@@ -40,6 +40,11 @@ class User extends WaveUser
         'remember_token',
     ];
 
+    public function userAddresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -67,4 +72,6 @@ class User extends WaveUser
             $user->assignRole( config('wave.default_user_role', 'registered') );
         });
     }
+
+   
 }
