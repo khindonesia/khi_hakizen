@@ -6,7 +6,8 @@
 ?>
 
 <x-layouts.marketing>
-    <x-container>
+    <article id="event-{{ $event->id }}"
+        class="max-w-4xl px-5 pb-20 mx-auto prose prose-md dark:prose-invert lg:prose-lg lg:px-0">
         <x-elements.back-button class="max-w-4xl mx-auto mt-4 md:mt-8" text="back" :href="route('events')" />
         <div class="max-w-4xl mx-auto mt-6">
 
@@ -23,5 +24,5 @@
         <div class="max-w-4xl mx-auto">
             {!! $event->body !!}
         </div>
-    </x-container>
+    </article>
 </x-layouts.marketing>
