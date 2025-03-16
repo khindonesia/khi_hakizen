@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class Plugins extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'phosphor-plugs-duotone';
 
     protected static string $view = 'filament.pages.plugins';

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RoleResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon = 'phosphor-address-book-duotone';

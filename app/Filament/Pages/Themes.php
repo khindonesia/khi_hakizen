@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\File;
 
 class Themes extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
     public $themes = [];
 
     private $themes_folder = '';

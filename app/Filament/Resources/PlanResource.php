@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PlanResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = Plan::class;
 
     protected static ?string $navigationIcon = 'phosphor-credit-card-duotone';

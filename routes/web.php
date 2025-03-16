@@ -18,6 +18,6 @@ use Wave\Facades\Wave;
 Wave::routes();
 
 // Di routes/web.php
-Route::any('auth/setup', function() {
-    abort(404); // Atau redirect atau response lainnya
-});
+// Route::any('auth/setup', function() {
+//     abort(404); // Atau redirect atau response lainnya
+// });

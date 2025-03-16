@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ChangelogResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = Changelog::class;
 
     protected static ?string $navigationIcon = 'phosphor-book-open-text-duotone';

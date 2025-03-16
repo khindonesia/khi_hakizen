@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PostResource\Pages;
-use App\Filament\Resources\PostResource\RelationManagers;
+use App\Filament\Resources\EventResource\Pages;
+use App\Models\Event;
 use App\Models\User;
-use Wave\Post;
-use Wave\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,16 +13,14 @@ use Filament\Tables\Table;
 use Filament\Forms\Set;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class PostResource extends Resource
+class EventResource extends Resource
 {
-    protected static ?string $model = Post::class;
+    protected static ?string $model = Event::class;
 
-    protected static ?string $navigationIcon = 'phosphor-pencil-line-duotone';
-    protected static ?string $navigationGroup = 'Post Management';
+    protected static ?string $navigationIcon = 'phosphor-calendar-duotone';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -42,20 +38,20 @@ class PostResource extends Resource
                 Forms\Components\RichEditor::make('body')
                     ->required()
                     ->columnSpanFull(),
-                Forms\Components\Textarea::make('excerpt')
-                    ->columnSpanFull(),
                 Forms\Components\FileUpload::make('image')
                     ->image(),
+                Forms\Components\DateTimePicker::make('start_datetime')
+                    ->required()
+                    ->label('Start Date & Time'),
+                Forms\Components\DateTimePicker::make('end_datetime')
+                    ->required()
+                    ->label('End Date & Time')
+                    ->afterOrEqual('start_datetime'),
                 Forms\Components\TextInput::make('seo_title')
                     ->maxLength(191),
                 Forms\Components\Select::make('author_id')
                     ->label('Author')
                     ->options(User::all()->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
-                Forms\Components\Select::make('category_id')
-                    ->label('Category')
-                    ->options(Category::all()->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
                 Forms\Components\Textarea::make('meta_description')
@@ -67,10 +63,8 @@ class PostResource extends Resource
                     ->options([
                         'DRAFT' => 'Draft',
                         'PUBLISHED' => 'Published',
-                        'ARCHIVED' => 'Archived',
+                        'PENDING' => 'Pending',
                     ]),
-                Forms\Components\Toggle::make('featured')
-                    ->required(),
             ]);
     }
 
@@ -78,18 +72,26 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('category.name')
+                Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Author')
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\IconColumn::make('featured')
-                    ->boolean(),
+                Tables\Columns\TextColumn::make('start_datetime')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('end_datetime')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'PUBLISHED' => 'success',
+                        'DRAFT' => 'gray',
+                        'PENDING' => 'warning',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -100,7 +102,18 @@ class PostResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'DRAFT' => 'Draft',
+                        'PUBLISHED' => 'Published',
+                        'PENDING' => 'Pending',
+                    ]),
+                Tables\Filters\Filter::make('upcoming')
+                    ->query(fn (Builder $query): Builder => $query->where('start_datetime', '>=', now())),
+                Tables\Filters\Filter::make('past')
+                    ->query(fn (Builder $query): Builder => $query->where('end_datetime', '<', now())),
+                Tables\Filters\Filter::make('ongoing')
+                    ->query(fn (Builder $query): Builder => $query->where('start_datetime', '<=', now())->where('end_datetime', '>=', now())),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -123,9 +136,9 @@ class PostResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPosts::route('/'),
-            'create' => Pages\CreatePost::route('/create'),
-            'edit' => Pages\EditPost::route('/{record}/edit'),
+            'index' => Pages\ListEvents::route('/'),
+            'create' => Pages\CreateEvent::route('/create'),
+            'edit' => Pages\EditEvent::route('/{record}/edit'),
         ];
     }
 }
