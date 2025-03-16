@@ -10,7 +10,7 @@ class Post extends Model
     public $guarded = [];
 
     public function link(){
-    	return url('/blog/' . $this->category->slug . '/' . $this->slug);
+    	return url($this->category->slug . '/' . $this->slug);
     }
 
     public function user(){
