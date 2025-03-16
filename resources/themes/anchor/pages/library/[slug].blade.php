@@ -14,7 +14,7 @@
             <div class="col-span-1">
                 <div class="relative">
                     <img class="w-full"
-                        src="{{Storage::url('/' . $book->image)}}" />
+                        src="{{Storage::url('/' . $book->cover_image)}}" />
                 </div>
             </div>
             <div class="col-span-4">

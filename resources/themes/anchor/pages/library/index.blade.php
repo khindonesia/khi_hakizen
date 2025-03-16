@@ -26,7 +26,7 @@ $ebooks = \App\Models\Ebook::published()->orderBy('created_at', 'asc')->paginate
                     </div>
                     <div class="relative">
                         <img class="w-full"
-                        src="{{Storage::url('/' . $book->image)}}" />
+                        src="{{Storage::url('/' . $book->cover_image)}}" />
                     </div>
                 </div>
             </a>
