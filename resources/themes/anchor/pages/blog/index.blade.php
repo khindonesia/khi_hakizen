@@ -15,7 +15,7 @@ $categories = \Wave\Category::all();
             <x-marketing.elements.heading title="Historia News"
                 description="Check out some of our latest blog posts below." align="left" />
 
-            @include('theme::partials.blog.categories')
+            {{-- @include('theme::partials.blog.categories') --}}
 
             <div class="grid gap-5 mx-auto mt-5 md:mt-10 sm:grid-cols-2 lg:grid-cols-3">
                 @include('theme::partials.blog.posts-loop', ['posts' => $posts])

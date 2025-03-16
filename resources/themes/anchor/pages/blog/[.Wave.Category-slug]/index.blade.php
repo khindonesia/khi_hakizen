@@ -12,12 +12,12 @@
     <x-container>
         <div class="relative pt-6">
             <x-marketing.elements.heading
-                title="{{ $category->name }} Articles"
+                title="{{ $category->name }}"
                 description="Our latest {{ $category->name }} posts below."
                 align="left"
             />
             
-            @include('theme::partials.blog.categories')
+            {{-- @include('theme::partials.blog.categories') --}}
 
             <div class="grid gap-5 mx-auto mt-7 sm:grid-cols-2 lg:grid-cols-3">
                 @include('theme::partials.blog.posts-loop', ['posts' => $posts])
