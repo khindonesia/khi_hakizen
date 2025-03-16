@@ -38,25 +38,22 @@ $events = $query->paginate(6);
         </div>
         
         <!-- Event filter tabs -->
-        <div class="flex flex-wrap gap-2 mt-8">
-            <a href="{{ route('events', ['filter' => 'upcoming']) }}" 
-               class="px-4 py-2 rounded-full text-sm font-medium {{ request('filter', 'upcoming') == 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+        <div class="flex flex-wrap justify-center gap-2 mt-8">
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'upcoming']) }}" tag="a" color="{{request('filter', 'upcoming') == 'upcoming' ? 'primary' : 'secondary'}}" class="text-sm">
                 Upcoming
-            </a>
-            <a href="{{ route('events', ['filter' => 'ongoing']) }}" 
-               class="px-4 py-2 rounded-full text-sm font-medium {{ request('filter') == 'ongoing' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+            </x-button>
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'ongoing']) }}" tag="a" color="{{request('filter', 'ongoing') == 'ongoing' ? 'primary' : 'secondary'}}" class="text-sm">
                 Ongoing
-            </a>
-            <a href="{{ route('events', ['filter' => 'past']) }}" 
-               class="px-4 py-2 rounded-full text-sm font-medium {{ request('filter') == 'past' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+            </x-button>
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'past']) }}" tag="a" color="{{request('filter', 'past') == 'past' ? 'primary' : 'secondary'}}" class="text-sm">
                 Past
-            </a>
+            </x-button>
         </div>
         
         @if($events->count() > 0)
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pt-12 gap-6">
                 @foreach($events as $event)
-                {{-- <a href="{{ route('events.show', ['slug' => $event->slug]) }}" class="block hover:no-underline"> --}}
+                <a href="{{ route('events.show', ['slug' => $event->slug]) }}" wire:navigate class="block hover:no-underline">
                         <div class="flex flex-col w-full bg-white rounded shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
                             <div class="w-full h-44 sm:h-64 bg-center bg-cover rounded-t"
                                 style="background-image: url({{ Storage::url('/' . $event->image) }})">
@@ -75,16 +72,10 @@ $events = $query->paginate(6);
                                     <div class="leading-normal line-clamp-3 flex-grow">
                                         {{ Str::limit(strip_tags($event->body), 150) }}
                                     </div>
-                                    <div class="mt-4">
-                                        <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                            View details
-                                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                    {{-- </a> --}}
+                    </a>
                 @endforeach
             </div>
             
