@@ -2,8 +2,8 @@
 use function Laravel\Folio\{name};
 name('library');
 
-$posts = \Wave\Post::orderBy('created_at', 'DESC')->paginate(6);
-$categories = \Wave\Category::all();
+// Query events based on filter
+$ebooks = \App\Models\Ebook::published()->orderBy('created_at', 'asc')->paginate(6);
 ?>
 
 <x-layouts.marketing :seo="[
@@ -17,26 +17,20 @@ $categories = \Wave\Category::all();
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 pt-12 gap-3">
             <!-- Create By Joker Banny -->
-            <div class="bg-white rounded-xl shadow-lg cursor-pointer">
-                <div class="p-4">
-                    <h1 class="mt-4 text-xl sm:text-3xl font-bold hover:underline cursor-pointer">Super Books</h1>
-                    <p class="mt-2 font-sans text-gray-700">by Diseño Constructivo</p>
+            @foreach ($ebooks as $book)
+            <a href="{{route('library.book', ['slug' => $book->slug])}}" wire:navigate key="{{$book->id}}">
+                <div class="bg-white rounded-xl shadow-lg cursor-pointer">
+                    <div class="p-4">
+                        <h1 class="mt-4 text-xl sm:text-2xl font-bold hover:underline cursor-pointer">{{$book->title}}</h1>
+                        <p class="mt-2 font-sans text-gray-700">by {{$book->author}}</p>
+                    </div>
+                    <div class="relative">
+                        <img class="w-full"
+                        src="{{Storage::url('/' . $book->image)}}" />
+                    </div>
                 </div>
-                <div class="relative">
-                    <img class="w-full"
-                        src="https://images.unsplash.com/photo-1571167530149-c1105da4c2c7?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=376&q=80" />
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-lg cursor-pointer">
-                <div class="p-4">
-                    <h1 class="mt-4 text-xl sm:text-3xl font-bold hover:underline cursor-pointer">Super Books</h1>
-                    <p class="mt-2 font-sans text-gray-700">by Diseño Constructivo</p>
-                </div>
-                <div class="relative">
-                    <img class="w-full"
-                        src="https://images.unsplash.com/photo-1571167530149-c1105da4c2c7?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=376&q=80" />
-                </div>
-            </div>
+            </a>
+            @endforeach
         </div>
     </x-container>
 </x-layouts.marketing>
