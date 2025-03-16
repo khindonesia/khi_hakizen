@@ -3,6 +3,7 @@
 
 <head>
     @include('theme::partials.head', ['seo' => $seo ?? null])
+    @stack('styles')
 </head>
 
 <body x-data
@@ -20,6 +21,7 @@
     @include('theme::partials.footer-scripts')
     {{ $javascript ?? '' }}
 
+    @stack('javascript')
 </body>
 
 </html>

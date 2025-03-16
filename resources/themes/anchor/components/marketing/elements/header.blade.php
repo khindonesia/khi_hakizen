@@ -99,13 +99,13 @@ window.addEventListener('scroll', function() {
                     </li>
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('library') }}" wire:navigate
-                            class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">
+                            class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('library') ? 'font-semibold' : 'font-medium' }}"">
                             E-Library
                         </a>
                     </li>
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
-                        <a href="{{ route('blog') }}" wire:navigate
-                            class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">
+                        <a href="{{ route('store') }}" wire:navigate
+                            class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('store') || request()->routeIs('shopping-cart') || request()->routeIs('store.product') ? 'font-semibold' : 'font-medium' }}"">
                             Merchandise
                         </a>
                     </li>
