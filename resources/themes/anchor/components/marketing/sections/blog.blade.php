@@ -1,6 +1,5 @@
 <?php
-$posts = \Wave\Post::orderBy('created_at', 'DESC')->paginate(3);
-$categories = \Wave\Category::all();
+$posts = \Wave\Post::orderBy('created_at', 'DESC')->where('category_id', 3)->paginate(3);
 ?>
 
 <x-container>
@@ -14,7 +13,7 @@ $categories = \Wave\Category::all();
     </div>
 
     <div class="flex justify-center my-10">
-        <x-filament::link wire:navigate :href="route('blog')">Lihat selengkapnya</x-filament::link>
+        <x-filament::link wire:navigate :href="url('historia-news')">Lihat selengkapnya</x-filament::link>
     </div>
 
 </x-container>
