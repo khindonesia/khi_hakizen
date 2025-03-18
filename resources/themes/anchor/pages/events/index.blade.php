@@ -2,8 +2,8 @@
 use function Laravel\Folio\{name};
 name('events');
 
-// Get the filter from the request
-$filter = request('filter', 'upcoming');
+// Get the filter from the request without a default
+$filter = request('filter');
 
 // Query events based on filter
 $query = \App\Models\Event::published()->orderBy('start_datetime', 'asc');
@@ -16,8 +16,10 @@ switch ($filter) {
         $query->past()->orderBy('start_datetime', 'desc'); // Past events in reverse chronological order
         break;
     case 'upcoming':
-    default:
         $query->upcoming();
+        break;
+    default:
+        // No filter applied - show all events
         break;
 }
 
@@ -39,13 +41,16 @@ $events = $query->paginate(6);
         
         <!-- Event filter tabs -->
         <div class="flex flex-wrap justify-center gap-2 mt-8">
-            <x-button wire:navigate href="{{ route('events', ['filter' => 'upcoming']) }}" tag="a" color="{{request('filter', 'upcoming') == 'upcoming' ? 'primary' : 'secondary'}}" class="text-sm">
+            <x-button wire:navigate href="{{ route('events') }}" tag="a" color="{{request('filter') === null ? 'primary' : 'secondary'}}" class="text-sm">
+                All Events
+            </x-button>
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'upcoming']) }}" tag="a" color="{{request('filter') === 'upcoming' ? 'primary' : 'secondary'}}" class="text-sm">
                 Upcoming
             </x-button>
-            <x-button wire:navigate href="{{ route('events', ['filter' => 'ongoing']) }}" tag="a" color="{{request('filter', 'ongoing') == 'ongoing' ? 'primary' : 'secondary'}}" class="text-sm">
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'ongoing']) }}" tag="a" color="{{request('filter') === 'ongoing' ? 'primary' : 'secondary'}}" class="text-sm">
                 Ongoing
             </x-button>
-            <x-button wire:navigate href="{{ route('events', ['filter' => 'past']) }}" tag="a" color="{{request('filter', 'past') == 'past' ? 'primary' : 'secondary'}}" class="text-sm">
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'past']) }}" tag="a" color="{{request('filter') === 'past' ? 'primary' : 'secondary'}}" class="text-sm">
                 Past
             </x-button>
         </div>
