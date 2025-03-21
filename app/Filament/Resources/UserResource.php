@@ -26,41 +26,41 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(191),
-                Forms\Components\TextInput::make('username')
-                    ->required()
-                    ->maxLength(191),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(191),
-                Forms\Components\FileUpload::make('avatar')
-                    ->required()
-                    ->image(),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $context): bool => $context === 'create'),
-                Forms\Components\Select::make('roles')
-                    ->multiple()
-                    ->relationship('roles', 'name')
-                    ->preload()
-                    ->searchable()
-                    ->required(),
-                Forms\Components\DateTimePicker::make('trial_ends_at'),
-                Forms\Components\TextInput::make('verification_code')
-                    ->maxLength(191),
-                Forms\Components\Toggle::make('verified')
-            ]);
+        return $form->schema([
+            Forms\Components\TextInput::make('name')
+                ->required()
+                ->maxLength(191),
+            Forms\Components\TextInput::make('username')
+                ->required()
+                ->maxLength(191),
+            Forms\Components\TextInput::make('email')
+                ->email()
+                ->required()
+                ->maxLength(191),
+            Forms\Components\FileUpload::make('avatar')
+                ->required()
+                ->image(),
+            Forms\Components\DateTimePicker::make('email_verified_at'),
+            Forms\Components\TextInput::make('password')
+                ->password()
+                ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                ->dehydrated(fn ($state) => filled($state))
+                ->required(fn (string $context): bool => $context === 'create'),
+            Forms\Components\Select::make('roles')
+                ->multiple()
+                ->relationship('roles', 'name')
+                ->preload()
+                ->searchable()
+                ->required(),
+            Forms\Components\DateTimePicker::make('trial_ends_at'),
+            Forms\Components\TextInput::make('verification_code')
+                ->maxLength(191),
+            Forms\Components\Toggle::make('verified')
+                ->label('Verified')
+                ->required(),
+        ]);
     }
-
-
+    
     public static function table(Table $table): Table
     {
         return $table
@@ -73,7 +73,10 @@ class UserResource extends Resource
                     ->circular()
                     ->defaultImageUrl(url('storage/demo/default.png')),
                 Tables\Columns\TextColumn::make('username')
-                    ->searchable()
+                    ->searchable(),
+                Tables\Columns\ToggleColumn::make('verified')
+                    ->label('Verified')
+                    ->searchable(),
             ])
             ->filters([
                 //
@@ -81,9 +84,6 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('Impersonate')
-                    ->url(fn ($record) => route('impersonate', $record))
-                    ->visible(fn ($record) => auth()->user()->id !== $record->id),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -91,14 +91,14 @@ class UserResource extends Resource
                 ]),
             ]);
     }
-
+    
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-
+    
     public static function getPages(): array
     {
         return [
@@ -107,4 +107,5 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
+    
 }
