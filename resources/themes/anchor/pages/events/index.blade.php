@@ -1,19 +1,96 @@
 <?php
 use function Laravel\Folio\{name};
 name('events');
+
+// Get the filter from the request without a default
+$filter = request('filter');
+
+// Query events based on filter
+$query = \App\Models\Event::published()->orderBy('start_datetime', 'asc');
+
+switch ($filter) {
+    case 'ongoing':
+        $query->ongoing();
+        break;
+    case 'past':
+        $query->past()->orderBy('start_datetime', 'desc'); // Past events in reverse chronological order
+        break;
+    case 'upcoming':
+        $query->upcoming();
+        break;
+    default:
+        // No filter applied - show all events
+        break;
+}
+
+// Fetch events from the database
+$events = $query->paginate(6);
 ?>
 
 <x-layouts.marketing :seo="[
     'title' => 'Events',
-    'description' => 'Events',
+    'description' => 'Discover and join our upcoming events',
 ]">
     <x-container>
-        <section class="bg-white dark:bg-gray-900">
-            <div class="py-8 px-4 mx-auto max-w-screen-md text-center lg:py-16 lg:px-12">
-                <svg class="mx-auto mb-4 w-10 h-10 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M331.8 224.1c28.29 0 54.88 10.99 74.86 30.97l19.59 19.59c40.01-17.74 71.25-53.3 81.62-96.65c5.725-23.92 5.34-47.08 .2148-68.4c-2.613-10.88-16.43-14.51-24.34-6.604l-68.9 68.9h-75.6V97.2l68.9-68.9c7.912-7.912 4.275-21.73-6.604-24.34c-21.32-5.125-44.48-5.51-68.4 .2148c-55.3 13.23-98.39 60.22-107.2 116.4C224.5 128.9 224.2 137 224.3 145l82.78 82.86C315.2 225.1 323.5 224.1 331.8 224.1zM384 278.6c-23.16-23.16-57.57-27.57-85.39-13.9L191.1 158L191.1 95.99l-127.1-95.99L0 63.1l96 127.1l62.04 .0077l106.7 106.6c-13.67 27.82-9.251 62.23 13.91 85.39l117 117.1c14.62 14.5 38.21 14.5 52.71-.0016l52.75-52.75c14.5-14.5 14.5-38.08-.0016-52.71L384 278.6zM227.9 307L168.7 247.9l-148.9 148.9c-26.37 26.37-26.37 69.08 0 95.45C32.96 505.4 50.21 512 67.5 512s34.54-6.592 47.72-19.78l119.1-119.1C225.5 352.3 222.6 329.4 227.9 307zM64 472c-13.25 0-24-10.75-24-24c0-13.26 10.75-24 24-24S88 434.7 88 448C88 461.3 77.25 472 64 472z"/></svg>
-                <h1 class="mb-4 text-4xl font-bold tracking-tight leading-none text-gray-900 lg:mb-6 md:text-5xl xl:text-6xl dark:text-white">Under Maintenance</h1>
-                <p class="font-light text-gray-500 md:text-lg xl:text-xl dark:text-gray-400">Our Enterprise administrators are performing scheduled maintenance.</p>
+        <div class="relative pt-6">
+            <x-marketing.elements.heading 
+                title="Events" 
+                description="Check out our upcoming events and join us"
+                align="left" />
+        </div>
+        
+        <!-- Event filter tabs -->
+        <div class="flex flex-wrap justify-center gap-2 mt-8">
+            <x-button wire:navigate href="{{ route('events') }}" tag="a" color="{{request('filter') === null ? 'primary' : 'secondary'}}" class="text-sm">
+                All Events
+            </x-button>
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'upcoming']) }}" tag="a" color="{{request('filter') === 'upcoming' ? 'primary' : 'secondary'}}" class="text-sm">
+                Upcoming
+            </x-button>
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'ongoing']) }}" tag="a" color="{{request('filter') === 'ongoing' ? 'primary' : 'secondary'}}" class="text-sm">
+                Ongoing
+            </x-button>
+            <x-button wire:navigate href="{{ route('events', ['filter' => 'past']) }}" tag="a" color="{{request('filter') === 'past' ? 'primary' : 'secondary'}}" class="text-sm">
+                Past
+            </x-button>
+        </div>
+        
+        @if($events->count() > 0)
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pt-12 gap-6">
+                @foreach($events as $event)
+                <a href="{{ route('events.show', ['slug' => $event->slug]) }}" wire:navigate class="block hover:no-underline">
+                        <div class="flex flex-col w-full bg-white rounded shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+                            <div class="w-full h-44 sm:h-64 bg-center bg-cover rounded-t"
+                                style="background-image: url({{ Storage::url('/' . $event->image) }})">
+                            </div>
+                            <div class="flex flex-col w-full md:flex-row flex-grow">
+                                <div
+                                    class="flex flex-row justify-around p-4 font-bold leading-none text-gray-800 uppercase bg-gray-400 rounded md:flex-col md:items-center md:justify-center md:w-1/4">
+                                    <div class="md:text-3xl">{{ $event->start_datetime->format('M') }}</div>
+                                    <div class="md:text-6xl">{{ $event->start_datetime->format('d') }}</div>
+                                    <div class="md:text-xl">{{ $event->start_datetime->format('H:i') }}</div>
+                                </div>
+                                <div class="p-4 font-normal text-gray-800 flex-grow flex flex-col">
+                                    <h1 class="mb-4 text-xl sm:text-2xl font-bold leading-none tracking-tight text-gray-800">
+                                        {{ $event->title }}
+                                    </h1>
+                                    <div class="leading-normal line-clamp-3 flex-grow">
+                                        {{ Str::limit(strip_tags($event->body), 150) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
             </div>
-        </section>
+            
+            <div class="flex justify-center my-10">
+                {{ $events->appends(['filter' => request('filter')])->links('theme::partials.pagination') }}
+            </div>
+        @else
+            <div class="py-12 text-center">
+                <p class="text-xl text-gray-600">No events found. Please check back later!</p>
+            </div>
+        @endif
     </x-container>
 </x-layouts.marketing>
