@@ -12,6 +12,8 @@
         <div class="px-1 py-1">
             <div class="flex gap-x-4 items-center my-3 text-xs">
                 <time datetime="2020-03-16" class="text-zinc-500">{{ $post->updated_at->format('M d, Y') }}</time>
+                <span>|</span>
+                <span class="text-zinc-500">{{ $post->user->name }}</span>
             </div>
             <h2 class="text-lg font-semibold leading-6 text-zinc-900 group-hover:text-zinc-600">
                 <a href="{{ $post->link() }}" wire:navigate>

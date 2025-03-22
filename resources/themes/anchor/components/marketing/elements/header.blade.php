@@ -47,7 +47,7 @@ window.addEventListener('scroll', function() {
                     <a href="{{ route('home') }}"
                         class="flex items-center justify-center space-x-3 font-bold text-zinc-900">
                         <x-logo class="w-auto h-8 md:h-9"></x-logo>
-                        <span class="block sm:hidden">Komunitas Historia Indonesia</span>
+                        {{-- <span class="block sm:hidden">Komunitas Historia Indonesia</span> --}}
                     </a>
                 </div>
                 <div class="flex justify-end flex-grow md:hidden">
@@ -103,12 +103,12 @@ window.addEventListener('scroll', function() {
                             E-Library
                         </a>
                     </li>
-                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
+                    {{-- <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('store') }}" wire:navigate
                             class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('store') || request()->routeIs('shopping-cart') || request()->routeIs('store.product') ? 'font-semibold' : 'font-medium' }}">
                             Merchandise
                         </a>
-                    </li>
+                    </li> --}}
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('events') }}" wire:navigate
                             class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('events') ? 'font-semibold' : 'font-medium' }}">

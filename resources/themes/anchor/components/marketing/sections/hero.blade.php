@@ -24,7 +24,7 @@
                 src="/images/img-hero.jpeg" style="max-width:450px;">
         </div>
     </div>
-    <div class="flex-shrink-0 lg:h-[150px] flex border-t border-zinc-200 items-center w-full bg-white">
+    {{-- <div class="flex-shrink-0 lg:h-[150px] flex border-t border-zinc-200 items-center w-full bg-white">
         <div
             class="grid h-auto grid-cols-1 px-8 py-10 mx-auto space-y-5 divide-y max-w-7xl lg:space-y-0 lg:divide-y-0 divide-zinc-200 lg:py-0 lg:divide-x md:px-12 lg:px-20 lg:divide-zinc-200 lg:grid-cols-3">
             <div class="">
@@ -50,5 +50,5 @@
                 </p>
             </div>
         </div>
-    </div>
+    </div> --}}
 </section>

@@ -18,7 +18,8 @@
                 </div>
             </div>
             <div class="col-span-4">
-                <h1 class="text-xl font-medium">{{$book->title}}</h1>
+                <h1 class="text-xl font-bold">{{$book->title}}</h1>
+                <h1 class="font-medium">Author: {{$book->author}}</h1>
                 <div class="max-w-4xl mx-auto py-4">
                     {!! $book->description !!}
                 </div>

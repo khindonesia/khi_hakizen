@@ -1,11 +1,11 @@
 <?php
 use function Laravel\Folio\{name};
-name('events');
+name('organization');
 ?>
 
 <x-layouts.marketing :seo="[
-    'title' => 'Events',
-    'description' => 'Events',
+    'title' => 'Organization',
+    'description' => 'Organization',
 ]">
     <x-container>
         <section class="bg-white dark:bg-gray-900">
