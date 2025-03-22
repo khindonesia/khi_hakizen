@@ -28,6 +28,11 @@ class User extends WaveUser
         'verification_code',
         'verified',
         'trial_ends_at',
+        'phone_number', 
+        'age',          
+        'occupation',    
+        'reason_for_joining', 
+        'consent',       
     ];
 
     /**
@@ -72,6 +77,4 @@ class User extends WaveUser
             $user->assignRole( config('wave.default_user_role', 'registered') );
         });
     }
-
-   
 }
