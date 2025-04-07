@@ -41,7 +41,16 @@
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->actions([
+                Action::make('edit')
+                    ->label('Edit')
+                    ->url(fn (Post $record) => "/manage-historia-news/{$record->id}/edit")
+                    ->icon('heroicon-o-pencil')
+                    ->color('primary'),
+                
+                DeleteAction::make(),
+            ]);;
         }
     }
 ?>
