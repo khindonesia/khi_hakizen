@@ -8,51 +8,49 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Set;
 use Illuminate\Support\Str;
 use Livewire\Volt\Component;
-use function Laravel\Folio\{middleware, name, parameters};
+use function Laravel\Folio\{middleware, name};
 
 middleware('auth');
-name('manage-historia-news.edit');
-parameters(['post']);
+name('manage-historia-news.create');
 
 new class extends Component implements Forms\Contracts\HasForms
 {
     use Forms\Concerns\InteractsWithForms;
 
-    public Post $post;
+    public array $post = [];  // Use array instead of model instance
 
-    public function mount(Post $post): void
+    public function mount(): void
     {
-        $this->post = $post;
-        $this->form->fill([
-            'title' => $post->title,
-            'slug' => $post->slug,
-            'seo_title' => $post->seo_title,
-            'meta_keywords' => $post->meta_keywords,
-            'excerpt' => $post->excerpt,
-            'body' => $post->body,
-            'meta_description' => $post->meta_description,
-            'image' => $post->image,
-        ]);
+        $this->post = [
+            'title' => '',
+            'slug' => '',
+            'seo_title' => '',
+            'meta_keywords' => '',
+            'excerpt' => '',
+            'body' => '',
+            'meta_description' => '',
+            'image' => null,
+        ];  
     }
 
     protected function getFormSchema(): array
     {
         return [
-            TextInput::make('title')
+            TextInput::make('post.title')  // Note the 'post.' prefix
                 ->live(onBlur: true)
-                ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                ->afterStateUpdated(fn (Set $set, ?string $state) => $set('post.slug', Str::slug($state)))
                 ->required(),
-
-            TextInput::make('slug')
+                
+            TextInput::make('post.slug')
                 ->required()
-                ->unique(Post::class, 'slug', ignoreRecord: $this->post),
+                ->unique(ignoreRecord: true),
 
-            TextInput::make('seo_title')->required(),
-            TextInput::make('meta_keywords')->required(),
-            Textarea::make('excerpt')->required(),
-            RichEditor::make('body')->required()->columnSpanFull(),
-            Textarea::make('meta_description')->required(),
-            FileUpload::make('image')->image(),
+            TextInput::make('post.seo_title')->required(),
+            TextInput::make('post.meta_keywords')->required(),
+            Textarea::make('post.excerpt')->required(),
+            RichEditor::make('post.body')->required()->columnSpanFull(),
+            Textarea::make('post.meta_description')->required(),
+            FileUpload::make('post.image')->image(),
         ];
     }
 
@@ -60,7 +58,11 @@ new class extends Component implements Forms\Contracts\HasForms
     {
         $data = $this->form->getState();
 
-        $this->post->update($data);
+        $post = new Post();
+        $post->fill($data['post']); // Fill model with the form data
+        $post->author_id = auth()->id();
+        $post->status = 'DRAFT';
+        $post->save();
 
         return redirect('/manage-historia-news');
     }
@@ -68,17 +70,16 @@ new class extends Component implements Forms\Contracts\HasForms
 ?>
 
 <x-layouts.app>
-    @volt('historia-news.edit')
+    @volt('historia-news.create')
         <x-app.container>
             <div class="mb-5">
-                <x-app.heading title="Edit Post" description="Update your post's content" :border="false" />
+                <x-app.heading title="Create New Post" description="Fill in the details to create a new post" :border="false" />
             </div>
 
             <form wire:submit.prevent="submit">
                 {{ $this->form }}
-                <div class="mt-4 flex gap-3">
-                    <x-button type="submit">Update Post</x-button>
-                    <x-button tag="a" href="/manage-historia-news" color="gray">Cancel</x-button>
+                <div class="mt-4">
+                    <x-button type="submit">Save Post</x-button>
                 </div>
             </form>
         </x-app.container>
