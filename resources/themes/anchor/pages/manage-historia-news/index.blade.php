@@ -50,7 +50,7 @@
                     ->color('primary'),
                 
                 DeleteAction::make(),
-            ]);;
+            ]);
         }
     }
 ?>
