@@ -1,10 +1,15 @@
 @php
-    $settings = setting()->all(); // Ambil semua setting (misalnya dari DB cache)
-    $seo = isset($seo) ? (object) (is_array($seo) ? $seo : get_object_vars($seo)) : null;
+    if (isset($seo)) {
+        $seo = is_array($seo) ? (object) $seo : $seo;
+    }
 @endphp
 
 <title>
-    {{ $seo->title ?? $settings['site.title'] ?? 'Laravel Wave' }}
+    @if (isset($seo->title))
+        {{ $seo->title }}
+    @else
+        {{ setting('site.title', 'Laravel Wave') . ' - ' . setting('site.description', 'The Software as a Service Starter Kit built with Laravel') }}
+    @endif
 </title>
 
 <meta charset="utf-8">
@@ -13,59 +18,41 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="url" content="{{ url('/') }}">
 
-{{-- Load Favicon --}}
+{{-- Favicon --}}
 <x-favicon />
 
-{{-- Auto-generate meta from all site.* settings --}}
-@foreach ($settings as $key => $value)
-    @php
-        // Handle site.* keys like site.description, site.keywords, etc
-        if (Str::startsWith($key, 'site.') && !in_array($key, ['site.title'])) {
-            $metaName = str_replace('site.', '', $key);
-            echo '<meta name="' . e($metaName) . '" content="' . e($value) . '">' . PHP_EOL;
-        }
-
-        // If you have special keys like og:title etc (optional)
-        if (Str::startsWith($key, 'meta.')) {
-            $metaKey = explode('.', $key, 2)[1];
-            echo '<meta name="' . e($metaKey) . '" content="' . e($value) . '">' . PHP_EOL;
-        }
-    @endphp
-@endforeach
-
-{{-- SEO override via controller --}}
-@if ($seo?->description)
+{{-- SEO Meta --}}
+@if (isset($seo->description))
     <meta name="description" content="{{ $seo->description }}">
 @endif
 
-@if ($seo?->keywords)
-    <meta name="keywords" content="{{ $seo->keywords }}">
+@if (setting('site.keywords'))
+    <meta name="keywords" content="{{ setting('site.keywords') }}">
 @endif
 
-{{-- Open Graph --}}
-@if ($seo?->title && $seo?->description && $seo?->image)
+<meta name="robots" content="index,follow">
+<meta name="googlebot" content="index,follow">
+
+{{-- Open Graph / Social Sharing --}}
+@if (isset($seo->title) && isset($seo->description) && isset($seo->image))
     <meta property="og:title" content="{{ $seo->title }}">
     <meta property="og:description" content="{{ $seo->description }}">
     <meta property="og:image" content="{{ $seo->image }}">
     <meta property="og:url" content="{{ Request::url() }}">
     <meta property="og:type" content="{{ $seo->type ?? 'article' }}">
-    <meta property="og:site_name" content="{{ $settings['site.title'] ?? 'Laravel Wave' }}">
+    <meta property="og:site_name" content="{{ setting('site.title') }}">
 
     <meta itemprop="name" content="{{ $seo->title }}">
     <meta itemprop="description" content="{{ $seo->description }}">
     <meta itemprop="image" content="{{ $seo->image }}">
 
-    @if ($seo?->image_w && $seo?->image_h)
+    @if (isset($seo->image_w) && isset($seo->image_h))
         <meta property="og:image:width" content="{{ $seo->image_w }}">
         <meta property="og:image:height" content="{{ $seo->image_h }}">
     @endif
 @endif
 
-{{-- Default Robots --}}
-<meta name="robots" content="index,follow">
-<meta name="googlebot" content="index,follow">
-
-{{-- Styles and Scripts --}}
+{{-- Styles & Scripts --}}
 @filamentStyles
 @livewireStyles
 @vite([
