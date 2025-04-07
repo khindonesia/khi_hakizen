@@ -28,9 +28,6 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('seo_title')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('excerpt')
                     ->limit(50)
                     ->searchable(),
