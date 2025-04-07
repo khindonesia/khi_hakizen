@@ -1,19 +1,22 @@
 <?php
-    use App\Models\Post;
-    use Filament\Forms\Concerns\InteractsWithForms;
-    use Filament\Forms\Contracts\HasForms;
-    use Filament\Tables;
-    use Filament\Tables\Columns\TextColumn;
-    use Filament\Tables\Table;
-    use Livewire\Volt\Component;
-    use function Laravel\Folio\{middleware, name};
+use App\Models\Post;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Table;
+use Livewire\Volt\Component;
+use function Laravel\Folio\{middleware, name};
 
-    middleware('auth');
-    name('manage-historia-news');
+middleware('auth');
+name('manage-historia-news');
 
-    new class extends Component implements HasForms, Tables\Contracts\HasTable
-    {
-        use InteractsWithForms, Tables\Concerns\InteractsWithTable;
+new class extends Component implements HasForms, Tables\Contracts\HasTable
+{
+    use InteractsWithForms, Tables\Concerns\InteractsWithTable;
 
     public ?array $data = [];
 
@@ -51,9 +54,10 @@
                 
                 DeleteAction::make(),
             ]);
-        }
     }
+}
 ?>
+
 
 <x-layouts.app>
     @volt('historia-news')
