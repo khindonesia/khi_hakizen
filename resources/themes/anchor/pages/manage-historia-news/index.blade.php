@@ -70,5 +70,5 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
                 {{ $this->table }}
             </div>
         </x-app.container>
-    @endvolt
+    @endvolt 
 </x-layouts.app>
