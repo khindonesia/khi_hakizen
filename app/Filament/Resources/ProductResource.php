@@ -53,7 +53,7 @@ class ProductResource extends Resource
                                                     ->maxLength(255)
                                                     ->placeholder('Enter product name')
                                                     ->columnSpan(2),
-                                                    
+
                                                 Forms\Components\Select::make('category_id')
                                                     ->label('Category')
                                                     ->relationship('category', 'name')
@@ -76,7 +76,7 @@ class ProductResource extends Resource
                                                             ->default('active')
                                                             ->required(),
                                                     ]),
-                                                
+
                                                 Forms\Components\Select::make('status')
                                                     ->options([
                                                         'active' => 'Active',
@@ -89,7 +89,7 @@ class ProductResource extends Resource
                                                     ->required(),
                                             ])
                                             ->columns(2),
-                                        
+
                                         Forms\Components\Section::make('Product Description')
                                             ->schema([
                                                 Forms\Components\RichEditor::make('description')
@@ -122,50 +122,290 @@ class ProductResource extends Resource
                                             ->schema([
                                                 Forms\Components\Placeholder::make('next_steps')
                                                     ->content('After creating the product, you will be able to:
-                                                    
-• Add product variants
-• Upload product images 
-• Manage inventory')
+                                                        
+    • Add product variants
+    • Upload product images 
+    • Manage inventory')
                                                     ->columnSpanFull(),
                                             ]),
                                     ])
                                     ->columnSpan(['lg' => 1]),
                             ])
                             ->columns(3),
-                            
                         Forms\Components\Tabs\Tab::make('Variants')
                             ->schema([
                                 Forms\Components\Section::make('Product Variants')
                                     ->schema([
-                                        // For new products, show placeholder
-                                        Forms\Components\Placeholder::make('variants_placeholder')
-                                            ->content('You can add product variants after saving the basic product information.')
-                                            ->visible(fn ($record) => $record === null),
-                                            
-                                        // For existing products, show the variants relation manager embedding
-                                        Forms\Components\View::make('filament.resources.product-resource.variants-embedded-form')
-                                            ->visible(fn ($record) => $record !== null),
+                                        Forms\Components\Placeholder::make('variant_info')
+                                            ->content(fn(callable $get) => $get('has_variants')
+                                                ? 'Add variants with specific combinations of attributes (e.g., Color: Blue, Size: Large)'
+                                                : 'Configure the single variant for this simple product')
+                                            ->columnSpanFull(),
+
+                                        Forms\Components\Repeater::make('variants')
+                                            ->relationship()
+                                            ->schema([
+                                                Forms\Components\Grid::make(2)
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('sku')
+                                                            ->label('SKU')
+                                                            ->required()
+                                                            ->maxLength(50)
+                                                            ->unique(ignoreRecord: true)
+                                                            ->helperText('Stock Keeping Unit - must be unique')
+                                                            ->autocomplete(false),
+
+                                                        Forms\Components\TextInput::make('price')
+                                                            ->label('Price')
+                                                            ->required()
+                                                            ->numeric()
+                                                            ->prefix('Rp')
+                                                            ->minValue(0),
+
+                                                        Forms\Components\TextInput::make('stock_quantity')
+                                                            ->label('Stock Quantity')
+                                                            ->required()
+                                                            ->numeric()
+                                                            ->minValue(0)
+                                                            ->default(0),
+
+                                                        Forms\Components\FileUpload::make('image_url')
+                                                            ->label('Variant Image')
+                                                            ->image()
+                                                            ->directory('products/variants')
+                                                            ->visibility('public')
+                                                            ->imageResizeMode('cover')
+                                                            ->imageCropAspectRatio('1:1')
+                                                            ->imageResizeTargetWidth('600')
+                                                            ->imageResizeTargetHeight('600'),
+
+                                                        Forms\Components\Toggle::make('is_default')
+                                                            ->label('Default Variant')
+                                                            ->helperText('This variant will be used as the default for this product')
+                                                            ->default(false)
+                                                            ->reactive()
+                                                            ->afterStateUpdated(function (callable $set, callable $get, $state, $context) {
+                                                                if ($context === 'create') {
+                                                                    return;
+                                                                }
+
+                                                                // If turning on this toggle, ensure we update form to reset other defaults
+                                                                if ($state === true) {
+                                                                    // Note: This will be processed when the form is submitted
+                                                                    // The actual logic to ensure only one default exists should be in the model
+                                                                }
+                                                            }),
+
+                                                        Forms\Components\Select::make('status')
+                                                            ->label('Status')
+                                                            ->options([
+                                                                'active' => 'Active',
+                                                                'inactive' => 'Inactive',
+                                                                'out_of_stock' => 'Out of Stock',
+                                                            ])
+                                                            ->default('active')
+                                                            ->required(),
+                                                    ]),
+
+                                                Forms\Components\Section::make('Variant Attributes')
+                                                    ->schema([
+                                                        Forms\Components\Repeater::make('variantAttributes')
+                                                            ->relationship()
+                                                            ->schema([
+                                                                Forms\Components\Select::make('attribute_id')
+                                                                    ->label('Attribute')
+                                                                    ->relationship('attribute', 'name')
+                                                                    ->required()
+                                                                    ->searchable()
+                                                                    ->preload()
+                                                                    ->reactive()
+                                                                    ->afterStateUpdated(function (callable $set, $state) {
+                                                                        $set('attribute_value_id', null);
+                                                                    }),
+
+                                                                Forms\Components\Select::make('attribute_value_id')
+                                                                    ->label('Value')
+                                                                    ->relationship('attributeValue', 'value', function (Builder $query, callable $get) {
+                                                                        $attributeId = $get('attribute_id');
+
+                                                                        if ($attributeId) {
+                                                                            $query->where('attribute_id', $attributeId);
+                                                                        }
+                                                                    })
+                                                                    ->required()
+                                                                    ->searchable()
+                                                                    ->preload()
+                                                                    ->disabled(fn(callable $get) => !$get('attribute_id')),
+                                                            ])
+                                                            ->columns(2)
+                                                            ->itemLabel(fn(array $state): ?string =>
+                                                            isset($state['attribute_id']) && isset($state['attribute_value_id'])
+                                                                ? \App\Models\Attribute::find($state['attribute_id'])?->name . ': ' .
+                                                                \App\Models\AttributeValue::find($state['attribute_value_id'])?->value
+                                                                : 'Attribute Value')
+                                                            ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                                                // Mencegah duplikasi attributes dalam satu varian
+                                                                $attributes = collect($state)->pluck('attribute_id')->filter()->toArray();
+                                                                $uniqueAttributes = array_unique($attributes);
+
+                                                                if (count($attributes) !== count($uniqueAttributes)) {
+                                                                    \Filament\Notifications\Notification::make()
+                                                                        ->warning()
+                                                                        ->title('Duplicate attributes detected')
+                                                                        ->body('Each variant can only have one value per attribute type.')
+                                                                        ->send();
+                                                                }
+                                                            })
+                                                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, $livewire) {
+                                                                // Dapatkan ID produk dari parent record
+                                                                $productId = $livewire->record?->id;
+
+                                                                if (!$productId) {
+                                                                    return $data;
+                                                                }
+
+                                                                // Tambahkan attribute dan value ke product_attribute jika belum ada
+                                                                $attributeId = $data['attribute_id'];
+                                                                $attributeValueId = $data['attribute_value_id'];
+
+                                                                if ($attributeId && $attributeValueId) {
+                                                                    // Cek apakah kombinasi atribut-nilai sudah ada di product_attribute
+                                                                    $exists = \App\Models\ProductAttribute::where('product_id', $productId)
+                                                                        ->where('attribute_id', $attributeId)
+                                                                        ->where('attribute_value_id', $attributeValueId)
+                                                                        ->exists();
+
+                                                                    // Jika belum ada, buat product_attribute baru
+                                                                    if (!$exists) {
+                                                                        \App\Models\ProductAttribute::create([
+                                                                            'product_id' => $productId,
+                                                                            'attribute_id' => $attributeId,
+                                                                            'attribute_value_id' => $attributeValueId,
+                                                                        ]);
+
+                                                                        // Berikan notifikasi bahwa product attribute telah ditambahkan
+                                                                        \Filament\Notifications\Notification::make()
+                                                                            ->success()
+                                                                            ->title('Product attribute added')
+                                                                            ->body('Attribute has been automatically added to the product')
+                                                                            ->send();
+                                                                    }
+                                                                }
+
+                                                                return $data;
+                                                            }),
+                                                    ])
+                                                    ->collapsible(),
+                                            ])
+                                            ->columns(1)
+                                            ->itemLabel(fn(array $state): ?string =>
+                                            isset($state['sku']) ? "Variant: {$state['sku']}" . (isset($state['is_default']) && $state['is_default'] ? ' (Default)' : '') : null)
+                                            ->addActionLabel('Add Variant')
+                                            ->reorderableWithButtons()
+                                            ->collapsible()
+                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, $livewire) {
+                                                // Jika ini adalah varian pertama, atur sebagai default
+                                                static $isFirst = true;
+
+                                                if ($isFirst && !$livewire->record?->variants()->exists()) {
+                                                    $data['is_default'] = true;
+                                                    $isFirst = false;
+                                                }
+
+                                                return $data;
+                                            })
                                     ])
-                                    ->columnSpanFull(),
                             ]),
-                            
+
+
+
                         Forms\Components\Tabs\Tab::make('Images')
                             ->schema([
                                 Forms\Components\Section::make('Product Images')
                                     ->schema([
-                                        // For new products, show placeholder
-                                        Forms\Components\Placeholder::make('images_placeholder')
-                                            ->content('You can add product images after saving the basic product information.')
-                                            ->visible(fn ($record) => $record === null),
-                                            
-                                        // For existing products, show the images relation manager embedding
-                                        Forms\Components\View::make('filament.resources.product-resource.images-embedded-form')
-                                            ->visible(fn ($record) => $record !== null),
+                                        Forms\Components\Repeater::make('images')
+                                            ->relationship()
+                                            ->schema([
+                                                Forms\Components\FileUpload::make('image_url')
+                                                    ->label('Image')
+                                                    ->image()
+                                                    ->required()
+                                                    ->directory('products/images')
+                                                    ->disk('public')
+                                                    ->visibility('public')
+                                                    ->imageResizeMode('cover')
+                                                    ->imageCropAspectRatio('1:1')
+                                                    ->imageResizeTargetWidth('1200')
+                                                    ->imageResizeTargetHeight('1200')
+                                                    ->columnSpanFull()
+                                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif']),
+
+                                                Forms\Components\Grid::make(2)
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('sort_order')
+                                                            ->label('Sort Order')
+                                                            ->integer()
+                                                            ->minValue(0)
+                                                            ->default(0)
+                                                            ->helperText('Lower numbers appear first'),
+
+                                                        Forms\Components\Toggle::make('is_primary')
+                                                            ->label('Primary Image')
+                                                            ->helperText('This image will be used as the main product image')
+                                                            ->reactive()
+                                                            ->afterStateUpdated(function ($state, $set, callable $get, $livewire) {
+                                                                // Jika toggle diaktifkan, nonaktifkan yang lain
+                                                                if ($state === true) {
+                                                                    $images = $get('images');
+                                                                    if (!is_array($images)) return;
+
+                                                                    $currentIndex = null;
+                                                                    foreach ($images as $index => $image) {
+                                                                        if (isset($image['is_primary']) && $image['is_primary'] === true) {
+                                                                            $currentIndex = $index;
+                                                                            break;
+                                                                        }
+                                                                    }
+
+                                                                    // Jangan lakukan apa-apa jika kita tidak menemukan index saat ini
+                                                                    if ($currentIndex === null) return;
+
+                                                                    // Reset semua toggle is_primary kecuali yang saat ini
+                                                                    foreach ($images as $index => $image) {
+                                                                        if ($index !== $currentIndex) {
+                                                                            $set("images.{$index}.is_primary", false);
+                                                                        }
+                                                                    }
+                                                                }
+                                                            })
+                                                            ->default(false),
+                                                    ]),
+                                            ])
+                                            ->columns(1)
+                                            ->itemLabel(fn(array $state): ?string =>
+                                            isset($state['image_url']) ?
+                                                (isset($state['is_primary']) && $state['is_primary'] ? '⭐ Primary Image' : 'Product Image') :
+                                                null)
+                                            ->addActionLabel('Add Image')
+                                            ->reorderableWithButtons()
+                                            ->collapsible()
+                                            ->cloneable()
+                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data) {
+                                                // Jika ini adalah gambar pertama, atur sebagai primary
+                                                static $isFirst = true;
+                                                if ($isFirst) {
+                                                    $data['is_primary'] = true;
+                                                    $isFirst = false;
+                                                }
+                                                return $data;
+                                            }),
+
+                                        Forms\Components\View::make('filament.resources.product-resource.images-note')
+                                            ->columnSpanFull(),
                                     ])
-                                    ->columnSpanFull(),
-                            ]),
+                            ])
                     ])
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
             ]);
     }
 
@@ -175,49 +415,65 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('defaultVariant.image_url')
                     ->label('Image')
-                    ->defaultImageUrl(fn (Product $record) => $record->defaultVariant && $record->defaultVariant->image_url 
-                        ? asset('storage/' . $record->defaultVariant->image_url) 
-                        : (
-                            $record->variants()->exists() && $record->variants()->first()->image_url
-                            ? asset('storage/' . $record->variants()->first()->image_url) 
+                    ->defaultImageUrl(
+                        fn(Product $record) => $record->defaultVariant && $record->defaultVariant->image_url
+                            ? asset('storage/' . $record->defaultVariant->image_url)
                             : (
-                                $record->images()->where('is_primary', true)->first()
-                                ? asset('storage/' . $record->images()->where('is_primary', true)->first()->image_url)
+                                $record->variants()->exists() && $record->variants()->first()->image_url
+                                ? asset('storage/' . $record->variants()->first()->image_url)
                                 : (
-                                    $record->images()->first() 
-                                    ? asset('storage/' . $record->images()->first()->image_url)
-                                    : asset('images/no-image.jpg')
+                                    $record->images()->where('is_primary', true)->first()
+                                    ? asset('storage/' . $record->images()->where('is_primary', true)->first()->image_url)
+                                    : (
+                                        $record->images()->first()
+                                        ? asset('storage/' . $record->images()->first()->image_url)
+                                        : asset('images/no-image.jpg')
+                                    )
                                 )
                             )
-                        )
                     )
                     ->circular(),
-                
+
                 Tables\Columns\TextColumn::make('name')
                     ->label('Product')
                     ->searchable()
                     ->sortable()
                     ->weight(FontWeight::Bold)
-                    ->description(fn (Product $record): ?string => 
-                        $record->category ? "Category: {$record->category->name}" : null),
-                
-                Tables\Columns\TextColumn::make('displayPrice')
+                    ->description(fn(Product $record): ?string =>
+                    $record->category ? "Category: {$record->category->name}" : null),
+
+                    Tables\Columns\TextColumn::make('displayPrice')
                     ->label('Price')
-                    ->formatStateUsing(function ($state) {
-                        if (is_array($state)) {
-                            return 'Rp ' . number_format($state['min'], 0, ',', '.') . ' - Rp ' . number_format($state['max'], 0, ',', '.');
+                    ->formatStateUsing(function ($state, Product $record) {
+                        $defaultVariant = $record->variants()->where('is_default', true)->first();
+                        
+                        if ($defaultVariant) {
+                            return 'Rp ' . number_format((float)$defaultVariant->price, 0, ',', '.');
                         }
-                        return 'Rp ' . number_format($state, 0, ',', '.');
+                
+                        // Fallback if no default variant exists
+                        return 'Rp 0';
                     }),
                 
                 Tables\Columns\TextColumn::make('availableStock')
                     ->label('Stock')
+                    ->formatStateUsing(function ($state, Product $record) {
+                        $defaultVariant = $record->variants()->where('is_default', true)->first();
+                        
+                        if ($defaultVariant) {
+                            return $defaultVariant->stock_quantity;
+                        }
+                
+                        // Fallback if no default variant exists
+                        return 0;
+                    })
                     ->sortable(),
                 
+
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->sortable()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'inactive' => 'danger',
                         'draft' => 'gray',
                         'out_of_stock' => 'warning',
@@ -225,7 +481,7 @@ class ProductResource extends Resource
                         'active' => 'success',
                         default => 'gray',
                     }),
-                
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Last Updated')
                     ->dateTime()
@@ -241,13 +497,13 @@ class ProductResource extends Resource
                         'out_of_stock' => 'Out of Stock',
                         'discontinued' => 'Discontinued',
                     ]),
-                
+
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label('Category')
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
-                    
+
                 Tables\Filters\Filter::make('low_stock')
                     ->label('Low Stock')
                     ->query(function (Builder $query) {
@@ -288,8 +544,8 @@ class ProductResource extends Resource
                         })
                         ->successNotification(
                             notification: \Filament\Notifications\Notification::make()
-                            ->success()
-                            ->title('Product updated successfully'),
+                                ->success()
+                                ->title('Product updated successfully'),
                         ),
                 ]),
             ])
@@ -319,13 +575,13 @@ class ProductResource extends Resource
                                             ->label('Product Name')
                                             ->weight(FontWeight::Bold)
                                             ->size(Infolists\Components\TextEntry\TextEntrySize::Large),
-                                        
+
                                         Infolists\Components\TextEntry::make('category.name')
                                             ->label('Category'),
-                                            
+
                                         Infolists\Components\TextEntry::make('status')
                                             ->badge()
-                                            ->color(fn (string $state): string => match ($state) {
+                                            ->color(fn(string $state): string => match ($state) {
                                                 'inactive' => 'danger',
                                                 'draft' => 'gray',
                                                 'out_of_stock' => 'warning',
@@ -333,17 +589,17 @@ class ProductResource extends Resource
                                                 'active' => 'success',
                                                 default => 'gray',
                                             }),
-                                            
+
                                         Infolists\Components\TextEntry::make('created_at')
                                             ->label('Created At')
                                             ->dateTime(),
-                                            
+
                                         Infolists\Components\TextEntry::make('updated_at')
                                             ->label('Last Updated')
                                             ->dateTime(),
                                     ])
                                     ->columns(3),
-                                    
+
                                 Infolists\Components\Section::make('Product Description')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('description')
@@ -353,14 +609,14 @@ class ProductResource extends Resource
                                             ->columnSpanFull(),
                                     ]),
                             ]),
-                            
+
                         Infolists\Components\Tabs\Tab::make('Variants')
                             ->schema([
                                 // Using a custom view to display the variants
                                 Infolists\Components\ViewEntry::make('variants')
                                     ->view('filament.resources.product-resource.variants-view'),
                             ]),
-                            
+
                         Infolists\Components\Tabs\Tab::make('Images')
                             ->schema([
                                 // Using a custom view to display the images
@@ -374,9 +630,8 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-                // We're still keeping the relation managers for use with the embedded views
-                // RelationManagers\VariantsRelationManager::class,
-                // RelationManagers\ImagesRelationManager::class,
+            // RelationManagers\VariantsRelationManager::class,
+            // RelationManagers\ImagesRelationManager::class,
         ];
     }
 
@@ -388,17 +643,17 @@ class ProductResource extends Resource
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
-    
+
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
     }
-    
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'description'];
     }
-    
+
     public static function getNavigationBadgeColor(): ?string
     {
         return 'success';

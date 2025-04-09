@@ -3,14 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AttributeResource\Pages;
-use App\Filament\Resources\AttributeResource\RelationManagers;
 use App\Models\Attribute;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -36,31 +34,77 @@ class AttributeResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
-                    ->heading('Attribute Information')
-                    ->description('Enter the attribute details below.')
-                    ->icon('heroicon-o-information-circle')
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Attribute Name')
-                            ->required()
-                            ->maxLength(255)
-                            ->placeholder('Enter attribute name')
-                            ->autocapitalize('words')
-                            ->columnSpan(1),
-                        
-                        Forms\Components\Select::make('status')
-                            ->label('Status')
-                            ->required()
-                            ->options([
-                                'active' => 'Active',
-                                'inactive' => 'Inactive',
+                Forms\Components\Tabs::make('Attribute Management')
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('Basic Information')
+                            ->schema([
+                                Forms\Components\Section::make()
+                                    ->heading('Attribute Information')
+                                    ->description('Enter the attribute details below.')
+                                    ->icon('heroicon-o-information-circle')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('name')
+                                            ->label('Attribute Name')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->placeholder('Enter attribute name')
+                                            ->autocapitalize('words')
+                                            ->columnSpan(1),
+                                        
+                                        Forms\Components\Select::make('status')
+                                            ->label('Status')
+                                            ->required()
+                                            ->options([
+                                                'active' => 'Active',
+                                                'inactive' => 'Inactive',
+                                            ])
+                                            ->default('active')
+                                            ->helperText('Controls visibility in frontend')
+                                            ->columnSpan(1),
+                                    ])
+                                    ->columns(2)
+                            ]),
+
+                        Forms\Components\Tabs\Tab::make('Attribute Values')
+                            ->schema([
+                                Forms\Components\Section::make('Manage Attribute Values')
+                                    ->description('Add all possible values for this attribute.')
+                                    ->icon('heroicon-o-list-bullet')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('values_info')
+                                            ->content('Define all possible values that can be assigned to this attribute (e.g., colors, sizes, materials)')
+                                            ->columnSpanFull(),
+
+                                        Forms\Components\Repeater::make('values')
+                                            ->relationship()
+                                            ->schema([
+                                                Forms\Components\TextInput::make('value')
+                                                    ->label('Value')
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->columnSpan(1),
+
+                                                Forms\Components\Select::make('status')
+                                                    ->label('Status')
+                                                    ->options([
+                                                        'active' => 'Active',
+                                                        'inactive' => 'Inactive',
+                                                    ])
+                                                    ->default('active')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ])
+                                            ->columns(2)
+                                            ->itemLabel(fn (array $state): ?string =>
+                                                isset($state['value']) ? $state['value'] : null)
+                                            ->addActionLabel('Add Value')
+                                            ->reorderableWithButtons()
+                                            ->collapsible()
+                                            ->cloneable(),
+                                    ])
                             ])
-                            ->default('active')
-                            ->helperText('Controls visibility in frontend')
-                            ->columnSpan(1),
                     ])
-                    ->columns(2)
+                    ->columnSpanFull()
             ]);
     }
 
@@ -128,7 +172,7 @@ class AttributeResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->whereHas('values'))
                     ->toggle(),
                     
-                Tables\Filters\Filter::make('used_in_products')
+                    Tables\Filters\Filter::make('used_in_products')
                     ->label('Used in Products')
                     ->query(fn (Builder $query): Builder => $query->whereHas('productAttributes'))
                     ->toggle(),
@@ -138,6 +182,10 @@ class AttributeResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('manageValues')
+                        ->label('Manage Values')
+                        ->icon('heroicon-o-list-bullet')
+                        ->url(fn (Attribute $record): string => route('filament.admin.resources.attributes.edit', ['record' => $record]) . '?activeTab=values'),
                 ]),
             ])
             ->bulkActions([
@@ -184,7 +232,7 @@ class AttributeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // RelationManagers\ValuesRelationManager::class,
+            // 
         ];
     }
 
