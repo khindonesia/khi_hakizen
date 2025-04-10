@@ -104,11 +104,6 @@ class Product extends Model
     /**
      * Relasi ke gambar utama produk.
      */
-    public function primaryImage()
-    {
-        return $this->hasOne(ProductImage::class)->where('is_primary', true);
-    }
-
     /**
      * Membuat varian default jika produk tidak memiliki varian.
      */
