@@ -1,6 +1,14 @@
 <?php
 use function Laravel\Folio\{name};
 name('store.product');
+
+// Query products and join with variants, filtering for is_default = 1
+$product = \App\Models\Product::leftJoin('variants', 'products.id', '=', 'variants.product_id')
+    ->where('variants.is_default', 1) // Ensure we're only getting the default variant
+    ->select('products.*', 'variants.image_url') // Select all product columns and the image_url from variants
+    ->where('products.id', $id ?? 1)
+    ->first();
+
 ?>
 
 <x-layouts.marketing>
@@ -16,8 +24,7 @@ name('store.product');
 
                 <div class="mt-6 sm:mt-8 lg:mt-0">
                     <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                        Apple iMac 24" All-In-One Computer, Apple M1, 8GB RAM, 256GB SSD,
-                        Mac OS, Pink
+                        {{ $product }}
                     </h1>
                     <div class="mt-4 sm:items-center sm:gap-4 sm:flex">
                         <p class="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">

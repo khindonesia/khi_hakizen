@@ -67,7 +67,7 @@ class PostResource extends Resource
                     ->options([
                         'DRAFT' => 'Draft',
                         'PUBLISHED' => 'Published',
-                        'ARCHIVED' => 'Archived',
+                        'PENDING' => 'Pending',
                     ]),
                 Forms\Components\Toggle::make('featured')
                     ->required(),
