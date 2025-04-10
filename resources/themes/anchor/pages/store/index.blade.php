@@ -326,7 +326,7 @@ $products = \App\Models\Product::leftJoin('variants', 'products.id', '=', 'varia
                                     </span>
                                 </div>
 
-                                <a href="/store/{{ $product->id }}" wire:navigate
+                                <a href="/store/{{ $product->slug }}" wire:navigate
                                     class="text-sm sm:text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white line-clamp-3">
                                     {{ $product->name }}
                                 </a>

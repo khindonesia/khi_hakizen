@@ -103,24 +103,24 @@ window.addEventListener('scroll', function() {
                             E-Library
                         </a>
                     </li>
-                    {{-- <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
+                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('store') }}" wire:navigate
                             class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('store') || request()->routeIs('shopping-cart') || request()->routeIs('store.product') ? 'font-semibold' : 'font-medium' }}">
                             Merchandise
                         </a>
-                    </li> --}}
+                    </li>
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('events') }}" wire:navigate
                             class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('events') ? 'font-semibold' : 'font-medium' }}">
                             Events
                         </a>
                     </li>
-                    {{-- <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
+                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ url('organization') }}" wire:navigate
                             class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->is('organization') ? 'font-semibold' : 'font-medium' }}">
                             Organization
                         </a>
-                    </li> --}}
+                    </li>
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ url('collaboration') }}" wire:navigate
                             class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->is('collaboration') ? 'font-semibold' : 'font-medium' }}">

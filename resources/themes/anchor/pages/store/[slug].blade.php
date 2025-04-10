@@ -4,9 +4,8 @@ name('store.product');
 
 // Query products and join with variants, filtering for is_default = 1
 $product = \App\Models\Product::leftJoin('variants', 'products.id', '=', 'variants.product_id')
-    ->where('variants.is_default', 1) // Ensure we're only getting the default variant
-    ->select('products.*', 'variants.image_url') // Select all product columns and the image_url from variants
-    ->where('products.id', $id ?? 1)
+    ->where(['products.slug' => $slug ?? '', 'variants.is_default' => 1])
+    ->select('products.*', 'variants.*') // Select all product columns and the image_url from variants
     ->first();
 
 ?>
@@ -16,20 +15,24 @@ $product = \App\Models\Product::leftJoin('variants', 'products.id', '=', 'varian
         <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0">
             <div class="md:grid md:grid-cols-2 md:gap-8 xl:gap-16">
                 <div class="shrink-0 max-w-md lg:max-w-lg mx-auto">
-                    <img class="w-full dark:hidden"
-                        src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg" alt="" />
-                    <img class="w-full hidden dark:block"
-                        src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front-dark.svg" alt="" />
+                    <img class="w-full"
+                        src="{{ Storage::url('/' . $product->image_url) }}" alt="" />
+                    <div class="flex gap-3 items-center mt-4">
+                        @foreach ($product->variants as $variant)
+                        <img class="w-24 h-24 cursor-pointer"
+                        src="{{ Storage::url('/' . $variant->image_url) }}" alt="" />
+                        @endforeach
+                    </div>
                 </div>
 
                 <div class="mt-6 sm:mt-8 lg:mt-0">
                     <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                        {{ $product }}
+                        {{ $product->name }}
                     </h1>
                     <div class="mt-4 sm:items-center sm:gap-4 sm:flex">
                         <p class="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
-                            Rp15.000.000
-                        </p>
+                            Rp {{ number_format($product->variants[0]->price, 0, ',', '.') }}
+                        </p>                        
 
                         <div class="flex items-center gap-2 mt-2 sm:mt-0">
                             <div class="flex items-center gap-1">
@@ -92,17 +95,12 @@ $product = \App\Models\Product::leftJoin('variants', 'products.id', '=', 'varian
 
                     <hr class="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
-                    <p class="mb-6 text-gray-500 dark:text-gray-400">
-                        Studio quality three mic array for crystal clear calls and voice
-                        recordings. Six-speaker sound system for a remarkably robust and
-                        high-quality audio experience. Up to 256GB of ultrafast SSD storage.
-                    </p>
-
-                    <p class="text-gray-500 dark:text-gray-400">
-                        Two Thunderbolt USB 4 ports and up to two USB 3 ports. Ultrafast
-                        Wi-Fi 6 and Bluetooth 5.0 wireless. Color matched Magic Mouse with
-                        Magic Keyboard or Magic Keyboard with Touch ID.
-                    </p>
+                    <div class="line-clamp-[13]">
+                        {!! $product->description !!}
+                    </div>
+                    <div class="mt-2">
+                        <span class="cursor-pointer text-[#c6303e] border-2 border-[#c6303e] rounded-md px-1">Readmore</span>
+                    </div>
                 </div>
             </div>
         </div>
