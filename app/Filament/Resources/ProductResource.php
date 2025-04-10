@@ -16,6 +16,7 @@ use Illuminate\Support\Collection;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Support\Enums\FontWeight;
+use Illuminate\Support\Str;
 
 class ProductResource extends Resource
 {
@@ -52,6 +53,20 @@ class ProductResource extends Resource
                                                     ->required()
                                                     ->maxLength(255)
                                                     ->placeholder('Enter product name')
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(function(string $state, callable $set) {
+                                                        // Only set the slug automatically if it doesn't exist yet
+                                                        $set('slug', Str::slug($state));
+                                                    })
+                                                    ->columnSpan(2),
+
+                                                Forms\Components\TextInput::make('slug')
+                                                    ->label('Slug')
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->placeholder('product-slug')
+                                                    ->helperText('Will be used in URL: example.com/products/[slug]')
+                                                    ->unique(ignoreRecord: true)
                                                     ->columnSpan(2),
 
                                                 Forms\Components\Select::make('category_id')
@@ -340,65 +355,24 @@ class ProductResource extends Resource
                                                     ->columnSpanFull()
                                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif']),
 
-                                                Forms\Components\Grid::make(2)
-                                                    ->schema([
-                                                        Forms\Components\TextInput::make('sort_order')
-                                                            ->label('Sort Order')
-                                                            ->integer()
-                                                            ->minValue(0)
-                                                            ->default(0)
-                                                            ->helperText('Lower numbers appear first'),
-
-                                                        Forms\Components\Toggle::make('is_primary')
-                                                            ->label('Primary Image')
-                                                            ->helperText('This image will be used as the main product image')
-                                                            ->reactive()
-                                                            ->afterStateUpdated(function ($state, $set, callable $get, $livewire) {
-                                                                // Jika toggle diaktifkan, nonaktifkan yang lain
-                                                                if ($state === true) {
-                                                                    $images = $get('images');
-                                                                    if (!is_array($images)) return;
-
-                                                                    $currentIndex = null;
-                                                                    foreach ($images as $index => $image) {
-                                                                        if (isset($image['is_primary']) && $image['is_primary'] === true) {
-                                                                            $currentIndex = $index;
-                                                                            break;
-                                                                        }
-                                                                    }
-
-                                                                    // Jangan lakukan apa-apa jika kita tidak menemukan index saat ini
-                                                                    if ($currentIndex === null) return;
-
-                                                                    // Reset semua toggle is_primary kecuali yang saat ini
-                                                                    foreach ($images as $index => $image) {
-                                                                        if ($index !== $currentIndex) {
-                                                                            $set("images.{$index}.is_primary", false);
-                                                                        }
-                                                                    }
-                                                                }
-                                                            })
-                                                            ->default(false),
-                                                    ]),
+                                                Forms\Components\TextInput::make('sort_order')
+                                                    ->label('Sort Order')
+                                                    ->integer()
+                                                    ->minValue(0)
+                                                    ->default(0)
+                                                    ->helperText('Lower numbers appear first')
+                                                    ->columnSpanFull(),
                                             ])
                                             ->columns(1)
                                             ->itemLabel(fn(array $state): ?string =>
-                                            isset($state['image_url']) ?
-                                                (isset($state['is_primary']) && $state['is_primary'] ? '⭐ Primary Image' : 'Product Image') :
-                                                null)
+                                                isset($state['image_url']) 
+                                                    ? "Product Image" . (isset($state['sort_order']) ? " (Order: {$state['sort_order']})" : "")
+                                                    : null
+                                            )
                                             ->addActionLabel('Add Image')
                                             ->reorderableWithButtons()
                                             ->collapsible()
-                                            ->cloneable()
-                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data) {
-                                                // Jika ini adalah gambar pertama, atur sebagai primary
-                                                static $isFirst = true;
-                                                if ($isFirst) {
-                                                    $data['is_primary'] = true;
-                                                    $isFirst = false;
-                                                }
-                                                return $data;
-                                            }),
+                                            ->cloneable(),
 
                                         Forms\Components\View::make('filament.resources.product-resource.images-note')
                                             ->columnSpanFull(),
@@ -422,13 +396,9 @@ class ProductResource extends Resource
                                 $record->variants()->exists() && $record->variants()->first()->image_url
                                 ? asset('storage/' . $record->variants()->first()->image_url)
                                 : (
-                                    $record->images()->where('is_primary', true)->first()
-                                    ? asset('storage/' . $record->images()->where('is_primary', true)->first()->image_url)
-                                    : (
-                                        $record->images()->first()
-                                        ? asset('storage/' . $record->images()->first()->image_url)
-                                        : asset('images/no-image.jpg')
-                                    )
+                                    $record->images()->first()
+                                    ? asset('storage/' . $record->images()->first()->image_url)
+                                    : asset('images/no-image.jpg')
                                 )
                             )
                     )
@@ -441,8 +411,15 @@ class ProductResource extends Resource
                     ->weight(FontWeight::Bold)
                     ->description(fn(Product $record): ?string =>
                     $record->category ? "Category: {$record->category->name}" : null),
+                
+                Tables\Columns\TextColumn::make('slug')
+                    ->label('Slug')
+                    ->searchable()
+                    ->toggleable()
+                    ->copyable()
+                    ->color('gray'),
 
-                    Tables\Columns\TextColumn::make('displayPrice')
+                Tables\Columns\TextColumn::make('displayPrice')
                     ->label('Price')
                     ->formatStateUsing(function ($state, Product $record) {
                         $defaultVariant = $record->variants()->where('is_default', true)->first();
@@ -576,6 +553,13 @@ class ProductResource extends Resource
                                             ->weight(FontWeight::Bold)
                                             ->size(Infolists\Components\TextEntry\TextEntrySize::Large),
 
+                                        Infolists\Components\TextEntry::make('slug')
+                                            ->label('Slug')
+                                            ->color('gray')
+                                            ->copyable()
+                                            ->url(fn(Product $record) => url("/products/{$record->slug}"))
+                                            ->openUrlInNewTab(),
+
                                         Infolists\Components\TextEntry::make('category.name')
                                             ->label('Category'),
 
@@ -630,8 +614,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // RelationManagers\VariantsRelationManager::class,
-            // RelationManagers\ImagesRelationManager::class,
+           
         ];
     }
 
@@ -651,7 +634,7 @@ class ProductResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name', 'description'];
+        return ['name', 'slug', 'description'];
     }
 
     public static function getNavigationBadgeColor(): ?string
