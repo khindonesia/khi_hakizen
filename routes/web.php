@@ -11,12 +11,15 @@
 |
 */
 
+use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Route;
 use Wave\Facades\Wave;
 
 // Wave routes
 Wave::routes();
 
-Route::any('auth/setup', function() {
+Route::any('auth/setup', function () {
     abort(404); // Atau redirect atau response lainnya
 });
+
+Route::post('/cart/add', [CartController::class, 'addToCart']);

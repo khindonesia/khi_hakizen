@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
@@ -19,11 +19,6 @@ class CartController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     public function __construct()
-     {
-         $this->middleware('auth:api');
-     }
-     
     public function addToCart(Request $request)
     {
         $request->validate([
@@ -39,7 +34,7 @@ class CartController extends Controller
                 ], 401);
             }
 
-     
+
             $userId = Auth::id();
             $variantId = $request->variant_id;
             $quantity = $request->quantity;
@@ -47,7 +42,7 @@ class CartController extends Controller
             $variant = Variant::findOrFail($variantId);
             // Get price from variant model
             $price = $variant->price;
-            
+
             if ($variant->stock_quantity < $quantity) {
                 return response()->json([
                     'success' => false,
@@ -56,17 +51,17 @@ class CartController extends Controller
             }
 
             DB::beginTransaction();
-            
+
             try {
                 $cart = Cart::firstOrCreate(
                     ['user_id' => $userId, 'status' => 'active'],
                     ['user_id' => $userId]
                 );
-                
+
                 $cartItem = CartItem::where('cart_id', $cart->id)
                     ->where('variant_id', $variantId)
                     ->first();
-                    
+
                 if ($cartItem) {
                     if ($variant->stock_quantity < ($cartItem->quantity + $quantity)) {
                         return response()->json([
@@ -74,7 +69,7 @@ class CartController extends Controller
                             'message' => 'Not enough stock available for the requested quantity'
                         ], 422);
                     }
-                    
+
                     $cartItem->quantity += $quantity;
                     $cartItem->save();
                 } else {
@@ -85,22 +80,20 @@ class CartController extends Controller
                         'price' => $price
                     ]);
                 }
-                
+
                 DB::commit();
-                
+
                 $cartCount = CartItem::where('cart_id', $cart->id)->sum('quantity');
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Item added to cart successfully',
                     'cart_count' => $cartCount
                 ]);
-                
             } catch (\Exception $e) {
                 DB::rollBack();
                 throw $e;
             }
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

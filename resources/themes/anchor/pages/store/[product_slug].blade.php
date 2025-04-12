@@ -239,7 +239,7 @@ if ($product) {
     </section>
 
 
-
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Store variants data for easy access
@@ -414,7 +414,9 @@ if ($product) {
 
             // Add to cart button event listener
             const addToCartBtn = document.getElementById('add-to-cart-btn');
-            addToCartBtn.addEventListener('click', async function() {
+            addToCartBtn.addEventListener('click', async function(e) {
+                e.preventDefault()
+
                 if (!currentVariant) return;
 
                 // Check if user is logged in
@@ -433,74 +435,71 @@ if ($product) {
                     // Show loading state
                     addToCartBtn.disabled = true;
                     addToCartBtn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Adding...
-            `;
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Adding...
+                    `;
 
                     // Make AJAX request to add to cart
-                    const response = await fetch('/api/cart/add', {
-                        method: 'POST',
+                    // Setup the AJAX request with CSRF and Authorization header
+                    $.ajaxSetup({
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content'),
-                            "Authorization": "Bearer " + localStorage.getItem('token')
-                        },
-                        body: JSON.stringify({
-                            variant_id: currentVariant.id,
-                            quantity: quantity,
-                        })
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        }
                     });
 
-                    // Check if the response is OK and if it returns JSON
-                    if (response.ok) {
-                        try {
-                            const result = await response.json(); // Define the result here
-                            console.log(result)
-                            // Process the result here
-                            if (result.cart_count) {
-                                // Update the cart counter in the navbar
+
+                    $.ajax({
+                        url: "{{ url('/cart/add') }}",
+                        type: 'POST',
+                        dataType: "json",  // Expecting JSON response
+                        contentType: "application/json",  // Set the Content-Type to application/json
+                        data: JSON.stringify({
+                            variant_id: currentVariant.id,
+                            quantity: quantity
+                        }),  // Send data as a JSON string
+                        success: function(result) {
+                            try {
+                                // Process the result here
+                                if (result.cart_count) {
+                                    // Update the cart counter in the navbar
+                                    const cartCounter = document.querySelector('.cart-counter');
+                                    if (cartCounter) {
+                                        cartCounter.textContent = result.cart_count;
+                                        cartCounter.classList.remove('hidden');
+                                    }
+                                }
+
+                                // Show success toast notification
+                                showNotification('success', 'Item added to cart successfully!');
+
+                                // Optional: Show mini cart preview
+                                showMiniCartPreview(currentVariant, quantity);
+
+                                // Update cart counter in navbar if present
                                 const cartCounter = document.querySelector('.cart-counter');
                                 if (cartCounter) {
                                     cartCounter.textContent = result.cart_count;
                                     cartCounter.classList.remove('hidden');
                                 }
+
+                                // Show success toast notification
+                                showNotification('success', 'Item added to cart successfully!');
+
+                                // Optional: Show mini cart preview
+                                showMiniCartPreview(currentVariant, quantity);
+                            } catch (error) {
+                                console.error('Error parsing JSON:', error);
+                                showNotification('error', 'Failed to parse the response.');
                             }
-
-                            // Show success toast notification
-                            showNotification('success', 'Item added to cart successfully!');
-
-                            // Optional: Show mini cart preview
-                            showMiniCartPreview(currentVariant, quantity);
-
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
-                            showNotification('error', 'Failed to parse the response.');
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Request failed with status:', response.status);
+                            showNotification('error', 'Failed to add item to cart.');
                         }
-                    } else {
-                        console.error('Request failed with status:', response.status);
-                        showNotification('error', 'Failed to add item to cart.');
-                    }
-
-                    if (response.ok) {
-                        // Update cart counter in navbar if present
-                        const cartCounter = document.querySelector('.cart-counter');
-                        if (cartCounter) {
-                            cartCounter.textContent = result.cart_count;
-                            cartCounter.classList.remove('hidden');
-                        }
-
-                        // Show success toast notification
-                        showNotification('success', 'Item added to cart successfully!');
-
-                        // Optional: Show mini cart preview
-                        showMiniCartPreview(currentVariant, quantity);
-                    } else {
-                        throw new Error(result.message || 'Failed to add item to cart');
-                    }
+                    });
                 } catch (error) {
                     console.error('Error adding to cart:', error);
 
@@ -510,14 +509,14 @@ if ($product) {
                     // Reset button state
                     addToCartBtn.disabled = false;
                     addToCartBtn.innerHTML = `
-                <svg class="w-5 h-5 -ms-2 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                </svg>
-                Add to cart
-            `;
+                        <svg class="w-5 h-5 -ms-2 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                        </svg>
+                        Add to cart
+                    `;
                 }
             });
 
