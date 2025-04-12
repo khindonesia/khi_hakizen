@@ -31,7 +31,7 @@
 
                 <div class="flex flex-col justify-start items-center px-4 space-y-1.5 w-full h-full text-slate-600 dark:text-zinc-400">
                     <x-app.sidebar-link href="/dashboard" icon="phosphor-house" :active="Request::is('dashboard')">Dashboard</x-app.sidebar-link>
-                    <x-app.sidebar-link href="/manage-historia-news" icon="phosphor-receipt" :active="Request::is('manage-historia-news')">Historia News</x-app.sidebar-link>
+                    <x-app.sidebar-link href="/dashboard/posts" icon="phosphor-receipt" :active="Request::is('dashboard/posts')">Posts</x-app.sidebar-link>
                     {{-- <x-app.sidebar-link href="/user-addresses" icon="phosphor-map-pin" :active="Request::is('user-addresses')">Alamat</x-app.sidebar-link> --}}
                 </div>
             </div>

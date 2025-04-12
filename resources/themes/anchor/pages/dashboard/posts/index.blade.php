@@ -12,7 +12,7 @@ use Livewire\Volt\Component;
 use function Laravel\Folio\{middleware, name};
 
 middleware('auth');
-name('manage-historia-news');
+name('dashboard.posts');
 
 new class extends Component implements HasForms, Tables\Contracts\HasTable
 {
@@ -23,14 +23,20 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(Post::query()->where('author_id', auth()->id()))
+            ->query(Post::query()
+                ->where('author_id', auth()->id())
+                ->whereHas('category', function ($query) {
+                    $query->whereIn('name', ['Historia News', 'Opini']);
+                })
+                ->with('category')  // Eager load the 'category' relationship
+            )
             ->columns([
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('excerpt')
+                TextColumn::make('category.name')  // Eager-loaded category name
                     ->limit(50)
-                    ->searchable(),
+                    ->sortable(),
                 TextColumn::make('status')
                     ->sortable(),
                 TextColumn::make('created_at')
@@ -45,12 +51,13 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
             ->actions([
                 Action::make('edit')
                     ->label('Edit')
-                    ->url(fn (Post $record) => "/manage-historia-news/{$record->id}/edit")
+                    ->url(fn (Post $record) => "/dashboard/posts/{$record->id}/edit")
                     ->icon('heroicon-o-pencil')
                     ->color('primary'),
                 
                 DeleteAction::make(),
             ]);
+
     }
 }
 ?>
@@ -60,8 +67,8 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
     @volt('historia-news')
         <x-app.container>
             <div class="flex items-center justify-between mb-5">
-                <x-app.heading title="Historia News" description="Check out your posts below" :border="false" />
-                <x-button tag="a" href="/manage-historia-news/create">New Post</x-button>
+                <x-app.heading title="Posts" description="Check out your posts below" :border="false" />
+                <x-button tag="a" href="/dashboard/posts/create">New Post</x-button>
             </div>
             <div class="overflow-x-auto border rounded-lg">
                 {{ $this->table }}

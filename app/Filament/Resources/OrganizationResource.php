@@ -37,7 +37,7 @@ class OrganizationResource extends Resource
                 Forms\Components\TextInput::make('position')
                     ->required()
                     ->maxLength(191),
-                Forms\Components\Textarea::make('description')
+                Forms\Components\RichEditor::make('description')
                     ->required()
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('facebook_url')
