@@ -8,3 +8,4 @@ Route::post('logout', '\Wave\Http\Controllers\API\AuthController@logout');
 Route::post('refresh', '\Wave\Http\Controllers\API\AuthController@refresh');
 Route::post('token', '\Wave\Http\Controllers\API\AuthController@token');
 
+
