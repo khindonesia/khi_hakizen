@@ -1,6 +1,18 @@
 <?php
 use function Laravel\Folio\{name};
 name('opini.show');
+
+$opini = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
+    ->leftJoin('profile_key_values', 'profile_key_values.keyvalue_id', '=', 'users.id')
+    ->where('slug', $opinislug ?? '')
+    ->select('posts.*', 'users.*', DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values'))
+    ->groupBy('posts.id', 'users.id')  // Group by the post and user IDs
+    ->first();
+
+$user = [];
+if (isset($opini->profile_values)) {
+    $user = json_decode($opini->profile_values, true);
+}
 ?>
 
 <x-layouts.marketing :seo="[
@@ -16,9 +28,8 @@ name('opini.show');
                     <div class="hidden md:block mb-24 md:mb-0 sm:px-6">
                         <div class="relative">
                             <img class="rounded-xl"
-                                src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=500&h=600&q=80"
+                                src="{{ Storage::url('/' . $opini->user->avatar) }}"
                                 alt="Avatar">
-
                             <!-- SVG Element -->
                             <div class="absolute bottom-0 start-0 -z-50 translate-y-10 -translate-x-14">
                                 <svg class="max-w-40 h-auto text-gray-400" width="696" height="653"
@@ -92,13 +103,12 @@ name('opini.show');
 
                             <div class="relative z-10">
                                 <p class="text-xs font-semibold text-gray-500 uppercase mb-3">
-                                    Featured client
+                                    Opini Anggota
                                 </p>
 
                                 <p
                                     class="text-xl font-medium italic text-gray-800 md:text-2xl md:leading-normal xl:text-3xl xl:leading-normal">
-                                    To say that switching to Preline has been life-changing is an understatement. My
-                                    business has tripled and I got my life back.
+                                    {{ $user['about'] }}
                                 </p>
                             </div>
 
@@ -110,18 +120,18 @@ name('opini.show');
                                             alt="Avatar">
                                     </div>
                                     <div class="ms-4 md:ms-0">
-                                        <div class="text-base font-semibold text-gray-800">Nicole Grazioso</div>
-                                        <div class="text-xs text-gray-500">Director Payments & Risk | Airbnb</div>
+                                        <div class="text-base font-semibold text-gray-800">{{$opini->user->name}}</div>
+                                        <div class="text-xs text-gray-500">{{$user['what-do-you-do-for-a-living']}}</div>
                                     </div>
                                 </div>
                             </footer>
-
+{{-- 
                             <div class="mt-8 lg:mt-14">
                                 <a class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-gray-800 text-white hover:bg-gray-900 focus:outline-hidden focus:bg-gray-900 disabled:opacity-50 disabled:pointer-events-none"
                                     href="#">
                                     Read the story
                                 </a>
-                            </div>
+                            </div> --}}
                         </blockquote>
                         <!-- End Blockquote -->
                     </div>
@@ -134,7 +144,38 @@ name('opini.show');
     </x-container>
 
     <x-container>
-        <p class="border-t border-zinc-200 py-4">Disini opininya...</p>
+        <div class="border-t border-zinc-200 py-4">
+            <article id="opini-{{ $opini->id }}"
+                class="prose prose-md dark:prose-invert lg:prose-lg lg:px-0">
+        
+                {{-- <x-elements.back-button class="max-w-4xl mx-auto mt-4 md:mt-8" text="back" :href="url($opini->category->slug)" /> --}}
+        
+                <meta property="name" content="{{ $opini->title }}">
+                <meta property="author" typeof="Person" content="admin">
+                <meta property="dateModified" content="{{ Carbon\Carbon::parse($opini->updated_at)->toIso8601String() }}">
+                <meta class="uk-margin-remove-adjacent" property="datePublished"
+                    content="{{ Carbon\Carbon::parse($opini->created_at)->toIso8601String() }}">
+        
+                <div class="max-w-4xl mx-auto mt-6">
+        
+                    <h1 class="flex flex-col leading-none">
+                        <span>{{ $opini->title }}</span>
+                        {{-- <span class="mt-0 sm:mt-10 text-base font-normal">Written on <time datetime="{{ Carbon\Carbon::parse($opini->created_at)->toIso8601String() }}">{{ Carbon\Carbon::parse($opini->created_at)->toFormattedDateString() }}</time>. Posted in <a href="{{ route('blog.category', $opini->category->slug) }}" rel="category">{{ $opini->category->name }}</a>.</span> --}}
+                    </h1>
+        
+                </div>
+        
+                <div class="relative">
+                    <img class="w-full h-auto rounded-lg" src="{{ $opini->image() }}" alt="{{ $opini->title }}"
+                        srcset="{{ $opini->image() }}">
+                </div>
+        
+                <div class="max-w-4xl mx-auto">
+                    {!! $opini->body !!}
+                </div>
+        
+            </article>
+        </div>
     </x-container>
 
 </x-layouts.marketing>

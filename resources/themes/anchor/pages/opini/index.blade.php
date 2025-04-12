@@ -49,6 +49,10 @@
     ]
 ];
 
+$query = \App\Models\Post::whereHas('category', function ($query) {
+    $query->where('name', 'Opini');
+})->paginate(5);
+
 ?>
 
 <x-layouts.marketing>
@@ -63,7 +67,7 @@
             {{-- @include('theme::partials.blog.categories') --}}
 
             <div class="grid gap-5 mx-auto mt-7 sm:grid-cols-2 lg:grid-cols-3">
-                @include('theme::partials.opini.opini-loop', ['opinions' => $opinions])
+                @include('theme::partials.opini.opini-loop', ['opinions' => $query])
             </div>
         </div>
 

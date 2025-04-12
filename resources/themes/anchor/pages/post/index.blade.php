@@ -62,7 +62,7 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
             ->emptyStateIcon('heroicon-o-document-text')
             ->emptyStateActions([
                 Tables\Actions\Action::make('create')
-                    ->label('Create New Post')
+                    ->label('New Post')
                     ->url('/post/create')
                     ->icon('heroicon-o-plus')
                     ->button(),
@@ -79,11 +79,11 @@ new class extends Component implements HasForms, Tables\Contracts\HasTable
                     <x-app.heading title="My Posts" description="Manage your blog posts" :border="false" />
                     <p class="text-sm text-gray-500 mt-1">Create, edit, and manage your content</p>
                 </div>
-                <x-button tag="a" href="/post/create" class="flex items-center gap-x-2 self-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <x-button tag="a" href="/post/create" class="flex items-center gap-x-2 self-start flex-nowrap">
+                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    Create New Post
+                    </svg> --}}
+                    New Post
                 </x-button>
             </div>
             
