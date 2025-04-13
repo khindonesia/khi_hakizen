@@ -452,7 +452,7 @@ if ($product) {
 
 
                     $.ajax({
-                        url: "{{ url('/cart/add') }}",
+                        url: "{{ url('/cart') }}",
                         type: 'POST',
                         dataType: "json",  // Expecting JSON response
                         contentType: "application/json",  // Set the Content-Type to application/json

@@ -110,9 +110,16 @@ class CartController extends Controller
             $cartItem->quantity = $request->quantity;
             $cartItem->save();
 
+            // Call getCartTotalPrice() method
+            $cartTotalPrice = $this->getCartTotalPrice();
+
             return response()->json([
                 'success' => true,
-                'message' => 'Cart item updated successfully'
+                'message' => 'Cart item updated successfully',
+                'data' => [
+                    'updatedItemPrice' => $cartItem->price * $cartItem->quantity,
+                    'cartSubtotal' => $cartTotalPrice->getData()->totalPrice // Accessing the totalPrice from the response
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -121,6 +128,7 @@ class CartController extends Controller
             ], 500);
         }
     }
+
 
     public function deleteCartItem($cartItemId)
     {
@@ -135,9 +143,14 @@ class CartController extends Controller
             $cartItem = CartItem::findOrFail($cartItemId);
             $cartItem->delete();
 
+            $cartTotalPrice = $this->getCartTotalPrice();
+
             return response()->json([
                 'success' => true,
-                'message' => 'Cart item removed successfully'
+                'message' => 'Cart item removed successfully',
+                'data' => [
+                    'cartSubtotal' => $cartTotalPrice->getData()->totalPrice
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -147,5 +160,47 @@ class CartController extends Controller
         }
     }
 
-    
+    public function getCartTotalPrice()
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must be logged in to view cart total'
+                ], 401);
+            }
+
+            $userId = Auth::id();
+
+            // Find the active cart for the user
+            $cart = Cart::where('user_id', $userId)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$cart) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active cart found'
+                ], 404);
+            }
+
+            // Get all the cart items for the user's active cart
+            $cartItems = CartItem::where('cart_id', $cart->id)->get();
+
+            // Calculate the total price
+            $totalPrice = $cartItems->reduce(function ($carry, $item) {
+                return $carry + ($item->price * $item->quantity);
+            }, 0);
+
+            return response()->json([
+                'success' => true,
+                'totalPrice' => $totalPrice
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get cart total price: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

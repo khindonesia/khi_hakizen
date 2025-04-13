@@ -93,7 +93,7 @@ window.addEventListener('scroll', function() {
                     </li>
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('opini') }}" wire:navigate
-                            class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('opini') ? 'font-semibold' : 'font-medium' }}">
+                            class="flex items-center h-full text-sm font-medium text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900 {{ request()->routeIs('opini') || request()->routeIs('opini.show') ? 'font-semibold' : 'font-medium' }}">
                             Opini
                         </a>
                     </li>
@@ -210,13 +210,15 @@ window.addEventListener('scroll', function() {
                             class="relative z-30 flex flex-col items-center justify-center flex-shrink-0 w-full h-auto pt-3 space-y-3 text-sm md:hidden px-7">
                             <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm"
                                 color="secondary">Login</x-button>
-                            <x-button href="{{ route('register') }}" tag="a" class="w-full text-sm">Sign
-                                Up</x-button>
+                            <x-button href="{{ route('register') }}" tag="a" class="w-full text-sm">
+                                Sign Up
+                            </x-button>
                         </li>
                     @else
                         <li class="flex items-center justify-center w-full pt-3 md:hidden px-7">
-                            <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm">View
-                                Dashboard</x-button>
+                            <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm">
+                                View Dashbord
+                            </x-button>
                         </li>
                     @endguest
 

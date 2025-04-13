@@ -43,7 +43,7 @@ $totalPrice = $cart ? $cart->getTotalPrice() : 0;
                                             <div class="flex items-center">
                                                 <button type="button" 
                                                     x-data
-                                                    @click="updateQuantity({{ $item->id }}, {{ $item->quantity - 1 }})"
+                                                    @click="updateQuantity({{ $item->id }}, 'minus', {{ $item->id }})"
                                                     class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700">
                                                     <svg class="h-2.5 w-2.5 text-gray-900 dark:text-white" aria-hidden="true"
                                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
@@ -59,7 +59,7 @@ $totalPrice = $cart ? $cart->getTotalPrice() : 0;
                                                     required />
                                                 <button type="button"
                                                     x-data
-                                                    @click="updateQuantity({{ $item->id }}, {{ $item->quantity + 1 }})"
+                                                    @click="updateQuantity({{ $item->id }}, 'plus', {{ $item->id }})"
                                                     class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700">
                                                     <svg class="h-2.5 w-2.5 text-gray-900 dark:text-white" aria-hidden="true"
                                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
@@ -137,7 +137,7 @@ $totalPrice = $cart ? $cart->getTotalPrice() : 0;
                             <div class="space-y-2">
                                 <dl class="flex items-center justify-between gap-4">
                                     <dt class="text-base font-normal text-gray-500 dark:text-gray-400">Subtotal</dt>
-                                    <dd class="text-base font-medium text-gray-900 dark:text-white">
+                                    <dd id="cart-subtotal" class="text-base font-medium text-gray-900 dark:text-white">
                                         Rp{{ number_format($totalPrice, 0, ',', '.') }}
                                     </dd>
                                 </dl>
@@ -159,7 +159,7 @@ $totalPrice = $cart ? $cart->getTotalPrice() : 0;
 
                             <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                                 <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
-                                <dd class="text-base font-bold text-gray-900 dark:text-white">
+                                <dd id="cart-total" class="text-base font-bold text-gray-900 dark:text-white">
                                     Rp{{ number_format($totalPrice, 0, ',', '.') }}
                                 </dd>
                             </dl>
@@ -187,22 +187,43 @@ $totalPrice = $cart ? $cart->getTotalPrice() : 0;
             </div>
         </div>
     </section>
+    
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            }
+        });
         // Update quantity via AJAX
-        function updateQuantity(cartItemId, quantity) {
+        function updateQuantity(cartItemId, action, itemId) {
+            var quantity = parseInt($(`#counter-input-${itemId}`).val(), 10);
+
             $.ajax({
                 url: '/cart/items/' + cartItemId,
                 type: 'PATCH',
                 dataType: 'json',
                 data: {
-                    quantity: quantity
+                    quantity: action == 'plus' ? quantity + 1 : quantity - 1 
                 },
                 success: function(response) {
                     if (response.success) {
-                        document.getElementById('counter-input-' + cartItemId).value = quantity;
-                        document.querySelector(`#cart-item-${cartItemId} .text-base.font-bold.text-gray-900`).textContent =
-                            'Rp' + new Intl.NumberFormat('id-ID').format(response.updatedItemPrice);
+                       // Update the quantity input value
+                        $('#counter-input-' + cartItemId).val(quantity);
+
+                        // Update the item price text
+                        $('#cart-item-' + cartItemId + ' .text-base.font-bold.text-gray-900').text(
+                            'Rp' + new Intl.NumberFormat('id-ID').format(response.data.updatedItemPrice)
+                        );
+
+                        // Update the subtotal and total price
+                        $('#counter-input-' + cartItemId).val(action === 'plus' ? quantity + 1 : quantity - 1);
+                        $('#cart-subtotal').text(
+                            'Rp' + new Intl.NumberFormat('id-ID').format(response.data.cartSubtotal)
+                        );
+                        $('#cart-total').text(
+                            'Rp' + new Intl.NumberFormat('id-ID').format(response.data.cartSubtotal)
+                        );
                     } else {
                         alert(response.message);
                     }
@@ -218,6 +239,12 @@ $totalPrice = $cart ? $cart->getTotalPrice() : 0;
                 success: function(response) {
                     if (response.success) {
                         document.getElementById('cart-item-' + cartItemId).remove();
+                        $('#cart-subtotal').text(
+                            'Rp' + new Intl.NumberFormat('id-ID').format(response.data.cartSubtotal)
+                        );
+                        $('#cart-total').text(
+                            'Rp' + new Intl.NumberFormat('id-ID').format(response.data.cartSubtotal)
+                        );
                     } else {
                         alert(response.message);
                     }

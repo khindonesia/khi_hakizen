@@ -15,7 +15,7 @@ $ebooks = \App\Models\Ebook::published()->orderBy('created_at', 'asc')->paginate
             <x-marketing.elements.heading title="Libraries" description="Check out some of our latest book posts below."
                 align="left" />
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 pt-12 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-4 pt-12 gap-3">
             <!-- Create By Joker Banny -->
             @foreach ($ebooks as $book)
             <a href="{{route('library.book', ['slug' => $book->slug])}}" wire:navigate key="{{$book->id}}">
@@ -31,6 +31,10 @@ $ebooks = \App\Models\Ebook::published()->orderBy('created_at', 'asc')->paginate
                 </div>
             </a>
             @endforeach
+        </div>
+
+        <div class="flex justify-center my-10">
+            {{ $ebooks->links('theme::partials.pagination') }}
         </div>
     </x-container>
 </x-layouts.marketing>

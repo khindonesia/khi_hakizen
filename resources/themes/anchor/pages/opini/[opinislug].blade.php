@@ -146,17 +146,17 @@ if (isset($opini->profile_values)) {
     <x-container>
         <div class="border-t border-zinc-200 py-4">
             <article id="opini-{{ $opini->id }}"
-                class="prose prose-md dark:prose-invert lg:prose-lg lg:px-0">
+                class="max-w-full prose prose-md dark:prose-invert lg:prose-lg lg:px-0">
         
                 {{-- <x-elements.back-button class="max-w-4xl mx-auto mt-4 md:mt-8" text="back" :href="url($opini->category->slug)" /> --}}
         
                 <meta property="name" content="{{ $opini->title }}">
-                <meta property="author" typeof="Person" content="admin">
+                <meta property="author" typeof="Person" content="{{ $opini->user->name }}">
                 <meta property="dateModified" content="{{ Carbon\Carbon::parse($opini->updated_at)->toIso8601String() }}">
                 <meta class="uk-margin-remove-adjacent" property="datePublished"
                     content="{{ Carbon\Carbon::parse($opini->created_at)->toIso8601String() }}">
         
-                <div class="max-w-4xl mx-auto mt-6">
+                <div class="max-w-full mt-6">
         
                     <h1 class="flex flex-col leading-none">
                         <span>{{ $opini->title }}</span>
@@ -170,7 +170,7 @@ if (isset($opini->profile_values)) {
                         srcset="{{ $opini->image() }}">
                 </div>
         
-                <div class="max-w-4xl mx-auto">
+                <div class="max-w-full">
                     {!! $opini->body !!}
                 </div>
         

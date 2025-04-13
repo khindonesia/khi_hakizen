@@ -1,5 +1,7 @@
 <?php
-$posts = \Wave\Post::orderBy('created_at', 'DESC')->where('category_id', 3)->paginate(3);
+$posts = \Wave\Post::orderBy('created_at', 'DESC')->whereHas('category', function ($query) {
+    $query->where('name', 'Historia News');
+})->where('status', 'PUBLISHED')->paginate(3);
 ?>
 
 <x-container>

@@ -25,7 +25,7 @@ Route::any('auth/setup', function () {
 // Cart routes
 Route::middleware('auth')->group(function () {
     Route::post('/cart', [CartController::class, 'addToCart']);
+    Route::post('/getCartTotalPrice', [CartController::class, 'getCartTotalPrice']);
     Route::patch('/cart/items/{cartItemId}', [CartController::class, 'updateCartItem']);
     Route::delete('/cart/items/{cartItemId}', [CartController::class, 'deleteCartItem']);
 });
-

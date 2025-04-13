@@ -1,11 +1,33 @@
+@php
+    $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
+    ->whereHas('category', function ($query) {
+        $query->where('name', 'Opini');
+    })
+    ->leftJoin('profile_key_values', 'profile_key_values.keyvalue_id', '=', 'users.id')
+    ->select(
+        'posts.id as post_id', // Alias for the post's id
+        'posts.*', 
+        'users.id as user_id', // Alias for the user's id
+        'users.*', 
+        DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values')
+    )
+    ->groupBy('posts.id', 'users.id')  // Group by the post and user IDs
+    ->get();
+
+    // $user = [];
+    // if (isset($query->profile_values)) {
+    //     $user = json_decode($query->profile_values, true);
+    // }
+@endphp
+
 <!-- Testimonials -->
 <div class="overflow-hidden bg-gray-800">
     <x-container>
         <div class="relative max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
             <!-- Title -->
-            <div class="max-w-2xl w-3/4 lg:w-1/2 mb-6 sm:mb-10 md:mb-16">
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl text-white font-semibold">
-                    Loved by business and individuals across the globe
+            <div class="mb-6 sm:mb-10 md:mb-16">
+                <h2 class="text-2xl sm:text-3xl text-center lg:text-4xl text-white font-semibold">
+                    Beberapa Opini Anggota dan Keanggotaan
                 </h2>
             </div>
             <!-- End Title -->
@@ -13,101 +35,45 @@
             <!-- Grid -->
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Card -->
-                <div class="flex h-auto">
-                    <div class="flex flex-col bg-white rounded-xl">
-                        <div class="flex-auto p-4 md:p-6">
-                            <p class="text-base italic md:text-lg text-gray-800">
-                                " With Preline, we're able to easily track our performance in full detail. It's become
-                                an
-                                essential tool for us to grow and engage with our audience. "
-                            </p>
-                        </div>
+                @foreach ($query as $item)              
+                @php
+                    $user = [];
+                    if (isset($item->profile_values)) {
+                        $user = json_decode($item->profile_values, true);
+                    }
+                @endphp      
+                <a href="{{ url('/opini?user=' . $item->id) }}" wire:navigate>
+                    <div class="flex h-auto">
+                        <div class="flex flex-col bg-white rounded-xl">
+                            <div class="flex-auto p-4 md:p-6">
+                                <p class="text-base italic md:text-lg text-gray-800 line-clamp-4">
+                                    " {{ $user['about'] }} "
+                                </p>
+                            </div>
 
-                        <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
-                            <div class="flex items-center gap-x-3">
-                                <div class="shrink-0">
-                                    <img class="size-8 sm:size-11.5 rounded-full"
-                                        src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                        alt="Avatar">
-                                </div>
+                            <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
+                                <div class="flex items-center gap-x-3">
+                                    <div class="shrink-0">
+                                        <img class="size-8 sm:size-11.5 rounded-full"
+                                            src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
+                                            alt="Avatar">
+                                    </div>
 
-                                <div class="grow">
-                                    <p class="text-sm sm:text-base font-semibold text-gray-800">
-                                        Josh Tyson
-                                    </p>
-                                    <p class="text-xs text-gray-500">
-                                        Product Manager | Capsule
-                                    </p>
+                                    <div class="grow">
+                                        <p class="text-sm sm:text-base font-semibold text-gray-800">
+                                            {{ $item->name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            {{ $user['what-do-you-do-for-a-living'] }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- End Card -->
+                </a>
+                @endforeach
 
-                <!-- Card -->
-                <div class="flex h-auto">
-                    <div class="flex flex-col bg-white rounded-xl">
-                        <div class="flex-auto p-4 md:p-6">
-                            <p class="text-base italic md:text-lg text-gray-800">
-                                " In September, I will be using this theme for 2 years. I went through multiple updates
-                                and
-                                changes and I'm very glad to see the consistency and effort made by the team. "
-                            </p>
-                        </div>
-
-                        <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
-                            <div class="flex items-center gap-x-3">
-                                <div class="shrink-0">
-                                    <img class="size-8 sm:size-11.5 rounded-full"
-                                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                        alt="Avatar">
-                                </div>
-
-                                <div class="grow">
-                                    <p class="text-sm sm:text-base font-semibold text-gray-800">
-                                        Luisa
-                                    </p>
-                                    <p class="text-xs text-gray-500">
-                                        Senior Director of Operations | Fitbit
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- End Card -->
-
-                <!-- Card -->
-                <div class="flex h-auto">
-                    <div class="flex flex-col bg-white rounded-xl">
-                        <div class="flex-auto p-4 md:p-6">
-                            <p class="text-base italic md:text-lg text-gray-800">
-                                " Refreshing and Thought provoking design and it changes my view about how I design the
-                                websites. Great typography, modern clean white design, nice tones of the color. "
-                            </p>
-                        </div>
-
-                        <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
-                            <div class="flex items-center gap-x-3">
-                                <div class="shrink-0">
-                                    <img class="size-8 sm:size-11.5 rounded-full"
-                                        src="https://images.unsplash.com/photo-1579017331263-ef82f0bbc748?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=900&h=900&q=80"
-                                        alt="Avatar">
-                                </div>
-
-                                <div class="grow">
-                                    <p class="text-sm sm:text-base font-semibold text-gray-800">
-                                        Alisa Williams
-                                    </p>
-                                    <p class="text-xs text-gray-500">
-                                        Entrepreneur | Happy customer
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- End Card -->
             </div>
             <!-- End Grid -->
@@ -116,27 +82,27 @@
             <div class="mt-20 grid gap-6 grid-cols-2 sm:gap-12 lg:grid-cols-3 lg:gap-8">
                 <!-- Stats -->
                 <div>
-                    <h4 class="text-lg sm:text-xl font-semibold text-white">Accuracy rate</h4>
-                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">99.95%</p>
-                    <p class="mt-1 text-gray-400">in fulfilling orders</p>
+                    <h4 class="text-lg sm:text-xl font-semibold text-white">Total Anggota</h4>
+                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">+23.000</p>
+                    <p class="mt-1 text-gray-400">Tersebar di seluruh penjuru Indonesia</p>
                 </div>
                 <!-- End Stats -->
 
                 <!-- Stats -->
                 <div>
-                    <h4 class="text-lg sm:text-xl font-semibold text-white">Startup businesses</h4>
-                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">2,000+</p>
-                    <p class="mt-1 text-gray-400">partner with Preline</p>
+                    <h4 class="text-lg sm:text-xl font-semibold text-white">Sudah Berdiri Selama</h4>
+                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">+22 Tahun</p>
+                    <p class="mt-1 text-gray-400">Didirikan pada 2003, oleh Asep kambali</p>
                 </div>
                 <!-- End Stats -->
 
-                <!-- Stats -->
+                {{-- <!-- Stats -->
                 <div>
                     <h4 class="text-lg sm:text-xl font-semibold text-white">Happy customer</h4>
                     <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">85%</p>
                     <p class="mt-1 text-gray-400">this year alone</p>
                 </div>
-                <!-- End Stats -->
+                <!-- End Stats --> --}}
             </div>
             <!-- End Grid -->
 
