@@ -36,4 +36,19 @@ class CartItem extends Model
     {
         return $this->variant->product();
     }
+
+    public function variantAttributes()
+    {
+        return $this->variant->variantAttributes; // Ensure variant attributes are loaded
+    }
+
+    /**
+     * Get the attribute values through variantAttributes.
+     */
+    public function attributeValues()
+    {
+        return $this->variant->variantAttributes->map(function($variantAttribute) {
+            return $variantAttribute->attributeValue;
+        });
+    }
 }

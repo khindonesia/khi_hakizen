@@ -22,4 +22,10 @@ Route::any('auth/setup', function () {
     abort(404); // Atau redirect atau response lainnya
 });
 
-Route::post('/cart/add', [CartController::class, 'addToCart']);
+// Cart routes
+Route::middleware('auth')->group(function () {
+    Route::post('/cart', [CartController::class, 'addToCart']);
+    Route::patch('/cart/items/{cartItemId}', [CartController::class, 'updateCartItem']);
+    Route::delete('/cart/items/{cartItemId}', [CartController::class, 'deleteCartItem']);
+});
+
