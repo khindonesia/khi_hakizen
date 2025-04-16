@@ -2,12 +2,14 @@
 use function Laravel\Folio\{name};
 name('opini.show');
 
-$opini = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
-    ->leftJoin('profile_key_values', 'profile_key_values.keyvalue_id', '=', 'users.id')
-    ->where('slug', $opinislug ?? '')
-    ->select('posts.*', 'users.*', DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values'))
-    ->groupBy('posts.id', 'users.id') // Group by the post and user IDs
-    ->first();
+// $opini = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
+//     ->leftJoin('profile_key_values', 'profile_key_values.keyvalue_id', '=', 'users.id')
+//     ->where('slug', $opinislug ?? '')
+//     ->select('posts.*', 'users.*', DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values'))
+//     ->groupBy('posts.id', 'users.id') // Group by the post and user IDs
+//     ->first();
+
+$query = [];
 
 $user = [];
 if (isset($opini->profile_values)) {
