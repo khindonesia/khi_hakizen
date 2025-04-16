@@ -8,7 +8,7 @@ name('opini.show');
 //     ->select('posts.*', 'users.*', DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values'))
 //     ->groupBy('posts.id', 'users.id') // Group by the post and user IDs
 //     ->first();
-
+//
 $query = [];
 
 $user = [];
