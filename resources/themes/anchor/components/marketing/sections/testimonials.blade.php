@@ -5,20 +5,16 @@ $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
     })
     ->leftJoin('profile_key_values', 'profile_key_values.keyvalue_id', '=', 'users.id')
     ->select(
-        'posts.id as post_id', // Alias for the post's id
-        'posts.*',
-        'users.id as user_id', // Alias for the user's id
-        'users.*',
-        DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values'),
-    )
-    ->groupBy(
-        'posts.id',
-        'users.id',
-        'posts.author_id', // Include all non-aggregated columns in GROUP BY
-        'users.name', // You should add all the columns selected from posts and users
+        'posts.id as post_id',
+        'posts.author_id',
+        'posts.created_at',
+        'posts.updated_at',
+        'users.id as user_id',
+        'users.name',
         'users.email',
-        'profile_key_values.keyvalue_id', // Include all the required fields here
+        DB::raw('COALESCE(JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value), "{}") AS profile_values'), // COALESCE to prevent null aggregation
     )
+    ->groupBy('posts.id', 'users.id', 'posts.author_id', 'users.name', 'users.email')
     ->get();
 
 // $user = [];
