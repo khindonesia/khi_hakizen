@@ -1,24 +1,32 @@
-@php
-    $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
+<?php
+$query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
     ->whereHas('category', function ($query) {
         $query->where('name', 'Opini');
     })
     ->leftJoin('profile_key_values', 'profile_key_values.keyvalue_id', '=', 'users.id')
     ->select(
         'posts.id as post_id', // Alias for the post's id
-        'posts.*', 
+        'posts.*',
         'users.id as user_id', // Alias for the user's id
-        'users.*', 
-        DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values')
+        'users.*',
+        DB::raw('JSON_OBJECTAGG(profile_key_values.key, profile_key_values.value) AS profile_values'),
     )
-    ->groupBy('posts.id', 'users.id')  // Group by the post and user IDs
+    ->groupBy(
+        'posts.id',
+        'users.id',
+        'posts.author_id', // Include all non-aggregated columns in GROUP BY
+        'users.name', // You should add all the columns selected from posts and users
+        'users.email',
+        'profile_key_values.keyvalue_id', // Include all the required fields here
+    )
     ->get();
 
-    // $user = [];
-    // if (isset($query->profile_values)) {
-    //     $user = json_decode($query->profile_values, true);
-    // }
-@endphp
+// $user = [];
+// if (isset($query->profile_values)) {
+//     $user = json_decode($query->profile_values, true);
+// }
+
+?>
 
 <!-- Testimonials -->
 <div class="overflow-hidden bg-gray-800">
@@ -35,43 +43,43 @@
             <!-- Grid -->
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Card -->
-                @foreach ($query as $item)              
-                @php
-                    $user = [];
-                    if (isset($item->profile_values)) {
-                        $user = json_decode($item->profile_values, true);
-                    }
-                @endphp      
-                <a href="{{ url('/opini?user=' . $item->id) }}" wire:navigate>
-                    <div class="flex h-auto">
-                        <div class="flex flex-col bg-white rounded-xl">
-                            <div class="flex-auto p-4 md:p-6">
-                                <p class="text-base italic md:text-lg text-gray-800 line-clamp-4">
-                                    " {{ $user['about-short-description-max-4-paraghraph'] }} "
-                                </p>
-                            </div>
+                @foreach ($query as $item)
+                    @php
+                        $user = [];
+                        if (isset($item->profile_values)) {
+                            $user = json_decode($item->profile_values, true);
+                        }
+                    @endphp
+                    <a href="{{ url('/opini?user=' . $item->id) }}" wire:navigate>
+                        <div class="flex h-auto">
+                            <div class="flex flex-col bg-white rounded-xl">
+                                <div class="flex-auto p-4 md:p-6">
+                                    <p class="text-base italic md:text-lg text-gray-800 line-clamp-4">
+                                        " {{ $user['about-short-description-max-4-paraghraph'] }} "
+                                    </p>
+                                </div>
 
-                            <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
-                                <div class="flex items-center gap-x-3">
-                                    <div class="shrink-0">
-                                        <img class="size-8 sm:size-11.5 rounded-full"
-                                            src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                            alt="Avatar">
-                                    </div>
+                                <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
+                                    <div class="flex items-center gap-x-3">
+                                        <div class="shrink-0">
+                                            <img class="size-8 sm:size-11.5 rounded-full"
+                                                src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
+                                                alt="Avatar">
+                                        </div>
 
-                                    <div class="grow">
-                                        <p class="text-sm sm:text-base font-semibold text-gray-800">
-                                            {{ $item->name }}
-                                        </p>
-                                        <p class="text-xs text-gray-500">
-                                            {{ $user['job-position'] }}
-                                        </p>
+                                        <div class="grow">
+                                            <p class="text-sm sm:text-base font-semibold text-gray-800">
+                                                {{ $item->name }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                {{ $user['job-position'] }}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </a>
+                    </a>
                 @endforeach
 
                 <!-- End Card -->
