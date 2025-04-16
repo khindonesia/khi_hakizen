@@ -12,9 +12,9 @@ name('home');
 
     <x-marketing.sections.hero />
 
-    <x-container class="border-t border-zinc-200">
+    {{-- <x-container class="border-t border-zinc-200">
         <x-marketing.sections.clients/>
-    </x-container>
+    </x-container> --}}
 
     <x-container class="py-12 border-t sm:py-24 border-zinc-200">
         <x-marketing.sections.join />

@@ -3,14 +3,14 @@
 return [
 	'fields' => [
 		'about' => [
-			'label' => 'About',
+			'label' => 'About (short description max 4 paraghraph)',
 			'type' => 'Textarea',
 			'rules' => 'required'
-        ],
+		],
 		'occupation' => [
-            'label' => 'What do you do for a living?',
-            'type' => 'TextInput',
-            'rules' => ''
-        ]
+			'label' => 'Job Position?',
+			'type' => 'TextInput',
+			'rules' => 'required'
+		]
 	],
 ];

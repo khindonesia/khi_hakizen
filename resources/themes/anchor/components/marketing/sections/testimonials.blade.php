@@ -47,7 +47,7 @@
                         <div class="flex flex-col bg-white rounded-xl">
                             <div class="flex-auto p-4 md:p-6">
                                 <p class="text-base italic md:text-lg text-gray-800 line-clamp-4">
-                                    " {{ $user['about'] }} "
+                                    " {{ $user['about-short-description-max-4-paraghraph'] }} "
                                 </p>
                             </div>
 
@@ -64,7 +64,7 @@
                                             {{ $item->name }}
                                         </p>
                                         <p class="text-xs text-gray-500">
-                                            {{ $user['what-do-you-do-for-a-living'] }}
+                                            {{ $user['job-position'] }}
                                         </p>
                                     </div>
                                 </div>
