@@ -33,6 +33,7 @@
 <meta name="robots" content="index,follow">
 <meta name="googlebot" content="index,follow">
 
+
 {{-- Open Graph / Social Sharing --}}
 @if (isset($seo->title) && isset($seo->description) && isset($seo->image))
     <meta property="og:title" content="{{ $seo->title }}">

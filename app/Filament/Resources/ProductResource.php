@@ -54,7 +54,7 @@ class ProductResource extends Resource
                                                     ->maxLength(255)
                                                     ->placeholder('Enter product name')
                                                     ->live(onBlur: true)
-                                                    ->afterStateUpdated(function(string $state, callable $set) {
+                                                    ->afterStateUpdated(function (string $state, callable $set) {
                                                         // Only set the slug automatically if it doesn't exist yet
                                                         $set('slug', Str::slug($state));
                                                     })
@@ -230,7 +230,7 @@ class ProductResource extends Resource
                                                                 Forms\Components\Select::make('attribute_id')
                                                                     ->label('Attribute')
                                                                     ->relationship('attribute', 'name')
-                                                                    ->required()
+                                                                    // ->required()
                                                                     ->searchable()
                                                                     ->preload()
                                                                     ->reactive()
@@ -247,7 +247,7 @@ class ProductResource extends Resource
                                                                             $query->where('attribute_id', $attributeId);
                                                                         }
                                                                     })
-                                                                    ->required()
+                                                                    // ->required()
                                                                     ->searchable()
                                                                     ->preload()
                                                                     ->disabled(fn(callable $get) => !$get('attribute_id')),
@@ -364,8 +364,9 @@ class ProductResource extends Resource
                                                     ->columnSpanFull(),
                                             ])
                                             ->columns(1)
-                                            ->itemLabel(fn(array $state): ?string =>
-                                                isset($state['image_url']) 
+                                            ->itemLabel(
+                                                fn(array $state): ?string =>
+                                                isset($state['image_url'])
                                                     ? "Product Image" . (isset($state['sort_order']) ? " (Order: {$state['sort_order']})" : "")
                                                     : null
                                             )
@@ -411,7 +412,7 @@ class ProductResource extends Resource
                     ->weight(FontWeight::Bold)
                     ->description(fn(Product $record): ?string =>
                     $record->category ? "Category: {$record->category->name}" : null),
-                
+
                 Tables\Columns\TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
@@ -423,29 +424,29 @@ class ProductResource extends Resource
                     ->label('Price')
                     ->formatStateUsing(function ($state, Product $record) {
                         $defaultVariant = $record->variants()->where('is_default', true)->first();
-                        
+
                         if ($defaultVariant) {
                             return 'Rp ' . number_format((float)$defaultVariant->price, 0, ',', '.');
                         }
-                
+
                         // Fallback if no default variant exists
                         return 'Rp 0';
                     }),
-                
+
                 Tables\Columns\TextColumn::make('availableStock')
                     ->label('Stock')
                     ->formatStateUsing(function ($state, Product $record) {
                         $defaultVariant = $record->variants()->where('is_default', true)->first();
-                        
+
                         if ($defaultVariant) {
                             return $defaultVariant->stock_quantity;
                         }
-                
+
                         // Fallback if no default variant exists
                         return 0;
                     })
                     ->sortable(),
-                
+
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -613,9 +614,7 @@ class ProductResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-           
-        ];
+        return [];
     }
 
     public static function getPages(): array

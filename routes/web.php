@@ -12,6 +12,8 @@
 */
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\XenditController;
 use Illuminate\Support\Facades\Route;
 use Wave\Facades\Wave;
 
@@ -29,3 +31,21 @@ Route::middleware('auth')->group(function () {
     Route::patch('/cart/items/{cartItemId}', [CartController::class, 'updateCartItem']);
     Route::delete('/cart/items/{cartItemId}', [CartController::class, 'deleteCartItem']);
 });
+
+
+Route::post('/api/checkout/create-invoice', [XenditController::class, 'createInvoice'])
+    ->name('checkout.create-invoice');
+
+// Payment status routes
+Route::get('/payment/success/{order_id}', function ($orderId) {
+    return view('payment.success', ['orderId' => $orderId]);
+})->name('payment.success');
+
+Route::get('/payment/failed/{order_id}', function ($orderId) {
+    return view('payment.failed', ['orderId' => $orderId]);
+})->name('payment.failed');
+
+
+// Xendit webhook callback
+Route::post('/api/xendit/callback', [XenditController::class, 'handleCallback'])
+    ->name('xendit.callback');

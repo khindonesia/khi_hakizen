@@ -3,11 +3,9 @@
 namespace App\Providers\Filament;
 
 use Wave\Widgets;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Blade;
 //use Filament\Widgets;
 // use BezhanSalleh\FilamentGoogleAnalytics\Widgets;
@@ -22,15 +20,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-
-use Filament\Facades\Filament;
-use Filament\Navigation\NavigationBuilder;
-use Filament\Navigation\NavigationGroup;
-use Filament\Navigation\NavigationItem;
-
-use App\Filament\Resources\UserResource;
-use App\Filament\Resources\RoleResource;
-use App\Filament\Resources\PlanResource;
 
 class AdminPanelProvider extends PanelProvider
 {

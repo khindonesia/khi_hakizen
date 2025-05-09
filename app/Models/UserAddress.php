@@ -19,6 +19,8 @@ class UserAddress extends Model
         'user_id',
         'address_line',
         'city',
+        'district',
+        'village',
         'state',
         'postal_code',
         'country',

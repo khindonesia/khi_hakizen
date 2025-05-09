@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 /*
@@ -24,3 +25,5 @@ Wave::api();
 Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/posts', '\App\Http\Controllers\Api\ApiController@posts');
 });
+Route::get('/checkout/search-destination', [CheckoutController::class, 'searchDestination']);
+Route::post('/checkout/shipping-cost', [CheckoutController::class, 'getShippingCost']);
