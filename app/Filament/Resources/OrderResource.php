@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
@@ -11,7 +12,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Support\Colors\Color;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Enums\FiltersLayout;
@@ -20,25 +20,21 @@ use Illuminate\Support\Collection;
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
-
     protected static ?string $navigationGroup = 'Order Management';
-
     protected static ?int $navigationSort = 1;
-
     protected static ?string $recordTitleAttribute = 'invoice_id';
 
     
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count();
+        return static::getModel()::count();
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return static::getModel()::where('status', 'pending')->count() > 0
+        return static::getModel()::count() > 0
             ? 'warning'
             : 'primary';
     }
@@ -60,7 +56,7 @@ class OrderResource extends Resource
                             ->preload()
                             ->required(),
                         Forms\Components\Select::make('address_id')
-                            ->relationship('address', 'address')
+                            ->relationship('address', 'address_line')
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -215,6 +211,7 @@ class OrderResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    FilamentExportBulkAction::make('export'),
                     Tables\Actions\BulkAction::make('updateStatus')
                         ->label('Update Status')
                         ->form([

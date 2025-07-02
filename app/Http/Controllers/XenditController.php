@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Xendit\Configuration;
@@ -13,13 +14,13 @@ use App\Models\OrderItem;
 class XenditController extends Controller
 {
     private $xenditInvoiceApi;
-    
+
     public function __construct()
     {
         Configuration::setXenditKey(config('services.xendit.secret_key'));
         $this->xenditInvoiceApi = new InvoiceApi();
     }
-    
+
     public function createInvoice(Request $request)
     {
         $request->validate([
@@ -28,29 +29,29 @@ class XenditController extends Controller
             'service' => 'required|string',
             'shipping_fee' => 'required|numeric',
         ]);
-        
+
         // Get user's active cart
         $user = auth()->user();
         $cart = Cart::with(['items.variant.product', 'items.variant.variantAttributes.attributeValue'])
             ->where('user_id', $user->id)
             ->where('status', 'active')
             ->first();
-            
+
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Your cart is empty'
             ], 400);
         }
-        
+
         // Calculate total amount
         $subtotal = $cart->getTotalPrice();
         $shippingFee = $request->shipping_fee;
         $grandTotal = $subtotal + $shippingFee;
-        
+
         // Generate unique external ID
         $externalId = 'order-' . Str::random(10) . '-' . time();
-        
+
         // Create order in database
         $order = Order::create([
             'user_id' => $user->id,
@@ -64,7 +65,7 @@ class XenditController extends Controller
             'external_id' => $externalId,
             'status' => 'pending'
         ]);
-        
+
         // Create order items
         foreach ($cart->items as $item) {
             OrderItem::create([
@@ -76,7 +77,7 @@ class XenditController extends Controller
                 'total_price' => $item->price * $item->quantity
             ]);
         }
-        
+
         // Prepare item descriptions for invoice
         $items = $cart->items->map(function ($item) {
             return [
@@ -85,7 +86,7 @@ class XenditController extends Controller
                 'price' => $item->price,
             ];
         })->toArray();
-        
+
         // Create Xendit invoice
         try {
             $invoiceRequest = new CreateInvoiceRequest([
@@ -102,18 +103,18 @@ class XenditController extends Controller
                 ],
                 'items' => $items,
             ]);
-            
+
             $response = $this->xenditInvoiceApi->createInvoice($invoiceRequest);
-            
+
             // Update order with invoice ID and payment URL
             $order->update([
                 'invoice_id' => $response['id'],
                 'payment_url' => $response['invoice_url']
             ]);
-            
+
             // Mark cart as inactive
             $cart->update(['status' => 'converted']);
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Invoice created successfully',
@@ -122,31 +123,30 @@ class XenditController extends Controller
                     'invoice_url' => $response['invoice_url']
                 ]
             ]);
-            
         } catch (\Exception $e) {
             // If there's an error, delete the order
             $order->delete();
-            
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to create invoice: ' . $e->getMessage()
             ], 500);
         }
     }
-    
+
     public function handleCallback(Request $request)
     {
-        
+
         $externalId = $request->external_id;
         $status = $request->status;
-        
+
         // Find order by external ID
         $order = Order::where('external_id', $externalId)->first();
-        
+
         if (!$order) {
             return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
         }
-        
+
         // Update order status based on Xendit callback
         if ($status === 'PAID') {
             $order->update([
@@ -159,7 +159,7 @@ class XenditController extends Controller
                 'status' => 'cancelled'
             ]);
         }
-        
+
         return response()->json(['status' => 'success']);
     }
 }

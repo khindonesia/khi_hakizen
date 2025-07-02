@@ -33,6 +33,7 @@
                     <x-app.sidebar-link href="/dashboard" icon="phosphor-house" :active="Request::is('dashboard')">Dashboard</x-app.sidebar-link>
                     <x-app.sidebar-link href="/post" icon="phosphor-receipt" :active="Request::is('dashboard/posts')">Posts</x-app.sidebar-link>
                     <x-app.sidebar-link href="/user-addresses" icon="phosphor-map-pin" :active="Request::is('user-addresses')">Alamat</x-app.sidebar-link>
+                    <x-app.sidebar-link href="/orders" icon="phosphor-shopping-cart" :active="Request::is('orders')">Orders</x-app.sidebar-link>
                 </div>
             </div>
 

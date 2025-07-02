@@ -12,7 +12,6 @@
 */
 
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\XenditController;
 use Illuminate\Support\Facades\Route;
 use Wave\Facades\Wave;
@@ -38,12 +37,15 @@ Route::post('/api/checkout/create-invoice', [XenditController::class, 'createInv
 
 // Payment status routes
 Route::get('/payment/success/{order_id}', function ($orderId) {
-    return view('payment.success', ['orderId' => $orderId]);
+    // Tampilkan pesan sukses sebentar, lalu redirect
+    return redirect()->route('orders.index')->with('success', 'Pembayaran berhasil untuk Order #' . $orderId);
 })->name('payment.success');
 
 Route::get('/payment/failed/{order_id}', function ($orderId) {
     return view('payment.failed', ['orderId' => $orderId]);
 })->name('payment.failed');
+
+Route::get('/orders/{order}/print-invoice', [App\Http\Controllers\OrderInvoiceController::class, 'printInvoice'])->name('orders.print-invoice');
 
 
 // Xendit webhook callback

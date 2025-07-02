@@ -22,7 +22,7 @@ class ViewOrder extends ViewRecord
             Actions\Action::make('printInvoice')
                 ->label('Print Invoice')
                 ->icon('heroicon-o-printer')
-                // ->url(fn ($record) => route('orders.print-invoice', $record))
+                ->url(fn ($record) => route('orders.print-invoice', $record))
                 ->openUrlInNewTab(),
         ];
     }

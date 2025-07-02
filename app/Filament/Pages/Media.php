@@ -8,7 +8,7 @@ use Filament\Support\Enums\MaxWidth;
 
 class Media extends Page
 {
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
 
