@@ -51,7 +51,7 @@ class PlanResource extends Resource
                     ])->columns(2),
                 Section::make('Plan Pricing')
                     ->description('Add the pricing details for your plans below')
-                    ->schema([ 
+                    ->schema([
                         Forms\Components\TextInput::make('monthly_price_id')
                             ->label('Monthly Price ID')
                             ->hint('Stripe/Paddle ID')
@@ -87,7 +87,7 @@ class PlanResource extends Resource
                             ->options(Role::all()->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
-                ])
+                    ])
             ]);
     }
 
@@ -101,7 +101,7 @@ class PlanResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\BooleanColumn::make('active')
-                    ->sortable(),    
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

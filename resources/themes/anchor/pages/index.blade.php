@@ -1,6 +1,11 @@
 <?php
 use function Laravel\Folio\{name};
+use App\Models\HomePageContent;
+
 name('home');
+
+// Fetch homepage content from database
+$homePageContent = HomePageContent::first();
 ?>
 
 <x-layouts.marketing :seo="[
@@ -10,7 +15,7 @@ name('home');
     'type' => 'website',
 ]">
 
-    <x-marketing.sections.hero />
+    <x-marketing.sections.hero :homePageContent="$homePageContent" />
 
     {{-- <x-container class="border-t border-zinc-200">
         <x-marketing.sections.clients/>

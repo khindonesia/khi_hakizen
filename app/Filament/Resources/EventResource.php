@@ -19,6 +19,7 @@ class EventResource extends Resource
     protected static ?string $model = Event::class;
 
     protected static ?string $navigationIcon = 'phosphor-calendar-duotone';
+    protected static ?string $navigationGroup = 'Content Management';
 
     protected static ?int $navigationSort = 4;
 
@@ -28,7 +29,7 @@ class EventResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('title')
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
                     ->required()
                     ->maxLength(191),
                 Forms\Components\TextInput::make('slug')
@@ -87,7 +88,7 @@ class EventResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'PUBLISHED' => 'success',
                         'DRAFT' => 'gray',
                         'PENDING' => 'warning',
@@ -109,11 +110,11 @@ class EventResource extends Resource
                         'PENDING' => 'Pending',
                     ]),
                 Tables\Filters\Filter::make('upcoming')
-                    ->query(fn (Builder $query): Builder => $query->where('start_datetime', '>=', now())),
+                    ->query(fn(Builder $query): Builder => $query->where('start_datetime', '>=', now())),
                 Tables\Filters\Filter::make('past')
-                    ->query(fn (Builder $query): Builder => $query->where('end_datetime', '<', now())),
+                    ->query(fn(Builder $query): Builder => $query->where('end_datetime', '<', now())),
                 Tables\Filters\Filter::make('ongoing')
-                    ->query(fn (Builder $query): Builder => $query->where('start_datetime', '<=', now())->where('end_datetime', '>=', now())),
+                    ->query(fn(Builder $query): Builder => $query->where('start_datetime', '<=', now())->where('end_datetime', '>=', now())),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -18,6 +18,7 @@ class EbookResource extends Resource
     protected static ?string $model = Ebook::class;
 
     protected static ?string $navigationIcon = 'phosphor-book-open-duotone';
+    protected static ?string $navigationGroup = 'Content Management';
 
     protected static ?int $navigationSort = 5;
 
@@ -27,7 +28,7 @@ class EbookResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('title')
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
                     ->required()
                     ->maxLength(191),
                 Forms\Components\TextInput::make('slug')
@@ -76,7 +77,7 @@ class EbookResource extends Resource
                 Tables\Columns\ImageColumn::make('cover_image'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'PUBLISHED' => 'success',
                         'DRAFT' => 'gray',
                         'PENDING' => 'warning',
@@ -102,7 +103,7 @@ class EbookResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('download')
-                    ->url(fn (Ebook $record): string => $record->ebook_file)
+                    ->url(fn(Ebook $record): string => $record->ebook_file)
                     ->icon('heroicon-o-arrow-down-tray')
                     ->openUrlInNewTab(),
             ])
@@ -111,8 +112,8 @@ class EbookResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('publish')
                         ->label('Publish Selected')
-                        ->action(fn (Collection $records) => $records->each->update(['status' => 'PUBLISHED']))
-                        ->action(fn (collection $records) => $records->each->update(['status' => 'PUBLISHED']))
+                        ->action(fn(Collection $records) => $records->each->update(['status' => 'PUBLISHED']))
+                        ->action(fn(collection $records) => $records->each->update(['status' => 'PUBLISHED']))
                         ->requiresConfirmation()
                         ->color('success')
                         ->deselectRecordsAfterCompletion(),

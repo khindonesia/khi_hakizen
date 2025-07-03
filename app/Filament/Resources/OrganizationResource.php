@@ -20,6 +20,7 @@ class OrganizationResource extends Resource
     protected static ?string $model = Organization::class;
 
     protected static ?string $navigationIcon = 'phosphor-buildings-duotone';
+    protected static ?string $navigationGroup = 'Content Management';
 
     protected static ?int $navigationSort = 5;
 
