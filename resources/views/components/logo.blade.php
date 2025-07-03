@@ -1,1 +1,1 @@
-<img src="{{ url('/images/logo.jpg', []) }}" width="50px" height="50px" />
+<img src="{{ url('/images/logo.jpg', []) }}" width="100px" height="auto" alt="brand" />
