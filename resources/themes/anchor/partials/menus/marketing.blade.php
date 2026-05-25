@@ -99,7 +99,7 @@
             <a href="#_" class="flex items-center h-full text-base font-medium text-zinc-500 transition duration-300 hover:text-zinc-800">About</a>
         </li>
 
-        <a href="#_" class="block px-5 py-3 text-base font-medium text-center text-white bg-blue-600 md:hidden">View Dashboard</a>
+        <a href="#_" class="block px-5 py-3 text-base font-medium text-center text-white bg-red-600 md:hidden">View Dashboard</a>
     </ul>
     
 </nav>

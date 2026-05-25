@@ -88,7 +88,7 @@
                         </span>
                     </a>
                     @impersonating
-                            <a href="{{ route('impersonate.leave') }}" class="block px-4 py-2 text-sm leading-5 text-blue-900 bg-blue-50 border-t text-zinc-700 border-zinc-100 hover:bg-blue-100 focus:outline-none focus:bg-blue-200">Leave impersonation</a>
+                            <a href="{{ route('impersonate.leave') }}" class="block px-4 py-2 text-sm leading-5 text-blue-900 bg-red-50 border-t text-zinc-700 border-zinc-100 hover:bg-red-100 focus:outline-none focus:bg-blue-200">Leave impersonation</a>
                     @endImpersonating
                     <div class="border-t border-zinc-100"></div>
                     <div class="py-1">

@@ -77,8 +77,12 @@
                         ->sortable(),
                     TextColumn::make('address_line')
                         ->label('Address')
-                        ->description(fn (UserAddress $record): string => 
-                            "{$record->city}, {$record->state} {$record->postal_code}")
+                        ->description(fn (UserAddress $record): string => trim(collect([
+                            $record->village,
+                            $record->district,
+                            $record->city,
+                            $record->state,
+                        ])->filter()->join(', ') . ' ' . $record->postal_code))
                         ->searchable()
                         ->sortable()
                         ->weight('medium'),
@@ -133,7 +137,7 @@
                         ->action(fn (UserAddress $record) => $this->setPrimaryAddress($record)),
                     ActionGroup::make([
                         Tables\Actions\EditAction::make()
-                            ->url(fn (UserAddress $record): string => "/user-addresses/{$record->id}/edit")
+                            ->url(fn (UserAddress $record): string => route('user-addresses.edit', ['address' => $record->id]))
                             ->icon('heroicon-o-pencil-square'),
                         Tables\Actions\DeleteAction::make()
                             ->icon('heroicon-o-trash')
@@ -156,7 +160,7 @@
                 ->emptyStateActions([
                     Tables\Actions\Action::make('create')
                         ->label('Add New Address')
-                        ->url('/user-addresses/create')
+                        ->url(route('user-addresses.create'))
                         ->icon('heroicon-o-plus')
                         ->button(),
                 ]);
@@ -171,7 +175,7 @@
                     <x-app.heading title="My Addresses" description="Manage your shipping and billing addresses" :border="false" />
                     <p class="text-sm text-gray-500 mt-1">You can add multiple addresses and set one as your primary address</p>
                 </div>
-                <x-button tag="a" href="/user-addresses/create" class="flex items-center gap-x-2 self-start">
+                <x-button tag="a" href="{{ route('user-addresses.create') }}" class="flex items-center gap-x-2 self-start">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
@@ -187,7 +191,7 @@
             
             <div class="mt-6 text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
                 <div class="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>

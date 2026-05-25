@@ -12,7 +12,7 @@ class Media extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
 
-    protected static string $view = 'wave::media.index';
+    protected static string $view = 'filament.pages.media';
     
     protected static ?int $navigationSort = 5;
  

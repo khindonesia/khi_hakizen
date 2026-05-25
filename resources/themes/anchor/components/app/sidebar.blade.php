@@ -1,71 +1,102 @@
-<div x-data="{ sidebarOpen: false }" @open-sidebar.window="sidebarOpen = true" x-init="$watch('sidebarOpen', function(value) {
-    if (value) { document.body.classList.add('overflow-hidden'); } else { document.body.classList.remove('overflow-hidden'); }
-});"
+<div x-data="{ sidebarOpen: false }" @open-sidebar.window="sidebarOpen = true"
+    x-init="$watch('sidebarOpen', function(value) {
+        if (value) { document.body.classList.add('overflow-hidden'); } else { document.body.classList.remove('overflow-hidden'); }
+    });"
     class="relative z-50 w-screen md:w-auto" x-cloak>
-    {{-- Backdrop for mobile --}}
     <div x-show="sidebarOpen" @click="sidebarOpen=false"
-        class="fixed top-0 right-0 z-50 w-screen h-screen duration-300 ease-out bg-black/20 dark:bg-white/10"></div>
+        class="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-sm dark:bg-white/10"></div>
 
-    {{-- Sidebar --}}
-    <div :class="{ '-translate-x-full': !sidebarOpen }"
-        class="fixed top-0 left-0 flex items-stretch -translate-x-full overflow-hidden lg:translate-x-0 z-50 h-dvh md:h-screen transition-[width,transform] duration-150 ease-out bg-zinc-50 dark:bg-zinc-900 w-64 group @if (config('wave.dev_bar')) {{ 'pb-10' }} @endif">
-        <div class="flex flex-col justify-between w-full overflow-auto md:h-full h-svh pt-4 pb-2.5">
-            <div class="relative flex flex-col">
-                <button x-on:click="sidebarOpen=false"
-                    class="flex items-center justify-center flex-shrink-0 w-10 h-10 ml-4 rounded-md lg:hidden text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 dark:hover:bg-zinc-700/70 hover:bg-gray-200/70">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div class="flex items-center px-5 space-x-2">
-                    <a href="/"
-                        class="flex justify-center items-center py-4 pl-0.5 space-x-1 font-bold text-zinc-900">
-                        <x-logo class="w-auto h-7" />
+    <aside :class="{ '-translate-x-full': !sidebarOpen }"
+        class="fixed left-0 top-0 z-50 flex h-dvh w-[18rem] -translate-x-full overflow-hidden border-r border-zinc-200/80 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-transform duration-200 ease-out dark:border-zinc-800 dark:bg-zinc-950/90 lg:translate-x-0 @if (config('wave.dev_bar')) {{ 'pb-10' }} @endif">
+        <div class="flex h-full w-full flex-col justify-between gap-6 overflow-y-auto p-4">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between lg:hidden">
+                    <a href="/" class="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                        <x-logo class="h-6 w-auto" />
                     </a>
+                    <button x-on:click="sidebarOpen=false"
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:border-red-200 hover:text-red-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <div class="flex items-center px-4 pt-1 pb-3">
-                    <div class="relative flex items-center w-full h-full rounded-lg">
-                        <x-phosphor-magnifying-glass
-                            class="absolute left-0 w-5 h-5 ml-2 text-gray-400 -translate-y-px" />
-                        <input type="text"
-                            class="w-full py-2 pl-8 text-sm border rounded-lg bg-zinc-200/70 focus:bg-white duration-50 dark:bg-zinc-950 ease border-zinc-200 dark:border-zinc-700/70 dark:ring-zinc-700/70 focus:ring dark:text-zinc-200 dark:focus:ring-zinc-700/70 dark:focus:border-zinc-700 focus:ring-zinc-200 focus:border-zinc-300 dark:placeholder-zinc-400"
-                            placeholder="Search">
+
+                <div class="rounded-[28px] border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div class="flex items-center gap-3">
+                        <a href="/" class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700 shadow-sm dark:bg-red-500/10 dark:text-blue-200">
+                            <x-logo class="h-6 w-auto" />
+                        </a>
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">Workspace</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">Komunitas Historia Indonesia</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 rounded-2xl border border-zinc-200/80 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+                        <div class="flex items-center gap-2 text-zinc-400">
+                            <x-phosphor-magnifying-glass class="h-4 w-4" />
+                            <input type="text" placeholder="Search"
+                                class="w-full border-0 bg-transparent p-0 text-sm text-zinc-700 placeholder:text-zinc-400 focus:ring-0 dark:text-zinc-200">
+                        </div>
                     </div>
                 </div>
 
-                <div
-                    class="flex flex-col justify-start items-center px-4 space-y-1.5 w-full h-full text-slate-600 dark:text-zinc-400">
-                    {{-- <x-app.sidebar-link href="/dashboard" icon="phosphor-house" :active="Request::is('dashboard')">Dashboard</x-app.sidebar-link> --}}
-                    <x-app.sidebar-link href="/post" icon="phosphor-receipt"
-                        :active="Request::is('dashboard/posts')">Posts</x-app.sidebar-link>
-                    <x-app.sidebar-link href="/user-addresses" icon="phosphor-map-pin"
-                        :active="Request::is('user-addresses')">Alamat</x-app.sidebar-link>
-                    <x-app.sidebar-link href="/orders" icon="phosphor-shopping-cart"
-                        :active="Request::is('orders')">Orders</x-app.sidebar-link>
+                <div class="space-y-2">
+                    <p class="px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Core</p>
+                    <div class="space-y-1">
+                        <x-app.sidebar-link href="{{ route('home') }}" icon="phosphor-arrow-left" :active="false">
+                            Kembali ke Website
+                        </x-app.sidebar-link>
+                        <x-app.sidebar-link href="{{ route('dashboard') }}" icon="phosphor-house" :active="Request::is('dashboard')">
+                            Dashboard
+                        </x-app.sidebar-link>
+                        <x-app.sidebar-link href="{{ route('orders') }}" icon="phosphor-shopping-bag" :active="Request::is('orders') || Request::is('orders/*')">
+                            Orders
+                        </x-app.sidebar-link>
+                        <x-app.sidebar-link href="/dashboard/aspirasi" icon="phosphor-pencil-line" :active="Request::is('dashboard/aspirasi') || Request::is('dashboard/aspirasi/*')">
+                            Aspirasi
+                        </x-app.sidebar-link>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Account</p>
+                    <div class="space-y-1">
+                        <x-app.sidebar-link href="/dashboard/events" icon="phosphor-calendar" :active="Request::is('dashboard/events') || Request::is('dashboard/events/*')">
+                            Events
+                        </x-app.sidebar-link>
+                        <x-app.sidebar-link href="/user-addresses" icon="phosphor-map-pin" :active="Request::is('user-addresses*')">
+                            Addresses
+                        </x-app.sidebar-link>
+                        <x-app.sidebar-link href="{{ route('settings.profile') }}" icon="phosphor-gear" :active="Request::is('settings/*')">
+                            Settings
+                        </x-app.sidebar-link>
+                        <x-app.sidebar-link href="{{ route('notifications') }}" icon="phosphor-bell" :active="Request::is('notifications')">
+                            Notifications
+                        </x-app.sidebar-link>
+                    </div>
                 </div>
             </div>
 
-            <div class="relative px-2.5 space-y-1.5 text-zinc-700 dark:text-zinc-400">
-
-                {{-- <x-app.sidebar-link href="https://devdojo.com/wave/docs" target="_blank" icon="phosphor-book-bookmark-duotone" active="false">Documentation</x-app.sidebar-link>
-                <x-app.sidebar-link href="https://devdojo.com/questions" target="_blank" icon="phosphor-chat-duotone" active="false">Questions</x-app.sidebar-link>
-                <x-app.sidebar-link :href="route('changelogs')" icon="phosphor-book-open-text-duotone" :active="Request::is('changelog') || Request::is('changelog/*')">Changelog</x-app.sidebar-link> --}}
-
-                {{-- <div x-show="sidebarTip" x-data="{ sidebarTip: $persist(true) }" class="px-1 py-3" x-collapse x-cloak>
-                    <div class="relative w-full px-4 py-3 space-y-1 border rounded-lg bg-zinc-50 text-zinc-700 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-200/60 dark:border-zinc-700">
-                        <button @click="sidebarTip=false" class="absolute top-0 right-0 z-50 p-1.5 mt-2.5 mr-2.5 rounded-full opacity-80 cursor-pointer hover:opacity-100 hover:bg-zinc-100 hover:dark:bg-zinc-700 hover:dark:text-zinc-300 text-zinc-500 dark:text-zinc-400">
-                            <x-phosphor-x-bold class="w-3 h-3" />
-                        </button>
-                        <h5 class="pb-1 text-sm font-bold -translate-y-0.5">Edit This Section</h5>
-                        <p class="block pb-1 text-xs opacity-80 text-balance">You can edit any aspect of your user dashboard. This section can be found inside your theme component/app/sidebar file.</p>
+            <div class="space-y-4">
+                <div class="rounded-[28px] border border-zinc-200/80 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm dark:border-zinc-800 dark:from-blue-500/10 dark:to-zinc-900">
+                    <div class="flex items-center gap-3">
+                        <div class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-red-700 shadow-sm dark:bg-zinc-950 dark:text-blue-200">
+                            <x-phosphor-sparkle class="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Workspace ready</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Clean canvas for content and orders.</p>
+                        </div>
                     </div>
-                </div> --}}
+                </div>
 
-                <div class="w-full h-px my-2 bg-slate-100 dark:bg-zinc-700"></div>
-                <x-app.user-menu />
+                <div class="rounded-[28px] border border-zinc-200/80 bg-white p-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <x-app.user-menu />
+                </div>
             </div>
         </div>
-    </div>
+    </aside>
 </div>

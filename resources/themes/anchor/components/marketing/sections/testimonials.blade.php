@@ -43,36 +43,34 @@ $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
                             $user = json_decode($item->profile_values, true);
                         }
                     @endphp
-                    <a href="{{ url('/opini?user=' . $item->id) }}" wire:navigate>
-                        <div class="flex h-auto">
-                            <div class="flex flex-col bg-white rounded-xl">
-                                <div class="flex-auto p-4 md:p-6">
-                                    <p class="text-base italic md:text-lg text-gray-800 line-clamp-4">
-                                        " {{ $user['about-short-description-max-4-paraghraph'] }} "
-                                    </p>
-                                </div>
+                    <div class="flex h-auto">
+                        <div class="flex flex-col bg-white rounded-xl">
+                            <div class="flex-auto p-4 md:p-6">
+                                <p class="text-base italic md:text-lg text-gray-800 line-clamp-4">
+                                    " {{ $user['about-short-description-max-4-paraghraph'] }} "
+                                </p>
+                            </div>
 
-                                <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
-                                    <div class="flex items-center gap-x-3">
-                                        <div class="shrink-0">
-                                            <img class="size-8 sm:size-11.5 rounded-full"
-                                                src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                alt="Avatar">
-                                        </div>
+                            <div class="p-4 bg-gray-100 rounded-b-xl md:px-7">
+                                <div class="flex items-center gap-x-3">
+                                    <div class="shrink-0">
+                                        <img class="size-8 sm:size-11.5 rounded-full"
+                                            src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
+                                            alt="Avatar">
+                                    </div>
 
-                                        <div class="grow">
-                                            <p class="text-sm sm:text-base font-semibold text-gray-800">
-                                                {{ $item->name }}
-                                            </p>
-                                            <p class="text-xs text-gray-500">
-                                                {{ $user['job-position'] }}
-                                            </p>
-                                        </div>
+                                    <div class="grow">
+                                        <p class="text-sm sm:text-base font-semibold text-gray-800">
+                                            {{ $item->name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            {{ $user['job-position'] }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 @endforeach
 
                 <!-- End Card -->
@@ -84,7 +82,7 @@ $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
                 <!-- Stats -->
                 <div>
                     <h4 class="text-lg sm:text-xl font-semibold text-white">Total Anggota</h4>
-                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">+23.000</p>
+                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-red-500">+23.000</p>
                     <p class="mt-1 text-gray-400">Tersebar di seluruh penjuru Indonesia</p>
                 </div>
                 <!-- End Stats -->
@@ -92,7 +90,7 @@ $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
                 <!-- Stats -->
                 <div>
                     <h4 class="text-lg sm:text-xl font-semibold text-white">Sudah Berdiri Selama</h4>
-                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">+22 Tahun</p>
+                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-red-500">+22 Tahun</p>
                     <p class="mt-1 text-gray-400">Didirikan pada 2003, oleh Asep kambali</p>
                 </div>
                 <!-- End Stats -->
@@ -100,7 +98,7 @@ $query = \App\Models\Post::join('users', 'posts.author_id', '=', 'users.id')
                 {{-- <!-- Stats -->
                 <div>
                     <h4 class="text-lg sm:text-xl font-semibold text-white">Happy customer</h4>
-                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-blue-500">85%</p>
+                    <p class="mt-2 sm:mt-3 text-4xl sm:text-6xl font-bold text-red-500">85%</p>
                     <p class="mt-1 text-gray-400">this year alone</p>
                 </div>
                 <!-- End Stats --> --}}

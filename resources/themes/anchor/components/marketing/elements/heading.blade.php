@@ -3,6 +3,7 @@
     'title' => 'No Heading Title Entered',
     'description' => 'Be sure to include the description attribute',
     'align' => 'center',
+    'eyebrow' => null,
 ])
 
 
@@ -13,9 +14,15 @@
         'text-right' => $align == 'right',
         'text-center' => $align != 'left' && $align != 'right',
     ]) }}>
-    <{{ $level }} class="text-3xl sm:text-4xl text-left md:text-center font-medium tracking-tighter lg:text-5xl">
-        {!! $title !!}</{{ $level }}>
-        <p
-            class="mt-4 text-sm sm:text-base font-medium text-left md:text-center md:text-balance text-zinc-500 @if ($align == 'left') {{ 'ml-auto' }}@elseif($align == 'right'){{ 'mr-auto' }}@else{{ 'mx-auto max-w-2xl' }} @endif">
-            {!! $description !!}</p>
+    @if ($eyebrow)
+        <div class="stitch-chip mb-4 @if ($align == 'left'){{ 'mr-auto' }}@elseif($align == 'right'){{ 'ml-auto' }}@else{{ 'mx-auto' }}@endif">
+            {{ $eyebrow }}
+        </div>
+    @endif
+    <{{ $level }} class="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl lg:text-5xl">
+        {!! $title !!}
+    </{{ $level }}>
+    <p class="mt-4 text-sm font-medium leading-7 text-zinc-500 sm:text-base @if ($align == 'left') {{ 'ml-auto' }}@elseif($align == 'right'){{ 'mr-auto' }}@else{{ 'mx-auto max-w-2xl' }} @endif">
+        {!! $description !!}
+    </p>
 </div>

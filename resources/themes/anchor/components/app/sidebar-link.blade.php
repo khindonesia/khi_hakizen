@@ -4,14 +4,24 @@
     'active' => false,
     'hideUntilGroupHover' => true,
     'target' => '_self',
-    'ajax' => true
+    'ajax' => true,
 ])
 
 @php
     $isActive = filter_var($active, FILTER_VALIDATE_BOOLEAN);
 @endphp
 
-<a {{ $attributes }} href="{{ $href }}" @if((($href ?? false) && $target == '_self') && $ajax) wire:navigate @else @if($ajax) target="_blank" @endif @endif class="@if($isActive){{ 'text-zinc-900 border-zinc-200 dark:border-zinc-700 shadow-sm bg-white font-medium dark:border-white dark:bg-zinc-700/60 dark:text-zinc-100' }}@else{{ 'border-transparent' }}@endif transition-colors border px-2.5 py-2 flex rounded-lg w-full h-auto text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700/60 justify-start items-center hover:text-zinc-900 dark:hover:text-zinc-100 space-x-2 overflow-hidden group-hover:autoflow-auto items">
-    <x-dynamic-component :component="$icon" class="flex-shrink-0 w-5 h-5" />
-    <span class="flex-shrink-0 ease-out duration-50">{{ $slot }}</span>
+<a {{ $attributes }}
+    href="{{ $href }}"
+    @if((($href ?? false) && $target == '_self') && $ajax) wire:navigate @else @if($ajax) target="_blank" @endif @endif
+    @class([
+        'group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm transition',
+        'border-red-100 bg-red-50 text-red-700 shadow-sm dark:border-blue-500/30 dark:bg-red-500/10 dark:text-red-100' => $isActive,
+        'border-transparent text-zinc-600 hover:border-zinc-200 hover:bg-white hover:text-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-100' => ! $isActive,
+    ])>
+    <x-dynamic-component :component="$icon" class="h-5 w-5 flex-shrink-0" />
+    <span class="flex-1 truncate font-medium">{{ $slot }}</span>
+    @if ($isActive)
+        <span class="h-2 w-2 rounded-full bg-current"></span>
+    @endif
 </a>

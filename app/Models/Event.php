@@ -20,10 +20,13 @@ class Event extends Model
         'seo_title',
         'body',
         'image',
+        'location',
         'slug',
         'meta_description',
         'meta_keywords',
         'status',
+        'type',
+        'price',
         'start_datetime',
         'end_datetime'
     ];
@@ -36,6 +39,7 @@ class Event extends Model
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
+        'price' => 'decimal:2',
     ];
 
     /**
@@ -44,6 +48,16 @@ class Event extends Model
     public function author()
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    /**
+     * Get the users registered for the event.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'event_user')
+            ->withPivot(['status', 'payment_status', 'amount', 'external_id', 'invoice_id', 'payment_url'])
+            ->withTimestamps();
     }
 
     /**

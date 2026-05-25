@@ -1,7 +1,11 @@
 <?php
+    use function Laravel\Folio\{middleware, name};
+    middleware('auth');
+    name('settings.api');
+?>
+<?php
     use Filament\Forms\Components\TextInput;
     use Livewire\Volt\Component;
-    use function Laravel\Folio\{middleware, name};
     use Filament\Forms\Concerns\InteractsWithForms;
     use Filament\Forms\Contracts\HasForms;
     use Filament\Forms\Form;
@@ -17,9 +21,6 @@
     use Illuminate\Support\Str;
     use Wave\ApiKey;
     
-    middleware('auth');
-    name('settings.api');
-
 	new class extends Component implements HasForms, Tables\Contracts\HasTable
 	{
         use InteractsWithForms, Tables\Concerns\InteractsWithTable;

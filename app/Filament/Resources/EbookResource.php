@@ -51,6 +51,10 @@ class EbookResource extends Resource
                     ->disk('public') // Menggunakan disk public
                     ->directory('ebook-files') // Menyimpan di folder ebook-files
                     ->acceptedFileTypes(['application/pdf', 'application/epub+zip', 'application/x-mobipocket-ebook'])
+                    ->panelLayout('integrated')
+                    ->openable()
+                    ->downloadable()
+                    ->previewable(false)
                     ->helperText('Upload PDF, EPUB, atau MOBI file (max: 50MB)')
                     ->maxSize(50 * 1024), // 50MB maksimum
                 Forms\Components\Select::make('status')

@@ -1,15 +1,16 @@
 <?php
+    use function Laravel\Folio\{middleware, name};
+    middleware('auth');
+    name('settings.security');
+?>
+<?php
     use Filament\Forms\Components\TextInput;
     use Livewire\Volt\Component;
-    use function Laravel\Folio\{middleware, name};
     use Filament\Forms\Concerns\InteractsWithForms;
     use Filament\Forms\Contracts\HasForms;
     use Filament\Forms\Form;
     use Filament\Notifications\Notification;
     
-    middleware('auth');
-    name('settings.security');
-
 	new class extends Component implements HasForms
 	{
         use InteractsWithForms;

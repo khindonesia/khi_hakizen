@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -65,16 +64,16 @@ class ProductResource extends Resource
                                                     ->required()
                                                     ->maxLength(255)
                                                     ->placeholder('product-slug')
-                                                    ->helperText('Will be used in URL: example.com/products/[slug]')
+                                                    ->helperText('Will be used in URL: example.com/merchandise/[slug]')
                                                     ->unique(ignoreRecord: true)
                                                     ->columnSpan(2),
 
                                                 Forms\Components\Select::make('category_id')
                                                     ->label('Category')
-                                                    ->relationship('category', 'name')
-                                                    ->options(
-                                                        fn() => ProductCategory::where('status', 'active')
-                                                            ->pluck('name', 'id')
+                                                    ->relationship(
+                                                        'category',
+                                                        'name',
+                                                        fn (Builder $query) => $query->where('status', 'active'),
                                                     )
                                                     ->searchable()
                                                     ->preload()
@@ -558,7 +557,7 @@ class ProductResource extends Resource
                                             ->label('Slug')
                                             ->color('gray')
                                             ->copyable()
-                                            ->url(fn(Product $record) => url("/products/{$record->slug}"))
+                                            ->url(fn(Product $record) => url("/merchandise/{$record->slug}"))
                                             ->openUrlInNewTab(),
 
                                         Infolists\Components\TextEntry::make('category.name')

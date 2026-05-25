@@ -35,8 +35,16 @@ return [
         'secret' => env('SPARKPOST_SECRET'),
     ],
     'xendit' => [
-        'secret_key' => env('XENDIT_SECRET_KEY'),
+        'secret_key' => env('XENDIT_SECRET_KEY', env('XENDIT_API_KEY')),
         'webhook_secret' => env('XENDIT_WEBHOOK_SECRET'),
+    ],
+
+    'rajaongkir' => [
+        'base_url' => env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1'),
+        'api_key' => env('RAJAONGKIR_API_KEY'),
+        'origin_id' => env('RAJAONGKIR_ORIGIN_ID', 17693),
+        'price_type' => env('RAJAONGKIR_PRICE_TYPE', 'lowest'),
+        'cache_ttl' => env('RAJAONGKIR_CACHE_TTL', 86400),
     ],
 
 ];

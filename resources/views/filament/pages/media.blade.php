@@ -1,5 +1,8 @@
 <?php
     use function Laravel\Folio\{name};
+    use App\Services\MediaDirectoryGuard;
+    use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Str;
     use Livewire\Volt\Component;
     name('media');
 
@@ -12,31 +15,24 @@
         public $files;
         public $disk;
         public $breadcrumbs;
+        private array $allowedDisks = ['public'];
 
         public function mount($disk = 'public'){
-            $this->storageURL = $this->storage($disk)->url('/');
-            $this->disk = $disk;
+            $this->disk = $this->guard()->normalizeDisk($disk, $this->allowedDisks);
+            $this->storageURL = Storage::disk($this->disk)->url('/');
             $this->loadFilesInCurrentFolder();
             $this->getBreadcrumbsProperty();
+        }
+
+        private function guard(): MediaDirectoryGuard
+        {
+            return app(MediaDirectoryGuard::class);
         }
 
         private function loadFilesInCurrentFolder(){
             $this->files = $this->getFilesInDir($this->folder);
         }
     
-        public function storage($disk = false){
-            // We want to get the class from the Storage facade, this is probably Illuminate\Filesystem\FilesystemManager
-            $storageClass = get_class(\Illuminate\Support\Facades\Storage::getFacadeRoot());
-
-            // create a new instance of this object to be used
-            $classInstance = new $storageClass(app());
-
-            // if the disk is set by default return the disk passed in
-            if($disk) $classInstance = $classInstance->disk($disk);
-
-            return $classInstance;
-        }
-
         public function getBreadcrumbsProperty(){
             $crumbs = array_filter(explode('/', trim($this->folder, '/')));
             $breadcrumbs = [];
@@ -61,15 +57,16 @@
             $files = [];
             $thumbnails = [];
             $thumbnail_names = [];
+            $safeDir = $this->guard()->normalizeDirectory($this->disk, $dir);
 
-            $storageItems = $this->storage($this->disk)->listContents($dir)->sortByPath()->toArray();
+            $storageItems = Storage::disk($this->disk)->listContents($safeDir)->sortByPath()->toArray();
 
             foreach ($storageItems as $item) {
                     if ($item['type'] == 'dir') {
                         $files[] = (object)[
                             'name'          => $item['basename'] ?? basename($item['path']),
                             'type'          => 'folder',
-                            'path'          => $this->storage($this->disk)->url($item['path']),
+                            'path'          => Storage::disk($this->disk)->url($item['path']),
                             'relative_path' => $item['path'],
                             'items'         => '',
                             'last_modified' => '',
@@ -85,13 +82,13 @@
                         }
                         $mime = 'file';
                         if (class_exists(\League\MimeTypeDetection\ExtensionMimeTypeDetector::class)) {
-                            $mime = (new \League\MimeTypeDetection\ExtensionMimeTypeDetector())->detectMimeTypeFromFile($item['path']);
+                            $mime = (new \League\MimeTypeDetection\ExtensionMimeTypeDetector())->detectMimeTypeFromFile($this->guard()->absolutePath($this->disk, $item['path']));
                         }
                         $files[] = (object)[
                             'name'          => $item['basename'] ?? basename($item['path']),
                             'filename'      => $item['filename'] ?? basename($item['path'], '.'.pathinfo($item['path'])['extension']),
                             'type'          => $item['mimetype'] ?? $mime,
-                            'path'          => $this->storage($this->disk)->url($item['path']),
+                            'path'          => Storage::disk($this->disk)->url($item['path']),
                             'relative_path' => $item['path'],
                             'size'          => $item['size'] ?? $item->fileSize(),
                             'last_modified' => $item['timestamp'] ?? $item->lastModified(),
@@ -102,10 +99,10 @@
 
                 foreach ($files as $key => $file) {
                     foreach ($thumbnails as $thumbnail) {
-                        if ($file['type'] != 'folder' && Str::startsWith($thumbnail['filename'], $file['filename'])) {
-                            $thumbnail['thumb_name'] = str_replace($file['filename'].'-', '', $thumbnail['filename']);
-                            $thumbnail['path'] = $this->storage($this->disk)->url($thumbnail['path']);
-                            $files[$key]['thumbnails'][] = $thumbnail;
+                        if ($file->type != 'folder' && Str::startsWith($thumbnail['filename'], $file->filename)) {
+                            $thumbnail['thumb_name'] = str_replace($file->filename.'-', '', $thumbnail['filename']);
+                            $thumbnail['path'] = Storage::disk($this->disk)->url($thumbnail['path']);
+                            $files[$key]->thumbnails[] = $thumbnail;
                         }
                     }
                 }
@@ -124,14 +121,16 @@
         }
 
         public function goToDirectory($path){
-            $this->folder = '/' . $path;
+            $safePath = $this->guard()->normalizeDirectory($this->disk, $path);
+            $this->folder = $safePath === '' ? '/' : $safePath;
             $this->loadFilesInCurrentFolder();
+            $this->getBreadcrumbsProperty();
         }
 
     }
 ?>
 <x-filament-panels::page>
-    @volt('media')
+    @volt('filament.media-manager')
         <div class="flex justify-start items-start p-5 w-full h-full bg-white rounded-xl border border-zinc-100">
             <div class="w-full h-full">
                 <div x-data="{ 

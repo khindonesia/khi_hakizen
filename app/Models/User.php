@@ -50,6 +50,32 @@ class User extends WaveUser
         return $this->hasMany(UserAddress::class);
     }
 
+    /**
+     * Get the events this user is registered for.
+     */
+    public function registeredEvents()
+    {
+        return $this->belongsToMany(Event::class, 'event_user')
+            ->withPivot(['status', 'payment_status', 'amount', 'external_id', 'invoice_id', 'payment_url'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Alias relationship for Filament many-to-many attach/detach actions.
+     */
+    public function events()
+    {
+        return $this->registeredEvents();
+    }
+
+    /**
+     * Get the events created/owned by this user.
+     */
+    public function ownedEvents()
+    {
+        return $this->hasMany(Event::class, 'author_id');
+    }
+
     protected static function boot()
     {
         parent::boot();

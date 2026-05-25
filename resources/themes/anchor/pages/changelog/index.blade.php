@@ -1,16 +1,15 @@
 <?php
-    use function Laravel\Folio\{name};
+    use Illuminate\View\View;
+    use function Laravel\Folio\{name, render};
+
     name('changelogs');
 
-    $logs = \Wave\Changelog::orderBy('created_at', 'desc')->paginate(10);
-
-    // use a dynamic layout based on whether or not the user is authenticated
-    $layout = ((auth()->guest()) ? 'layouts.marketing' : 'layouts.app');
+    render(function (View $view): View {
+        return $view->with('logs', \Wave\Changelog::orderBy('created_at', 'desc')->paginate(10));
+    });
 ?>
 
-<x-dynamic-component 
-	:component="$layout"
->
+<x-dynamic-component :component="auth()->guest() ? 'layouts.marketing' : 'layouts.app'">
 
     
     <x-app.container>

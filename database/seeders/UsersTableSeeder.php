@@ -14,10 +14,17 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        
-
+        \DB::table('social_provider_user')->delete();
+        \DB::table('user_addresses')->delete();
+        \DB::table('aspirasis')->delete();
+        \DB::table('orders')->delete();
+        \DB::table('carts')->delete();
+        \DB::table('events')->delete();
+        \DB::table('posts')->delete();
+        \DB::table('pages')->delete();
+        \DB::table('model_has_roles')->delete();
         \DB::table('users')->delete();
-        
+
         \DB::table('users')->insert(array (
             0 => 
             array (

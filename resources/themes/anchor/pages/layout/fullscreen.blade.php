@@ -1,9 +1,14 @@
-<x-layouts.app>
-	<div class="flex flex-col flex-1 items-stretch p-5 h-100">
-		<div class="flex flex-col flex-1 items-stretch mx-auto w-full h-100">
-			<div class="relative flex-1 w-full h-100">
-				<x-placeholder class="h-100" />
-			</div>
-		</div>
-	</div>
-</x-layouts.app>
+<?php
+use function Laravel\Folio\name;
+
+name('layout.fullscreen');
+?>
+
+<x-layouts.marketing>
+    <div class="flex min-h-screen items-center justify-center bg-white px-6">
+        <div class="max-w-md rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center shadow-sm">
+            <p class="text-lg font-semibold text-zinc-900">Fullscreen layout</p>
+            <p class="mt-2 text-sm text-zinc-600">Blank utility shell for pages that need a distraction-free canvas.</p>
+        </div>
+    </div>
+</x-layouts.marketing>

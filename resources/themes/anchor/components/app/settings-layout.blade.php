@@ -1,30 +1,23 @@
-<x-card class="flex flex-col w-full max-w-4xl mx-auto lg:my-10">
-    <div class="flex flex-wrap items-center justify-between pb-3 mt-5 border-b lg:mt-0 sm:mt-8 border-zinc-200 dark:border-zinc-800 sm:flex-no-wrap">
-        <div class="relative p-2">
-            <div class="space-y-0.5">
-                <h2 class="text-xl font-semibold tracking-tight dark:text-zinc-100">{{ $title ?? '' }}</h2>
-                <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $description ?? '' }}</p>
-            </div>
+<x-card class="mx-auto w-full max-w-5xl">
+    <div class="flex flex-col gap-4 border-b border-zinc-200/80 pb-5 dark:border-zinc-800 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-red-700 dark:text-blue-300">Settings</p>
+            <h2 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{{ $title ?? '' }}</h2>
+            <p class="max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">{{ $description ?? '' }}</p>
         </div>
     </div>
-    <div class="flex flex-col pt-5 lg:flex-row lg:space-x-8">
-        <aside class="flex-shrink-0 pb-8 lg:pt-4 lg:pb-0 lg:w-48">
-            <nav class="flex items-start justify-start lg:flex-col lg:space-y-1">
-                <div class="px-2.5 pb-1.5 text-xs lg:block hidden font-semibold leading-6 text-zinc-500">Settings</div>
-                <div class="flex items-center w-auto space-x-2 lg:items-stretch lg:flex-col lg:w-full lg:space-y-1 lg:space-x-0">
-                    <x-settings-sidebar-link :href="route('settings.profile')" icon="phosphor-user-circle-duotone">Profile</x-settings-sidebar-link>
-                    <x-settings-sidebar-link :href="route('settings.security')" icon="phosphor-lock-duotone">Security</x-settings-sidebar-link>
-                    {{-- <x-settings-sidebar-link :href="route('settings.api')" icon="phosphor-code-duotone">API Keys</x-settings-sidebar-link> --}}
-                </div>
-                {{-- <div class="px-2.5 pt-3.5 pb-1.5 text-xs lg:block hidden font-semibold leading-6 text-zinc-500">Billing</div>
-                <div class="flex items-center w-full ml-2 space-x-2 lg:items-stretch lg:flex-col lg:ml-0 lg:space-y-1 lg:space-x-0">
-                    <x-settings-sidebar-link :href="route('settings.subscription')" icon="phosphor-credit-card-duotone">Subscription</x-settings-sidebar-link>
-                    <x-settings-sidebar-link :href="route('settings.invoices')" icon="phosphor-invoice-duotone">Invoices</x-settings-sidebar-link>
-                </div> --}}
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
+        <aside class="rounded-3xl border border-zinc-200/80 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+            <nav class="space-y-1">
+                <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">Account</p>
+                <x-settings-sidebar-link :href="route('settings.profile')" icon="phosphor-user-circle-duotone">Profile</x-settings-sidebar-link>
+                <x-settings-sidebar-link :href="route('settings.security')" icon="phosphor-lock-duotone">Security</x-settings-sidebar-link>
+                {{-- <x-settings-sidebar-link :href="route('settings.api')" icon="phosphor-code-duotone">API Keys</x-settings-sidebar-link> --}}
             </nav>
         </aside>
 
-        <div class="py-3 lg:px-6 lg:w-full">
+        <div class="min-w-0">
             {{ $slot }}
         </div>
     </div>

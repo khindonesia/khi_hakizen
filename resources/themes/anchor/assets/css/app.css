@@ -3,87 +3,86 @@
 @tailwind components;
 @tailwind utilities;
 
-[x-cloak]{
-  display:none;
+[x-cloak] {
+  display: none;
 }
 
 svg {
-    width:100%;
-  }
-  .wave {
-    animation: wave 3s linear;
-    animation-iteration-count:infinite;
-    fill: #4e80ee;
+  width: 100%;
+}
+
+@layer base {
+  html {
+    @apply bg-zinc-50 text-zinc-900;
   }
 
-  #wave2 {
-    animation-duration:5s;
-    animation-direction: reverse;
-    opacity: .6
-  }
-  #wave3 {
-    animation-duration: 7s;
-    opacity:.3;
-  }
-  @keyframes drop {
-    0% {
-      transform: translateY(80%);
-      opacity:.6;
-    }
-    80% {
-      transform: translateY(80%);
-      opacity:.6;
-    }
-    90% {
-      transform: translateY(10%) ;
-      opacity:.6;
-    }
-    100% {
-      transform: translateY(0%) scale(1.5);
-      stroke-width:0.2;
-      opacity:0;
-    }
-  }
-  @keyframes wave {
-    to {transform: translateX(-100%);}
+  body {
+    font-family: 'Inter', sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(26, 115, 232, 0.12), transparent 28%),
+      radial-gradient(circle at top right, rgba(15, 23, 42, 0.05), transparent 24%),
+      linear-gradient(180deg, #ffffff 0%, #f8fafc 42%, #f3f4f6 100%);
+    @apply text-zinc-900 antialiased;
   }
 
-  .form-control{
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter Tight', 'Inter', sans-serif;
+    @apply tracking-tight text-zinc-900;
+  }
+
+  ::selection {
+    @apply bg-blue-200 text-red-950;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  .form-control {
     @apply w-full form-input;
   }
-
-/****** Form Input CLASSES **********/
-
-.form-input, .form-textarea, .form-select {
-    @apply px-3 py-2 text-base leading-normal transition duration-150 ease-in-out bg-white border rounded-md appearance-none border-zinc-400 focus:outline-none focus:ring focus:ring-opacity-30 focus:ring-blue-500 focus:border-blue-400;
 }
 
-.form-select{
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%239fa6b2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-position: right .5rem center;
-    background-size: 1.5em 1.5em;
-    padding:.5rem 2.5rem .5rem .75rem;
-    background-repeat: no-repeat;
+.form-input,
+.form-textarea,
+.form-select {
+  @apply rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm leading-normal text-zinc-900 shadow-sm transition duration-150 ease-in-out placeholder:text-zinc-400 focus:border-red-400 focus:ring-4 focus:ring-red-100;
 }
 
-.prose {
-  blockquote{
-    @apply py-3 border-l-4 bg-zinc-100 border-zinc-300;
-  }
+.form-select {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right .75rem center;
+  background-size: 1.25rem 1.25rem;
+  padding: .65rem 2.5rem .65rem .95rem;
+  background-repeat: no-repeat;
 }
 
-html, body{
-  p{
-    @apply text-gray-500 dark:text-gray-400;
-  }
+.prose blockquote {
+  @apply rounded-2xl border-l-4 border-red-300 bg-red-50/70 py-3 text-zinc-700;
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
 
-/* For IE, Edge and Firefox */
 .scrollbar-hidden {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.stitch-shell {
+  @apply rounded-[32px] border border-white/70 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl;
+}
+
+.stitch-panel {
+  @apply rounded-3xl border border-zinc-200/80 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.05)];
+}
+
+.stitch-chip {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-red-100 bg-red-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-700;
 }

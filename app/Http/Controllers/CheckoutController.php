@@ -2,101 +2,138 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
-    public function searchDestination(Request $request)
+    public function searchDestination(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'search' => 'required|string',
             'limit' => 'nullable|integer|min:1',
             'offset' => 'nullable|integer|min:0',
         ]);
-    
-        $search = $validated['search'];
-        $limit = $validated['limit'] ?? 5;
-        $offset = $validated['offset'] ?? 0;
-    
-        $url = 'https://rajaongkir.komerce.id/api/v1/destination/domestic-destination';
-        $apiKey = env('RAJAONGKIR_API_KEY');
-    
-        $response = Http::withHeader('key', $apiKey)
+
+        if (! $this->rajaOngkirApiKey()) {
+            return response()->json([
+                'error' => 'RajaOngkir API key belum dikonfigurasi.',
+                'message' => 'Set RAJAONGKIR_API_KEY di environment application.',
+            ], 500);
+        }
+
+        $response = Http::withHeaders($this->rajaOngkirHeaders())
             ->withQueryParameters([
-                'search' => $search,
-                'limit' => $limit,
-                'offset' => $offset,
+                'search' => $validated['search'],
+                'limit' => $validated['limit'] ?? 5,
+                'offset' => $validated['offset'] ?? 0,
             ])
-            ->get($url);
-    
-        // log response
-        Log::info('RajaOngkir API Response:', [
-            'url' => $url,
-            'headers' => ['key' => $apiKey],
+            ->get($this->rajaOngkirBaseUrl() . '/destination/domestic-destination');
+
+        Log::info('RajaOngkir destination lookup completed.', [
+            'url' => $this->rajaOngkirBaseUrl() . '/destination/domestic-destination',
             'params' => [
-                'search' => $search,
-                'limit' => $limit,
-                'offset' => $offset,
+                'search' => $validated['search'],
+                'limit' => $validated['limit'] ?? 5,
+                'offset' => $validated['offset'] ?? 0,
             ],
-            'response' => $response->json(),
+            'status' => $response->status(),
         ]);
-    
+
         if ($response->successful()) {
             return response()->json($response->json());
         }
-    
+
         return response()->json([
             'error' => 'Gagal mengambil data dari API RajaOngkir.',
             'message' => $response->body(),
         ], $response->status());
     }
 
-    public function getShippingCost(Request $request)
-{
-    $validated = $request->validate([
-        'courier' => 'required|string',
-        'origin' => 'required|integer',
-        'destination' => 'required|integer',
-        'weight' => 'required|integer|min:1',
-    ]);
+    public function getShippingCost(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'courier' => 'required|string',
+            'origin' => 'required|integer',
+            'destination' => 'required|integer',
+            'weight' => 'required|integer|min:1',
+        ]);
 
-    $url = 'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost';
-    $apiKey = env('RAJAONGKIR_API_KEY');
+        if (! $this->rajaOngkirApiKey()) {
+            return response()->json([
+                'error' => 'RajaOngkir API key belum dikonfigurasi.',
+                'message' => 'Set RAJAONGKIR_API_KEY di environment application.',
+            ], 500);
+        }
 
-    // Gunakan asForm() untuk mengirim data sebagai application/x-www-form-urlencoded
-    $response = Http::withHeaders([
-        'key' => $apiKey,
-        'Content-Type' => 'application/x-www-form-urlencoded'
-    ])->asForm()->post($url, [
-        'origin' => $validated['origin'],
-        'destination' => $validated['destination'],
-        'weight' => $validated['weight'],
-        'courier' => $validated['courier'],
-        'price' => 'lowest' 
-    ]);
+        $response = Http::withHeaders($this->rajaOngkirHeaders())
+            ->asForm()
+            ->post($this->rajaOngkirBaseUrl() . '/calculate/domestic-cost', [
+                'origin' => $validated['origin'],
+                'destination' => $validated['destination'],
+                'weight' => $validated['weight'],
+                'courier' => $validated['courier'],
+                'price' => $this->rajaOngkirPriceType(),
+            ]);
 
-    // Log response untuk debugging
-    Log::info('RajaOngkir Cost API Response:', [
-        'url' => $url,
-        'params' => [
-            'origin' => $validated['origin'],
-            'destination' => $validated['destination'],
-            'weight' => $validated['weight'],
-            'courier' => $validated['courier'],
-            'price' => 'lowest'
-        ],
-        'response' => $response->json(),
-    ]);
+        Log::info('RajaOngkir shipping cost lookup completed.', [
+            'url' => $this->rajaOngkirBaseUrl() . '/calculate/domestic-cost',
+            'params' => [
+                'origin' => $validated['origin'],
+                'destination' => $validated['destination'],
+                'weight' => $validated['weight'],
+                'courier' => $validated['courier'],
+                'price' => $this->rajaOngkirPriceType(),
+            ],
+            'status' => $response->status(),
+        ]);
 
-    if ($response->successful()) {
-        return response()->json($response->json());
+        if ($response->successful()) {
+            return response()->json($response->json());
+        }
+
+        return response()->json([
+            'error' => 'Gagal mengambil data dari API RajaOngkir.',
+            'message' => $response->body(),
+        ], $response->status());
     }
 
-    return response()->json([
-        'error' => 'Gagal mengambil data dari API RajaOngkir.',
-        'message' => $response->body(),
-    ], $response->status());
-}
+    private function rajaOngkirApiKey(): ?string
+    {
+        $apiKey = config('services.rajaongkir.api_key');
+
+        if (! is_string($apiKey) || $apiKey === '') {
+            return null;
+        }
+
+        return $apiKey;
+    }
+
+    private function rajaOngkirBaseUrl(): string
+    {
+        return rtrim((string) config('services.rajaongkir.base_url', 'https://rajaongkir.komerce.id/api/v1'), '/');
+    }
+
+    /**
+     * @return array{key: string}
+     */
+    private function rajaOngkirHeaders(): array
+    {
+        return [
+            'key' => $this->rajaOngkirApiKey() ?? '',
+        ];
+    }
+
+    private function rajaOngkirPriceType(): string
+    {
+        $priceType = config('services.rajaongkir.price_type', 'lowest');
+
+        if (! is_string($priceType) || $priceType === '') {
+            return 'lowest';
+        }
+
+        return $priceType;
+    }
 }

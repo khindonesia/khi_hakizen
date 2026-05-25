@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Variant;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,53 +30,61 @@ class CartController extends Controller
         $variantId = $request->variant_id;
         $quantity = $request->quantity;
 
-        $variant = Variant::findOrFail($variantId);
-
-        if ($variant->stock_quantity < $quantity) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Not enough stock available'
-            ], 422);
-        }
-
-        DB::beginTransaction();
         try {
-            $cart = Cart::firstOrCreate(
-                ['user_id' => $userId, 'status' => 'active'],
-                ['user_id' => $userId]
-            );
+            DB::transaction(function () use ($userId, $variantId, $quantity): void {
+                $variant = Variant::query()
+                    ->whereKey($variantId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            $cartItem = CartItem::where('cart_id', $cart->id)
-                ->where('variant_id', $variantId)
-                ->first();
-
-            if ($cartItem) {
-                if ($variant->stock_quantity < ($cartItem->quantity + $quantity)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Not enough stock available for the requested quantity'
-                    ], 422);
+                if ($variant->stock_quantity < $quantity) {
+                    throw new \RuntimeException('Not enough stock available', 422);
                 }
 
-                $cartItem->quantity += $quantity;
-                $cartItem->save();
-            } else {
+                $cart = Cart::firstOrCreate(
+                    ['user_id' => $userId, 'status' => 'active'],
+                    ['user_id' => $userId]
+                );
+
+                $cartItem = CartItem::query()
+                    ->where('cart_id', $cart->id)
+                    ->where('variant_id', $variantId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($cartItem) {
+                    if ($variant->stock_quantity < ($cartItem->quantity + $quantity)) {
+                        throw new \RuntimeException('Not enough stock available for the requested quantity', 422);
+                    }
+
+                    $cartItem->quantity += $quantity;
+                    $cartItem->save();
+
+                    return;
+                }
+
                 CartItem::create([
                     'cart_id' => $cart->id,
                     'variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $variant->price
                 ]);
-            }
-
-            DB::commit();
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Item added to cart successfully'
             ]);
+        } catch (\RuntimeException $exception) {
+            if ($exception->getCode() === 422) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            throw $exception;
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to add item to cart: ' . $e->getMessage()
@@ -97,18 +106,22 @@ class CartController extends Controller
                 ], 401);
             }
 
-            $cartItem = CartItem::findOrFail($cartItemId);
-            $variant = $cartItem->variant;
+            $cartItem = DB::transaction(function () use ($cartItemId, $request): CartItem {
+                $cartItem = $this->activeUserCartItem($cartItemId)->lockForUpdate()->firstOrFail();
+                $variant = Variant::query()
+                    ->whereKey($cartItem->variant_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            if ($variant->stock_quantity < $request->quantity) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Not enough stock available'
-                ], 422);
-            }
+                if ($variant->stock_quantity < $request->quantity) {
+                    throw new \RuntimeException('Not enough stock available', 422);
+                }
 
-            $cartItem->quantity = $request->quantity;
-            $cartItem->save();
+                $cartItem->quantity = $request->quantity;
+                $cartItem->save();
+
+                return $cartItem;
+            });
 
             // Call getCartTotalPrice() method
             $cartTotalPrice = $this->getCartTotalPrice();
@@ -121,6 +134,17 @@ class CartController extends Controller
                     'cartSubtotal' => $cartTotalPrice->getData()->totalPrice // Accessing the totalPrice from the response
                 ]
             ]);
+        } catch (ModelNotFoundException $exception) {
+            throw $exception;
+        } catch (\RuntimeException $exception) {
+            if ($exception->getCode() === 422) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            throw $exception;
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -140,7 +164,7 @@ class CartController extends Controller
                 ], 401);
             }
 
-            $cartItem = CartItem::findOrFail($cartItemId);
+            $cartItem = $this->activeUserCartItem($cartItemId)->firstOrFail();
             $cartItem->delete();
 
             $cartTotalPrice = $this->getCartTotalPrice();
@@ -152,6 +176,8 @@ class CartController extends Controller
                     'cartSubtotal' => $cartTotalPrice->getData()->totalPrice
                 ]
             ]);
+        } catch (ModelNotFoundException $exception) {
+            throw $exception;
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -184,17 +210,14 @@ class CartController extends Controller
                 ], 404);
             }
 
-            // Get all the cart items for the user's active cart
-            $cartItems = CartItem::where('cart_id', $cart->id)->get();
-
-            // Calculate the total price
-            $totalPrice = $cartItems->reduce(function ($carry, $item) {
-                return $carry + ($item->price * $item->quantity);
-            }, 0);
+            $totalPrice = CartItem::query()
+                ->where('cart_id', $cart->id)
+                ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
+                ->value('total');
 
             return response()->json([
                 'success' => true,
-                'totalPrice' => $totalPrice
+                'totalPrice' => (int) $totalPrice
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -202,5 +225,15 @@ class CartController extends Controller
                 'message' => 'Failed to get cart total price: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function activeUserCartItem(int|string $cartItemId)
+    {
+        return CartItem::query()
+            ->whereKey($cartItemId)
+            ->whereHas('cart', function ($query): void {
+                $query->where('user_id', Auth::id())
+                    ->where('status', 'active');
+            });
     }
 }

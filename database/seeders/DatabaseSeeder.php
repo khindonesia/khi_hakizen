@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Wave\Facades\Wave;
 
 class DatabaseSeeder extends Seeder
@@ -14,23 +15,35 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(RolesTableSeeder::class);
-        $this->call(UsersTableSeeder::class);
-        $this->call(ChangelogsTableSeeder::class);
-        $this->call(ApiKeysTableSeeder::class);
-        $this->call(CategoriesTableSeeder::class);
-        $this->call(NotificationsTableSeeder::class);
-        $this->call(PagesTableSeeder::class);
-        $this->call(PasswordResetsTableSeeder::class);
-        $this->call(PermissionsTableSeeder::class);
-        $this->call(PermissionRoleTableSeeder::class);
-        $this->call(ModelHasRolesTableSeeder::class);
-        $this->call(PlansTableSeeder::class);
-        $this->call(PostsTableSeeder::class);
-        $this->call(SettingsTableSeeder::class);
-        $this->call(ProfileKeyValuesTableSeeder::class);
-        $this->call(ThemesTableSeeder::class);
-        fixPostgresSequence();
+        Schema::disableForeignKeyConstraints();
+
+        try {
+            $this->call(RolesTableSeeder::class);
+            $this->call(UsersTableSeeder::class);
+            $this->call(ChangelogsTableSeeder::class);
+            $this->call(ApiKeysTableSeeder::class);
+            $this->call(CategoriesTableSeeder::class);
+            $this->call(NotificationsTableSeeder::class);
+            $this->call(PagesTableSeeder::class);
+            $this->call(PasswordResetsTableSeeder::class);
+            $this->call(PermissionsTableSeeder::class);
+            $this->call(PermissionRoleTableSeeder::class);
+            $this->call(ModelHasRolesTableSeeder::class);
+            $this->call(PlansTableSeeder::class);
+            $this->call(PostsTableSeeder::class);
+            $this->call(SettingsTableSeeder::class);
+            $this->call(ProfileKeyValuesTableSeeder::class);
+            $this->call(ThemesTableSeeder::class);
+            $this->call(MerchandiseSeeder::class);
+            $this->call(EventSeeder::class);
+            $this->call(AspirasiSeeder::class);
+            $this->call(EbookSeeder::class);
+            $this->call(OrganizationSeeder::class);
+            $this->call(HomePageContentSeeder::class);
+            fixPostgresSequence();
+        } finally {
+            Schema::enableForeignKeyConstraints();
+        }
     }
 }
 
@@ -53,4 +66,3 @@ if (!function_exists('fixPostgresSequence')) {
         }
     }
 }
-

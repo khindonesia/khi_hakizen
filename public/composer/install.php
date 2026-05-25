@@ -1,7 +1,7 @@
 <?php
 
 // Define the correct project root path directly
-$projectRoot = dirname(getcwd());
+$projectRoot = dirname(dirname(__DIR__));
 
 // Define the path to the autoload file
 $autoloadPath = $projectRoot . '/vendor/autoload.php';

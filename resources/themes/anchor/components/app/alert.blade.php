@@ -27,7 +27,7 @@
     {{ $attributes->class([
         'relative pl-5 pr-10 py-4 w-full rounded-md border',
         'bg-gray-100 dark:bg-zinc-700 dark:border-zinc-600 text-gray-900 dark:text-gray-300 border-gray-200 dark:border-zinc-800' => $type == 'gray',
-		'bg-blue-50 text-blue-600 border-blue-200' => $type == 'info',
+		'bg-red-50 text-red-600 border-red-200' => $type == 'info',
 		'bg-green-100 text-green-600 border-green-200' => $type == 'success',
 		'bg-yellow-50 text-yellow-600 border-yellow-200' => $type == 'warning',
 		'bg-red-50 text-red-600 border-red-200' => $type == 'danger'

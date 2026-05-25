@@ -18,15 +18,13 @@
         
         public Order $order;
         
-        public function mount($id)
-        {
-            $this->order = Order::findOrFail($id);
-            
-            // Pastikan user hanya bisa melihat pesanan mereka sendiri
-            if ($this->order->user_id !== auth()->id()) {
-                abort(403);
-            }
-        }
+	        public function mount($id)
+	        {
+	            $this->order = Order::query()
+                    ->with(['address', 'items.product'])
+                    ->where('user_id', auth()->id())
+                    ->findOrFail($id);
+	        }
         
         public function infolist(Infolist $infolist): Infolist
         {

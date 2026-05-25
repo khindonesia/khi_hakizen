@@ -1,39 +1,47 @@
 <?php
-use function Laravel\Folio\{name};
+use function Laravel\Folio\name;
+
 name('blog.post');
 ?>
 
-<x-layouts.marketing>
+@php
+    $coverImage = $post->image() ?: url('/og_image.png');
+    $categoryLabel = $post->category?->name ?? 'Historia News';
+    $authorName = $post->user?->name ?? 'Admin KHI';
+    $publishedText = Carbon\Carbon::parse($post->created_at)->format('d M Y');
+    $updatedText = Carbon\Carbon::parse($post->updated_at)->format('d M Y');
+    $summary = \Illuminate\Support\Str::limit(strip_tags($post->body), 180);
+@endphp
 
-    <article id="post-{{ $post->id }}"
-        class="max-w-4xl px-5 pb-20 mx-auto prose prose-md dark:prose-invert lg:prose-lg lg:px-0">
+<x-layouts.marketing :seo="[
+    'title' => $post->title . ' - Komunitas Historia Indonesia',
+    'description' => $summary,
+    'image' => $coverImage,
+    'type' => 'article',
+]">
+    @push('styles')
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+        </style>
+    @endpush
 
-        <x-elements.back-button class="max-w-4xl mx-auto mt-4 md:mt-8" text="back" :href="url($post->category->slug)" />
-
-        <meta property="name" content="{{ $post->title }}">
-        <meta property="author" typeof="Person" content="admin">
-        <meta property="dateModified" content="{{ Carbon\Carbon::parse($post->updated_at)->toIso8601String() }}">
-        <meta class="uk-margin-remove-adjacent" property="datePublished"
-            content="{{ Carbon\Carbon::parse($post->created_at)->toIso8601String() }}">
-
-        <div class="max-w-4xl mx-auto mt-6">
-
-            <h1 class="flex flex-col leading-none">
-                <span>{{ $post->title }}</span>
-                {{-- <span class="mt-0 sm:mt-10 text-base font-normal">Written on <time datetime="{{ Carbon\Carbon::parse($post->created_at)->toIso8601String() }}">{{ Carbon\Carbon::parse($post->created_at)->toFormattedDateString() }}</time>. Posted in <a href="{{ route('blog.category', $post->category->slug) }}" rel="category">{{ $post->category->name }}</a>.</span> --}}
-            </h1>
-
-        </div>
-
-        <div class="relative">
-            <img class="w-full h-auto rounded-lg" src="{{ $post->image() }}" alt="{{ $post->title }}"
-                srcset="{{ $post->image() }}">
-        </div>
-
-        <div class="max-w-4xl mx-auto">
-            {!! $post->body !!}
-        </div>
-
-    </article>
+    @include('theme::partials.blog.article-detail', [
+        'backHref' => url($post->category->slug),
+        'backText' => 'Back to ' . $post->category->name,
+        'categoryLabel' => $categoryLabel,
+        'title' => $post->title,
+        'coverImage' => $coverImage,
+        'authorName' => $authorName,
+        'publishedText' => $publishedText,
+        'updatedText' => $updatedText,
+        'body' => $post->body,
+        'summary' => $summary,
+        'sidebarTitle' => 'Article Details',
+        'sidebarDescription' => 'A quick overview of this Historia News article.',
+    ])
 
 </x-layouts.marketing>

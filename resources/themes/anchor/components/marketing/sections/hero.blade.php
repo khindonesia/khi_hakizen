@@ -1,6 +1,4 @@
-@php
-    $homePageContent = \App\Models\HomePageContent::first();
-@endphp
+@props(['homePageContent' => null])
 
 <section
     class="relative top-0 flex flex-col items-center justify-center w-full min-h-screen -mt-24 bg-white lg:min-h-screen">
@@ -11,17 +9,17 @@
             <h1
                 class="text-4xl font-bold tracking-tighter text-left sm:text-7xl md:text-6xl sm:text-center lg:text-left text-zinc-900 text-balance">
                 <span class="block origin-left lg:scale-90">
-                    {{ $homePageContent->hero_title }}
+                    {{ $homePageContent?->hero_title ?? 'Komunitas Historia Indonesia' }}
                 </span>
             </h1>
             <p
                 class="mx-auto mt-5 text-xl font-normal text-left sm:max-w-md lg:ml-0 lg:max-w-md sm:text-center lg:text-left text-zinc-500">
-                {{ $homePageContent->hero_subtitle }}
+                {{ $homePageContent?->hero_subtitle ?? 'Komunitas sejarah untuk belajar, berbagi, dan melestarikan warisan budaya Indonesia.' }}
             </p>
             <div
                 class="flex flex-col items-center justify-center gap-3 mx-auto mt-8 md:gap-2 lg:justify-start md:ml-0 md:flex-row">
                 <x-button :href="route('register')" tag="a" size="lg" class="w-full lg:w-auto">
-                    {{ $homePageContent->hero_button_text }}
+                    {{ $homePageContent?->hero_button_text ?? 'Bergabung Sekarang' }}
                 </x-button>
                 {{-- <x-button :href="route('store')" tag="a" wire:navigate size="lg" color="secondary" class="w-full lg:w-auto">Kunjungi Toko Kami</x-button> --}}
             </div>

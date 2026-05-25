@@ -23,9 +23,14 @@ Route::any('auth/setup', function () {
     abort(404); // Atau redirect atau response lainnya
 });
 
+Route::redirect('/store', '/merchandise', 301);
+Route::get('/store/{product_slug}', function (string $product_slug) {
+    return redirect("/merchandise/{$product_slug}", 301);
+});
+
 // Cart routes
-Route::middleware('auth')->group(function () {
-    Route::post('/cart', [CartController::class, 'addToCart']);
+Route::middleware(['auth', 'throttle:cart'])->group(function () {
+    Route::post('/cart', [CartController::class, 'addToCart'])->name('shopping-cart.add');
     Route::post('/getCartTotalPrice', [CartController::class, 'getCartTotalPrice']);
     Route::patch('/cart/items/{cartItemId}', [CartController::class, 'updateCartItem']);
     Route::delete('/cart/items/{cartItemId}', [CartController::class, 'deleteCartItem']);
@@ -33,21 +38,55 @@ Route::middleware('auth')->group(function () {
 
 
 Route::post('/api/checkout/create-invoice', [XenditController::class, 'createInvoice'])
+    ->middleware(['auth', 'throttle:checkout'])
     ->name('checkout.create-invoice');
+
+Route::post('/api/events/checkout/create-invoice', [XenditController::class, 'createEventInvoice'])
+    ->middleware(['auth', 'throttle:checkout'])
+    ->name('events.checkout.create-invoice');
 
 // Payment status routes
 Route::get('/payment/success/{order_id}', function ($orderId) {
     // Tampilkan pesan sukses sebentar, lalu redirect
-    return redirect()->route('orders.index')->with('success', 'Pembayaran berhasil untuk Order #' . $orderId);
+    return redirect('/orders')->with('success', 'Pembayaran berhasil untuk Order #' . $orderId);
 })->name('payment.success');
 
 Route::get('/payment/failed/{order_id}', function ($orderId) {
     return view('payment.failed', ['orderId' => $orderId]);
 })->name('payment.failed');
 
-Route::get('/orders/{order}/print-invoice', [App\Http\Controllers\OrderInvoiceController::class, 'printInvoice'])->name('orders.print-invoice');
+Route::get('/orders/{order}/print-invoice', [App\Http\Controllers\OrderInvoiceController::class, 'printInvoice'])
+    ->middleware('auth')
+    ->name('orders.print-invoice');
+
+Route::get('/dashboard/events/{event}/ticket', [App\Http\Controllers\EventTicketController::class, 'showTicket'])
+    ->middleware('auth')
+    ->name('dashboard.events.ticket');
 
 
 // Xendit webhook callback
 Route::post('/api/xendit/callback', [XenditController::class, 'handleCallback'])
     ->name('xendit.callback');
+
+// Explicitly override DevDojo Auth Folio routes to load them within KHI's marketing theme (with navigation and footer)
+Route::middleware(['web', 'guest', 'throttle:login'])->group(function () {
+    Route::get('auth/login', function () {
+        return view('theme::pages.auth.login');
+    })->name('login');
+
+    Route::get('auth/password/reset', function () {
+        return view('theme::pages.auth.password.reset');
+    })->name('auth.password.request');
+
+    Route::get('auth/password/{token}', function (string $token) {
+        return view('theme::pages.auth.password.[token]', compact('token'));
+    })->name('password.reset');
+
+    Route::get('auth/register', function () {
+        return redirect('/join');
+    })->name('register');
+
+    Route::get('auth/register-devdojo', function () {
+        return redirect('/join');
+    })->name('auth.register');
+});

@@ -1,329 +1,313 @@
 <?php
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
+
+use App\Actions\UpdateUserAddressAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 use Livewire\Volt\Component;
 use function Laravel\Folio\{middleware, name};
-use App\Models\UserAddress;
 
 middleware('auth');
 name('user-addresses.edit');
 
-new class extends Component implements HasForms {
+new class extends Component implements HasForms
+{
     use InteractsWithForms;
 
     public ?array $data = [];
-    public $provinces = [];
-    public $cities = [];
-    public $districts = [];
-    public $villages = [];
-    public $postalCode = null;
+    public array $provinces = [];
+    public array $cities = [];
+    public array $districts = [];
+    public array $subdistricts = [];
+    public int|string|null $addressId = null;
+    public bool $isPrimary = false;
+    public bool $locationResolved = true;
 
-    // Menggunakan properti terpisah untuk ID dan model
-    public $addressId;
-    public $addressModel;
-    public $isPrimary = false;
-
-    public function mount($address): void
+    protected function action(): UpdateUserAddressAction
     {
-        // Set address ID
+        return app(UpdateUserAddressAction::class);
+    }
+
+    public function mount(string $address): void
+    {
         $this->addressId = $address;
+        $initialState = $this->action()->initialState(auth()->user(), $address);
 
-        // Find the address by ID
-        $addressModel = UserAddress::findOrFail($address);
-
-        // Ensure the user can only edit their own addresses
-        if ($addressModel->user_id !== auth()->id()) {
-            $this->redirect('/user-addresses');
-            return;
-        }
-
-        // Load provinces
-        $this->provinces = \Indonesia::allProvinces();
-
-        // Simpan state yang diperlukan
-        $this->addressModel = $addressModel;
-        $this->isPrimary = $addressModel->is_primary;
-
-        // Get province_id, city_id, district_id, and village_id based on names
-        $province = $this->provinces->where('name', $addressModel->state)->first();
-
-        if ($province) {
-            $province_id = $province->id;
-            $this->cities = \Indonesia::findProvince($province_id, ['cities'])->cities;
-
-            $city = $this->cities->where('name', $addressModel->city)->first();
-            if ($city) {
-                $city_id = $city->id;
-                $this->districts = \Indonesia::findCity($city_id, ['districts'])->districts;
-
-                // Find district by name
-                $district = $this->districts->where('name', $addressModel->district)->first();
-                if ($district) {
-                    $district_id = $district->id;
-                    $this->villages = \Indonesia::findDistrict($district_id, ['villages'])->villages;
-
-                    // Find village by name
-                    $village = $this->villages->where('name', $addressModel->village)->first();
-                    $village_id = $village ? $village->id : null;
-
-                    // Initialize data array with found IDs
-                    $this->form->fill([
-                        'address_line' => $addressModel->address_line,
-                        'address_type' => $addressModel->address_type,
-                        'phone_number' => $addressModel->phone_number,
-                        'postal_code' => $addressModel->postal_code,
-                        'is_primary' => $addressModel->is_primary,
-                        'province_id' => $province_id,
-                        'city_id' => $city_id,
-                        'district_id' => $district_id,
-                        'village_id' => $village_id,
-                    ]);
-
-                    $this->postalCode = $addressModel->postal_code;
-                    return;
-                }
-            }
-        }
-
-        // Fallback if we can't find matching location IDs
-        $this->form->fill($addressModel->toArray());
-    }
-    public function updatedDataProvinceId($value)
-    {
-        $this->cities = \Indonesia::findProvince($value, ['cities'])->cities;
-        $this->data['city_id'] = null;
-        $this->data['district_id'] = null;
-        $this->data['village_id'] = null;
-        $this->districts = [];
-        $this->villages = [];
-        $this->postalCode = null;
-    }
-
-    public function updatedDataCityId($value)
-    {
-        $this->districts = \Indonesia::findCity($value, ['districts'])->districts;
-        $this->data['district_id'] = null;
-        $this->data['village_id'] = null;
-        $this->villages = [];
-        $this->postalCode = null;
-    }
-
-    public function updatedDataDistrictId($value)
-    {
-        $this->villages = \Indonesia::findDistrict($value, ['villages'])->villages;
-        $this->data['village_id'] = null;
-        $this->postalCode = null;
-    }
-
-    public function updatedDataVillageId($value)
-    {
-        if ($value) {
-            $village = \Indonesia::findVillage($value);
-
-            // Periksa tipe data meta dan sesuaikan
-            $meta = $village->meta;
-
-            // Jika meta berbentuk string JSON, decode terlebih dahulu
-            if (is_string($meta) && !empty($meta)) {
-                $meta = json_decode($meta, true);
-            }
-
-            // Jika meta sudah berbentuk array, gunakan langsung
-            if (is_array($meta) && isset($meta['pos']) && $meta['pos'] !== 'NULL') {
-                $this->postalCode = $meta['pos'];
-                $this->data['postal_code'] = $this->postalCode;
-            } else {
-                // Jika tidak ada pos di meta, tetap gunakan postal_code yang ada
-                $this->postalCode = $this->data['postal_code'] ?? null;
-            }
-        } else {
-            $this->postalCode = $this->data['postal_code'] ?? null;
-        }
+        $this->isPrimary = $initialState['is_primary'];
+        $this->locationResolved = $initialState['location_resolved'];
+        $this->provinces = $initialState['provinces'];
+        $this->cities = $initialState['cities'];
+        $this->districts = $initialState['districts'];
+        $this->subdistricts = $initialState['subdistricts'];
+        $this->form->fill($initialState['form']);
     }
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Edit Address')
-                    ->description('Update your address information')
+                Section::make('Edit address')
+                    ->description('Update RajaOngkir region data, phone number, and the address line itself.')
                     ->schema([
-                        Grid::make()
-                            ->columns(2)
+                        Grid::make(2)
                             ->schema([
-                                TextInput::make('address_line')->label('Address Line')->required()->maxLength(255)->placeholder('e.g. Jl. Sudirman No. 123'),
-
+                                TextInput::make('address_line')
+                                    ->label('Street address')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('Jl. Sudirman No. 123')
+                                    ->columnSpanFull(),
+                                Hidden::make('province_name'),
+                                Hidden::make('city_name'),
+                                Hidden::make('district_name'),
+                                Hidden::make('subdistrict_name'),
                                 Select::make('address_type')
-                                    ->label('Address Type')
+                                    ->label('Address type')
                                     ->options([
                                         'Home' => 'Home',
                                         'Office' => 'Office',
                                         'Other' => 'Other',
                                     ])
                                     ->required(),
-
                                 Select::make('province_id')
                                     ->label('Province')
-                                    ->options(function () {
-                                        return $this->provinces->pluck('name', 'id')->toArray();
-                                    })
+                                    ->options(fn (): array => collect($this->provinces)->pluck('name', 'code')->all())
                                     ->searchable()
                                     ->reactive()
                                     ->required()
-                                    ->placeholder('Search province')
-                                    ->afterStateUpdated(fn(callable $set) => $set('city_id', null)),
-
+                                    ->placeholder('Select province')
+                                    ->afterStateUpdated(function (Set $set, Get $get): void {
+                                        $province = collect($this->provinces)->firstWhere('code', $get('province_id'));
+                                        $set('province_name', data_get($province, 'name'));
+                                        $set('city_id', null);
+                                        $set('city_name', null);
+                                        $set('district_id', null);
+                                        $set('district_name', null);
+                                        $set('subdistrict_id', null);
+                                        $set('subdistrict_name', null);
+                                    }),
                                 Select::make('city_id')
-                                    ->label('City')
-                                    ->options(function () {
-                                        return collect($this->cities)->pluck('name', 'id')->toArray();
-                                    })
+                                    ->label('City / Regency')
+                                    ->options(fn (Get $get): array => filled($get('province_id'))
+                                        ? collect($this->cities)->pluck('name', 'code')->all()
+                                        : [])
                                     ->searchable()
                                     ->reactive()
                                     ->required()
-                                    ->placeholder('Search city')
-                                    ->disabled(fn(callable $get) => !$get('province_id'))
-                                    ->afterStateUpdated(fn(callable $set) => $set('district_id', null)),
-
+                                    ->placeholder('Select city or regency')
+                                    ->disabled(fn (Get $get): bool => blank($get('province_id')))
+                                    ->afterStateUpdated(function (Set $set, Get $get): void {
+                                        $city = collect($this->cities)->firstWhere('code', $get('city_id'));
+                                        $set('city_name', data_get($city, 'name'));
+                                        $set('district_id', null);
+                                        $set('district_name', null);
+                                        $set('subdistrict_id', null);
+                                        $set('subdistrict_name', null);
+                                    }),
                                 Select::make('district_id')
-                                    ->label('District')
-                                    ->options(function () {
-                                        return collect($this->districts)->pluck('name', 'id')->toArray();
-                                    })
+                                    ->label('District / Kecamatan')
+                                    ->options(fn (Get $get): array => filled($get('city_id'))
+                                        ? collect($this->districts)->pluck('name', 'code')->all()
+                                        : [])
                                     ->searchable()
                                     ->reactive()
                                     ->required()
-                                    ->placeholder('Search district')
-                                    ->disabled(fn(callable $get) => !$get('city_id'))
-                                    ->afterStateUpdated(fn(callable $set) => $set('village_id', null)),
-
-                                Select::make('village_id')
-                                    ->label('Village')
-                                    ->options(function () {
-                                        return collect($this->villages)->pluck('name', 'id')->toArray();
-                                    })
+                                    ->placeholder('Select district')
+                                    ->disabled(fn (Get $get): bool => blank($get('city_id')))
+                                    ->afterStateUpdated(function (Set $set, Get $get): void {
+                                        $district = collect($this->districts)->firstWhere('code', $get('district_id'));
+                                        $set('district_name', data_get($district, 'name'));
+                                        $set('subdistrict_id', null);
+                                        $set('subdistrict_name', null);
+                                    }),
+                                Select::make('subdistrict_id')
+                                    ->label('Subdistrict / Kelurahan')
+                                    ->options(fn (Get $get): array => filled($get('district_id'))
+                                        ? collect($this->subdistricts)->pluck('name', 'code')->all()
+                                        : [])
                                     ->searchable()
                                     ->reactive()
                                     ->required()
-                                    ->placeholder('Search village')
-                                    ->disabled(fn(callable $get) => !$get('district_id')),
-
-                                TextInput::make('postal_code')->label('Postal Code')->required()->maxLength(20)->default(fn() => $this->postalCode)->helperText('Will be auto-filled based on village selection when available'),
-                                
-                                TextInput::make('phone_number')->label('Phone Number')->tel()->required()->maxLength(20)->placeholder('+62812XXXXXXXX'),
-
-                                Toggle::make('is_primary')->label('Set as Primary Address')->helperText('This address will be used as your default shipping and billing address')->onColor('success')->offColor('danger')->inline(false)->disabled(fn() => $this->isPrimary),
+                                    ->placeholder('Select subdistrict')
+                                    ->disabled(fn (Get $get): bool => blank($get('district_id'))),
+                                TextInput::make('postal_code')
+                                    ->label('Postal code')
+                                    ->required()
+                                    ->maxLength(20)
+                                    ->placeholder('12630'),
+                                TextInput::make('phone_number')
+                                    ->label('Phone number')
+                                    ->tel()
+                                    ->required()
+                                    ->maxLength(20)
+                                    ->placeholder('+62812XXXXXXXX'),
+                                Toggle::make('is_primary')
+                                    ->label('Set as primary address')
+                                    ->helperText('Primary address is used by default during checkout.')
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->inline(false)
+                                    ->disabled(fn (): bool => $this->isPrimary)
+                                    ->columnSpanFull(),
                             ]),
                     ]),
             ])
             ->statePath('data');
     }
 
-    public function update(): void
+    public function update(): ?RedirectResponse
     {
-        // Validasi form
-        $data = $this->form->getState();
-
-        // Ensure is_primary is set, default to false if not present
-        $data['is_primary'] = $data['is_primary'] ?? false;
+        $state = $this->form->getState();
 
         try {
-            // Get address model from DB again to avoid stale data
-            $address = UserAddress::findOrFail($this->addressId);
+            $this->action()->update(auth()->user(), $this->addressId, $state);
 
-            // Mendapatkan nama lokasi dari ID
-            $province = \Indonesia::findProvince($data['province_id']);
-            $city = \Indonesia::findCity($data['city_id']);
-            $district = \Indonesia::findDistrict($data['district_id']);
-            $village = \Indonesia::findVillage($data['village_id']);
+            Notification::make()
+                ->success()
+                ->title('Address updated')
+                ->body('Your address changes have been saved.')
+                ->send();
 
-            // Menyusun alamat lengkap
-            $data['state'] = $province->name;
-            $data['city'] = $city->name;
-            $data['country'] = 'Indonesia'; // Tetap menyimpan sebagai Indonesia di database
-            $data['district'] = $district->name; // Add this line
-            $data['village'] = $village->name; // Add this line
+            return redirect('/user-addresses');
+        } catch (\Throwable $throwable) {
+            Log::error('Unable to update user address', [
+                'address_id' => $this->addressId,
+                'user_id' => auth()->id(),
+                'message' => $throwable->getMessage(),
+            ]);
 
-            // Format alamat lengkap
-            $fullAddress = $data['address_line'] . ', ' . $village->name . ', ' . $district->name . ', ' . $city->name . ', ' . $province->name . ' ' . $data['postal_code'];
+            Notification::make()
+                ->danger()
+                ->title('Unable to update address')
+                ->body('RajaOngkir data could not be resolved. Please re-select the region fields.')
+                ->send();
 
-            $data['full_address'] = $fullAddress;
-
-            // Update alamat
-            $address->update($data);
-
-            // Atur sebagai alamat utama jika diperlukan
-            if ($data['is_primary'] && !$address->is_primary) {
-                $address->setPrimary();
-            }
-
-            // Kirim notifikasi
-            Notification::make()->success()->title('Address updated successfully')->body('Your address has been updated')->send();
-
-            // Redirect ke halaman utama
-            $this->redirect('/user-addresses');
-        } catch (\Exception $e) {
-            // Tangkap error
-            Notification::make()->danger()->title('Error updating address')->body($e->getMessage())->send();
+            return null;
         }
+    }
+
+    public function updatedDataProvinceId(?string $value): void
+    {
+        $this->cities = $this->action()->cities($value);
+        $this->districts = [];
+        $this->subdistricts = [];
+    }
+
+    public function updatedDataCityId(?string $value): void
+    {
+        $this->districts = $this->action()->districts($value);
+        $this->subdistricts = [];
+    }
+
+    public function updatedDataDistrictId(?string $value): void
+    {
+        $this->subdistricts = $this->action()->subdistricts($value);
     }
 };
 ?>
 
 <x-layouts.app>
     @volt('user-addresses.edit')
-        <x-app.container class="max-w-3xl">
-            <div class="flex items-center justify-between mb-5">
-                <x-app.heading title="Edit Address" description="Update your address information" :border="false" />
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <form wire:submit.prevent="update" class="space-y-6 p-6">
-                    {{ $this->form }}
-
-                    <div class="flex justify-end gap-x-3 pt-4 border-t">
-                        <x-button tag="a" href="/user-addresses" color="secondary">
-                            Cancel
-                        </x-button>
-                        <x-button type="submit" class="text-white bg-primary-600 hover:bg-primary-500">
-                            <span class="flex items-center gap-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Update Address
-                            </span>
-                        </x-button>
+        <div class="relative overflow-hidden">
+            <div class="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-blue-50/90 via-blue-50/40 to-transparent"></div>
+            <x-app.container class="relative py-8 sm:py-10 lg:py-12">
+                <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div class="max-w-3xl">
+                        <div class="stitch-chip mb-3 inline-flex">Addresses</div>
+                        <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 md:text-[40px]">
+                            Edit address
+                        </h1>
+                        <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 md:text-base">
+                            Keep your delivery address fresh and aligned with RajaOngkir data.
+                        </p>
                     </div>
-                </form>
-            </div>
 
-            @if ($isPrimary)
-                <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
-                    <div class="flex items-start gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mt-0.5" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <div>
-                            <p class="font-medium">This is your primary address</p>
-                            <p class="mt-1">This address is currently set as your primary address and will be used as the
-                                default for shipping and billing.</p>
+                    <x-button tag="a" href="/user-addresses" color="secondary" class="inline-flex items-center gap-2 self-start">
+                        Back to addresses
+                    </x-button>
+                </div>
+
+                @if (! $locationResolved)
+                    <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+                        This address was loaded from older location names. Please re-select province, city, district, and subdistrict before saving.
+                    </div>
+                @endif
+
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                    <div class="lg:col-span-8">
+                        <div class="stitch-panel p-6 md:p-8">
+                            <div class="mb-6 flex flex-col gap-3 border-b border-zinc-200/70 pb-5 md:flex-row md:items-start md:justify-between">
+                                <div>
+                                    <h2 class="text-xl font-semibold text-zinc-900">Address form</h2>
+                                    <p class="mt-1 text-sm leading-6 text-zinc-500">
+                                        Update the hierarchy from the province down to the subdistrict, then save your changes.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <form wire:submit.prevent="update" class="space-y-6">
+                                {{ $this->form }}
+
+                                <div class="flex flex-col-reverse gap-3 border-t border-zinc-200/70 pt-4 sm:flex-row sm:justify-end">
+                                    <x-button tag="a" href="/user-addresses" color="secondary">
+                                        Cancel
+                                    </x-button>
+                                    <x-button type="submit" class="bg-red-600 text-white hover:bg-red-500">
+                                        Update address
+                                    </x-button>
+                                </div>
+                            </form>
                         </div>
                     </div>
+
+                    <aside class="lg:col-span-4 space-y-6">
+                        @if ($isPrimary)
+                            <div class="stitch-panel border-amber-200 bg-amber-50 p-6">
+                                <div class="flex items-start gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-amber-900">Primary address</h3>
+                                        <p class="mt-1 text-sm leading-6 text-amber-800">
+                                            This address is marked as your default checkout address.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="stitch-panel p-6">
+                            <h3 class="text-base font-semibold text-zinc-900">Editing tips</h3>
+                            <ol class="mt-4 space-y-4 text-sm leading-6 text-zinc-600">
+                                <li class="flex gap-3">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700">1</span>
+                                    <span>Change province first if the whole region moved.</span>
+                                </li>
+                                <li class="flex gap-3">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700">2</span>
+                                    <span>Each downstream field reloads from RajaOngkir once its parent changes.</span>
+                                </li>
+                                <li class="flex gap-3">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700">3</span>
+                                    <span>Save after checking phone number and postal code.</span>
+                                </li>
+                            </ol>
+                        </div>
+                    </aside>
                 </div>
-            @endif
-        </x-app.container>
+            </x-app.container>
+        </div>
     @endvolt
 </x-layouts.app>

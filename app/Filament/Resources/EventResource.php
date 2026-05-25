@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EventResource\Pages;
+use App\Filament\Resources\EventResource\RelationManagers;
 use App\Models\Event;
 use App\Models\User;
 use Filament\Forms;
@@ -11,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Set;
+use Filament\Forms\Get;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -19,7 +21,7 @@ class EventResource extends Resource
     protected static ?string $model = Event::class;
 
     protected static ?string $navigationIcon = 'phosphor-calendar-duotone';
-    protected static ?string $navigationGroup = 'Content Management';
+    protected static ?string $navigationGroup = 'Event Management';
 
     protected static ?int $navigationSort = 4;
 
@@ -41,6 +43,9 @@ class EventResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\FileUpload::make('image')
                     ->image(),
+                Forms\Components\TextInput::make('location')
+                    ->maxLength(191)
+                    ->placeholder('Kota Tua Jakarta, Indonesia'),
                 Forms\Components\DateTimePicker::make('start_datetime')
                     ->required()
                     ->label('Start Date & Time'),
@@ -66,6 +71,20 @@ class EventResource extends Resource
                         'PUBLISHED' => 'Published',
                         'PENDING' => 'Pending',
                     ]),
+                Forms\Components\Select::make('type')
+                    ->required()
+                    ->options([
+                        'FREE' => 'Gratis',
+                        'PAID' => 'Berbayar',
+                    ])
+                    ->default('FREE')
+                    ->live(),
+                Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->placeholder('0')
+                    ->visible(fn (Get $get): bool => $get('type') === 'PAID')
+                    ->required(fn (Get $get): bool => $get('type') === 'PAID'),
             ]);
     }
 
@@ -76,10 +95,25 @@ class EventResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
+                Tables\Columns\TextColumn::make('author.name')
                     ->label('Author')
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\TextColumn::make('location')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'PAID' => 'warning',
+                        'FREE' => 'success',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->money('IDR')
+                    ->sortable()
+                    ->placeholder('Free'),
                 Tables\Columns\TextColumn::make('start_datetime')
                     ->dateTime()
                     ->sortable(),
@@ -109,6 +143,11 @@ class EventResource extends Resource
                         'PUBLISHED' => 'Published',
                         'PENDING' => 'Pending',
                     ]),
+                Tables\Filters\SelectFilter::make('type')
+                    ->options([
+                        'FREE' => 'Gratis',
+                        'PAID' => 'Berbayar',
+                    ]),
                 Tables\Filters\Filter::make('upcoming')
                     ->query(fn(Builder $query): Builder => $query->where('start_datetime', '>=', now())),
                 Tables\Filters\Filter::make('past')
@@ -130,7 +169,8 @@ class EventResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\EventOrdersRelationManager::class,
+            RelationManagers\EventAttendanceRelationManager::class,
         ];
     }
 

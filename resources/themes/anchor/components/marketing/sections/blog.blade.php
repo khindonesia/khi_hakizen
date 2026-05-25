@@ -6,7 +6,7 @@ $posts = \Wave\Post::orderBy('created_at', 'DESC')->whereHas('category', functio
 
 <x-container>
     <div class="relative pt-12">
-        <x-marketing.elements.heading title="Historia News" description="Check out some of our latest blog posts below."
+        <x-marketing.elements.heading title="Historialita" description="Curated articles, notes, and updates from Komunitas Historia Indonesia."
             align="left" />
 
         <div class="grid gap-5 mx-auto mt-5 md:mt-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -15,7 +15,7 @@ $posts = \Wave\Post::orderBy('created_at', 'DESC')->whereHas('category', functio
     </div>
 
     <div class="flex justify-center my-10">
-        <x-filament::link wire:navigate :href="url('historia-news')">Lihat selengkapnya</x-filament::link>
+        <x-filament::link wire:navigate :href="route('historia-news')">Lihat selengkapnya</x-filament::link>
     </div>
 
 </x-container>
