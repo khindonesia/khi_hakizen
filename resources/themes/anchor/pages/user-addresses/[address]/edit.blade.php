@@ -166,7 +166,7 @@ new class extends Component implements HasForms
             ->statePath('data');
     }
 
-    public function update(): ?RedirectResponse
+    public function update(): void
     {
         $state = $this->form->getState();
 
@@ -179,7 +179,7 @@ new class extends Component implements HasForms
                 ->body('Your address changes have been saved.')
                 ->send();
 
-            return redirect('/user-addresses');
+            $this->redirect('/user-addresses');
         } catch (\Throwable $throwable) {
             Log::error('Unable to update user address', [
                 'address_id' => $this->addressId,
@@ -192,8 +192,6 @@ new class extends Component implements HasForms
                 ->title('Unable to update address')
                 ->body('RajaOngkir data could not be resolved. Please re-select the region fields.')
                 ->send();
-
-            return null;
         }
     }
 

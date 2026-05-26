@@ -69,9 +69,10 @@ None yet.
 | Slug | Date | Status | Description |
 |------|------|--------|-------------|
 | change-join-success-to-admin-verification | 2026-05-26 | complete ✓ | Show waiting for admin verification screen after member register/join |
+| fix-user-address-save-redirect-type-error | 2026-05-26 | complete ✓ | Fix TypeError when saving/updating user address in Volt components |
 
 ## Session Continuity
 
-Last session: 2026-05-26 20:34
-Stopped at: Completed changing join success state to waiting for admin verification state.
+Last session: 2026-05-26 20:56
+Stopped at: Fixed TypeError when saving/updating user address in Volt components.
 Resume file: None

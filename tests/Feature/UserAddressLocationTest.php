@@ -116,7 +116,8 @@ it('stores a user address using RajaOngkir hierarchy', function (): void {
         ->set('data.phone_number', '08123456789')
         ->set('data.is_primary', true)
         ->call('create')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertRedirect('/user-addresses');
 
     expect(UserAddress::query()->count())->toBe(1);
 
@@ -165,7 +166,8 @@ it('hydrates edit form state from RajaOngkir data and saves updates', function (
         ->set('data.subdistrict_name', 'TANJUNG BARAT')
         ->set('data.postal_code', '12530')
         ->call('update')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertRedirect('/user-addresses');
 
     $address->refresh();
 

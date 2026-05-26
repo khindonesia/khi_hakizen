@@ -156,7 +156,7 @@ new class extends Component implements HasForms
             ->statePath('data');
     }
 
-    public function create(): ?RedirectResponse
+    public function create(): void
     {
         $state = $this->form->getState();
 
@@ -169,7 +169,7 @@ new class extends Component implements HasForms
                 ->body('Your new address has been added.')
                 ->send();
 
-            return redirect('/user-addresses');
+            $this->redirect('/user-addresses');
         } catch (\Throwable $throwable) {
             Log::error('Unable to save user address', [
                 'user_id' => auth()->id(),
@@ -181,8 +181,6 @@ new class extends Component implements HasForms
                 ->title('Unable to save address')
                 ->body('RajaOngkir data could not be resolved. Please try again.')
                 ->send();
-
-            return null;
         }
     }
 
