@@ -43,19 +43,16 @@ new class extends Component {
             'email' => $this->email,
             'password' => Hash::make($this->password),
             'reason_for_joining' => $this->interest,
-            'verified' => 1,
+            'verified' => 0,
         ]);
-
-        // Auto log in the user
-        Auth::login($user);
 
         $this->registeredUser = $user;
         $this->isRegistered = true;
 
         Notification::make()
             ->success()
-            ->title('Selamat Bergabung!')
-            ->body('Anda resmi menjadi bagian dari Komunitas Historia Indonesia.')
+            ->title('Pendaftaran Berhasil!')
+            ->body('Akun Anda sedang menunggu verifikasi oleh admin Komunitas Historia Indonesia.')
             ->send();
     }
 };
@@ -217,65 +214,59 @@ new class extends Component {
 
                     </div>
                 @else
-                    <!-- Success State: FLOATING MEMBER PASS (Stitch Visual Confirmation spec) -->
-                    <div class="mx-auto max-w-xl space-y-8 overflow-hidden rounded-[32px] border border-zinc-200/80 bg-white p-8 text-center shadow-2xl md:p-12">
-                        <!-- Holographic-like light header -->
-                        <div class="absolute left-0 right-0 top-0 h-2 bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500"></div>
+                    <!-- Success State: Waiting for Admin Verification -->
+                    <div class="relative mx-auto max-w-xl space-y-8 overflow-hidden rounded-[32px] border border-zinc-200/80 bg-white p-8 text-center shadow-2xl md:p-12">
+                        <!-- Red-amber gradient header indicator -->
+                        <div class="absolute left-0 right-0 top-0 h-2 bg-gradient-to-r from-red-500 via-amber-500 to-orange-500"></div>
                         
-                        <div class="space-y-2">
-                            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-700">
-                                <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                        <div class="space-y-3">
+                            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-600 animate-pulse">
+                                <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">hourglass_top</span>
                             </div>
-                            <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">Pendaftaran Selesai!</h2>
-                            <p class="text-xs text-zinc-500">Selamat Datang, Keeper of History.</p>
+                            <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">Pendaftaran Berhasil!</h2>
+                            <p class="text-xs text-zinc-500">Terima Kasih, Keeper of History.</p>
                         </div>
 
-                        <!-- Admission Member Pass Card Graphic -->
+                        <!-- Verification Status Details -->
                         <div class="border border-[#E9E9E8] rounded-2xl bg-[#FFFDF5] p-6 text-left relative space-y-6">
-                            <!-- Ticket Notch circles left/right -->
-                            <div class="absolute left-0 top-1/2 w-4 h-8 bg-[#fffafb] border-r border-[#E9E9E8] rounded-r-full -translate-y-1/2 -ml-2.5"></div>
-                            <div class="absolute right-0 top-1/2 w-4 h-8 bg-[#fffafb] border-l border-[#E9E9E8] rounded-l-full -translate-y-1/2 -mr-2.5"></div>
-
-                            <!-- Header -->
+                            <!-- Status Header -->
                             <div class="flex justify-between items-center border-b border-dashed border-[#E9E9E8] pb-4">
-                                <span class="text-[11px] font-bold text-[#E06D3B] uppercase tracking-wider">ADMIT ONE • KHI MEMBER</span>
-                                <span class="text-[10px] text-[#979A9B]">ID: #KHI-{{ str_pad($registeredUser?->id ?? '0', 5, '0', STR_PAD_LEFT) }}</span>
+                                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">KHI MEMBERSHIP STATUS</span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                                    Menunggu Verifikasi
+                                </span>
                             </div>
 
-                            <!-- Details -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <!-- Context Message -->
+                            <div class="space-y-3 text-xs leading-relaxed text-zinc-600">
+                                <p>
+                                    Halo <strong class="text-zinc-900">{{ $registeredUser?->name }}</strong>, akun Anda telah berhasil didaftarkan dan saat ini sedang berada dalam antrean peninjauan oleh Admin Komunitas Historia Indonesia (KHI).
+                                </p>
+                                <p>
+                                    Tim kami akan memverifikasi kelayakan data keanggotaan Anda. Proses ini biasanya memakan waktu maksimal 24 jam. Anda akan menerima email pemberitahuan segera setelah akun Anda disetujui.
+                                </p>
+                            </div>
+
+                            <!-- User Info Summary -->
+                            <div class="grid grid-cols-2 gap-4 border-t border-[#E9E9E8] pt-4">
                                 <div>
-                                    <span class="text-[9px] uppercase tracking-wider text-[#979A9B] block">Member Name</span>
-                                    <span class="text-xs font-bold text-[#000000] mt-0.5 block">{{ $registeredUser?->name }}</span>
+                                    <span class="text-[9px] uppercase tracking-wider text-[#979A9B] block">Email Terdaftar</span>
+                                    <span class="text-xs font-bold text-[#000000] mt-0.5 block truncate">{{ $registeredUser?->email }}</span>
                                 </div>
                                 <div>
-                                    <span class="text-[9px] uppercase tracking-wider text-[#979A9B] block">Valid From</span>
-                                    <span class="text-xs font-bold text-[#000000] mt-0.5 block">{{ now()->format('d M Y') }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-[9px] uppercase tracking-wider text-[#979A9B] block">Interest Area</span>
+                                    <span class="text-[9px] uppercase tracking-wider text-[#979A9B] block">Area Ketertarikan</span>
                                     <span class="text-xs font-bold text-[#000000] mt-0.5 block capitalize">{{ str_replace('-', ' ', $registeredUser?->reason_for_joining ?? 'General') }}</span>
                                 </div>
-                                <div class="flex items-center justify-end">
-                                    <!-- QR Code box block -->
-                                    <div class="w-12 h-12 bg-white border border-[#E9E9E8] p-1 flex items-center justify-center shrink-0">
-                                        <svg class="w-full h-full text-[#000000]" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm13-2h3v2h-3zm-2 2h2v2h-2zm2 2h3v3h-3zm-2-2h2v2h-2zm-2 2h2v2h-2zm2-4h2v2h-2zm3 0h2v2h-2zm-6-2h2v2h-2z"/>
-                                        </svg>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                            <a href="{{ url('/dashboard') }}" class="w-full bg-[#df1c24] hover:bg-opacity-95 text-white font-bold py-3.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-sm">
-                                <span class="material-symbols-outlined text-[18px]">dashboard</span>
-                                Masuk Dashboard
+                        <!-- CTA Actions -->
+                        <div class="pt-4">
+                            <a href="{{ url('/') }}" class="w-full bg-[#df1c24] hover:bg-opacity-95 text-white font-bold py-3.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-sm">
+                                <span class="material-symbols-outlined text-[18px]">home</span>
+                                Kembali ke Beranda
                             </a>
-                            <button onclick="window.print()" class="w-full bg-white border border-[#E9E9E8] hover:bg-zinc-50 text-charcoal font-bold py-3.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5">
-                                <span class="material-symbols-outlined text-[18px]">print</span>
-                                Cetak Kartu Member
-                            </button>
                         </div>
                     </div>
                 @endif

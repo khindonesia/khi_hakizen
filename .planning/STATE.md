@@ -64,8 +64,14 @@ None yet.
 
 None yet.
 
+## Quick Tasks Completed
+
+| Slug | Date | Status | Description |
+|------|------|--------|-------------|
+| change-join-success-to-admin-verification | 2026-05-26 | complete ✓ | Show waiting for admin verification screen after member register/join |
+
 ## Session Continuity
 
-Last session: 2026-05-26 20:15
-Stopped at: Completed sequential codebase mapping and committed documentation files.
+Last session: 2026-05-26 20:34
+Stopped at: Completed changing join success state to waiting for admin verification state.
 Resume file: None

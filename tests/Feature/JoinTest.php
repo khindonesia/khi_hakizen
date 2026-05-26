@@ -15,7 +15,7 @@ it('can render the join membership page', function () {
     $response->assertSee('Become a Keeper of History');
 });
 
-it('can register a new member and show member pass', function () {
+it('can register a new member and show waiting for verification state', function () {
     Volt::test('join')
         ->set('name', 'Professor Robert van Batavia')
         ->set('email', 'robert@batavia.org')
@@ -23,8 +23,8 @@ it('can register a new member and show member pass', function () {
         ->set('interest', 'cagar-budaya')
         ->call('registerMember')
         ->assertSet('isRegistered', true)
-        ->assertSee('Pendaftaran Selesai!')
-        ->assertSee('ADMIT ONE • KHI MEMBER')
+        ->assertSee('Pendaftaran Berhasil!')
+        ->assertSee('Menunggu Verifikasi')
         ->assertSee('Professor Robert van Batavia');
 
     // Assert user exists in database
@@ -32,4 +32,5 @@ it('can register a new member and show member pass', function () {
     expect($user)->not->toBeNull();
     expect($user->name)->toBe('Professor Robert van Batavia');
     expect($user->reason_for_joining)->toBe('cagar-budaya');
+    expect($user->verified)->toBe(0);
 });
