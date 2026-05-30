@@ -202,7 +202,7 @@
                         $tracking = $this->getTrackingData();
                     @endphp
 
-                    @if ($order->resi)
+                    @if (false && $order->resi)
                         <section class="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-150 dark:border-zinc-800/80 pb-4 mb-6">
                                 <div>
