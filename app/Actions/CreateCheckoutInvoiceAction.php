@@ -31,7 +31,7 @@ class CreateCheckoutInvoiceAction
             ->findOrFail($input['address_id']);
 
         $cartForWeight = Cart::query()
-            ->with('items')
+            ->with('items.variant.product')
             ->where('user_id', $user->id)
             ->where('status', 'active')
             ->first();
@@ -42,7 +42,12 @@ class CreateCheckoutInvoiceAction
             ]);
         }
 
-        $weight = max(1, (int) $cartForWeight->items->sum('quantity')) * 1000;
+        $weight = $cartForWeight->items->sum(function ($item) {
+            $productWeight = $item->variant?->product?->weight ?? 1000;
+            return (int) $item->quantity * (int) ($productWeight > 0 ? $productWeight : 1000);
+        });
+        $weight = max(1, $weight);
+
         $shippingQuote = $this->shippingService->quoteForAddress(
             $address,
             $input['courier_code'],
@@ -106,6 +111,12 @@ class CreateCheckoutInvoiceAction
 
             $shippingFee = $shippingQuote['cost'];
 
+            $firstProductId = $lockedItems[0]['variant']->product_id ?? 1;
+            $today = now()->format('dmY');
+            $orderCountToday = Order::query()->whereDate('created_at', now())->count();
+            $increment = str_pad($orderCountToday + 1, 3, '0', STR_PAD_LEFT);
+            $invoiceId = "ORDER-{$firstProductId}-{$today}-{$increment}";
+
             $order = Order::query()->create([
                 'user_id' => $user->id,
                 'address_id' => $address->id,
@@ -117,6 +128,7 @@ class CreateCheckoutInvoiceAction
                 'payment_status' => 'pending',
                 'external_id' => 'order-' . Str::random(10) . '-' . time(),
                 'status' => 'pending',
+                'invoice_id' => $invoiceId,
             ]);
 
             foreach ($lockedItems as $lockedItem) {

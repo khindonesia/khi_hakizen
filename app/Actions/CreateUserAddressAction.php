@@ -125,6 +125,10 @@ class CreateUserAddressAction
             'address_type' => $state['address_type'],
             'postal_code' => $state['postal_code'],
             'phone_number' => $state['phone_number'],
+            'province_id' => $state['province_id'] ?? null,
+            'city_id' => $state['city_id'] ?? null,
+            'district_id' => $state['district_id'] ?? null,
+            'subdistrict_id' => $state['subdistrict_id'] ?? null,
         ];
     }
 }

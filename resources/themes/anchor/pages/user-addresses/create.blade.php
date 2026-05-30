@@ -131,7 +131,14 @@ new class extends Component implements HasForms
                                     ->reactive()
                                     ->required()
                                     ->placeholder('Select subdistrict')
-                                    ->disabled(fn (Get $get): bool => blank($get('district_id'))),
+                                    ->disabled(fn (Get $get): bool => blank($get('district_id')))
+                                    ->afterStateUpdated(function (Set $set, Get $get): void {
+                                        $subdistrict = collect($this->subdistricts)->firstWhere('code', $get('subdistrict_id'));
+                                        $set('subdistrict_name', data_get($subdistrict, 'name'));
+                                        if (filled(data_get($subdistrict, 'zip_code'))) {
+                                            $set('postal_code', data_get($subdistrict, 'zip_code'));
+                                        }
+                                    }),
                                 TextInput::make('postal_code')
                                     ->label('Postal code')
                                     ->required()

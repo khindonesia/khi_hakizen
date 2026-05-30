@@ -58,7 +58,7 @@ class CheckoutController extends Controller
             'courier' => 'required|string',
             'origin' => 'required|integer',
             'destination' => 'required|integer',
-            'weight' => 'required|integer|min:1',
+            'weight' => 'nullable|integer|min:1',
         ]);
 
         if (! $this->rajaOngkirApiKey()) {
@@ -68,12 +68,33 @@ class CheckoutController extends Controller
             ], 500);
         }
 
+        $weight = $request->input('weight') ?? 1000;
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            $cart = \App\Models\Cart::query()
+                ->with('items.variant.product')
+                ->where('user_id', $user->id)
+                ->where('status', 'active')
+                ->first();
+
+            if ($cart && $cart->items->isNotEmpty()) {
+                $cartWeight = $cart->items->sum(function ($item) {
+                    $productWeight = $item->variant?->product?->weight ?? 1000;
+                    return (int) $item->quantity * (int) ($productWeight > 0 ? $productWeight : 1000);
+                });
+                if ($cartWeight > 0) {
+                    $weight = $cartWeight;
+                }
+            }
+        }
+
         $response = Http::withHeaders($this->rajaOngkirHeaders())
             ->asForm()
             ->post($this->rajaOngkirBaseUrl() . '/calculate/domestic-cost', [
                 'origin' => $validated['origin'],
                 'destination' => $validated['destination'],
-                'weight' => $validated['weight'],
+                'weight' => $weight,
                 'courier' => $validated['courier'],
                 'price' => $this->rajaOngkirPriceType(),
             ]);
@@ -83,7 +104,7 @@ class CheckoutController extends Controller
             'params' => [
                 'origin' => $validated['origin'],
                 'destination' => $validated['destination'],
-                'weight' => $validated['weight'],
+                'weight' => $weight,
                 'courier' => $validated['courier'],
                 'price' => $this->rajaOngkirPriceType(),
             ],

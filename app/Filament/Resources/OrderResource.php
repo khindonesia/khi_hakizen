@@ -64,7 +64,7 @@ class OrderResource extends Resource
                             ->options([
                                 'pending' => 'Pending',
                                 'processing' => 'Processing',
-                                'shipped' => 'Shipped',
+                                'shipping' => 'Shipping',
                                 'delivered' => 'Delivered',
                                 'cancelled' => 'Cancelled',
                             ])
@@ -93,8 +93,11 @@ class OrderResource extends Resource
                             ->numeric()
                             ->prefix('Rp')
                             ->required(),
+                        Forms\Components\TextInput::make('resi')
+                            ->label('Nomor Resi')
+                            ->placeholder('Masukkan nomor resi pengiriman'),
                     ])
-                    ->columns(3),
+                    ->columns(2),
 
                 // Payment Details Section
                 Forms\Components\Section::make('Payment Details')
@@ -109,6 +112,11 @@ class OrderResource extends Resource
                             ->prefix('Rp')
                             ->required(),
                         Forms\Components\TextInput::make('external_id')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('xendit_invoice_id')
+                            ->label('Xendit Invoice ID')
+                            ->disabled()
+                            ->dehydrated(false)
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('payment_url')
                             ->url()
@@ -127,6 +135,12 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->copyable(),
+                TextColumn::make('resi')
+                    ->label('No. Resi')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->copyable(),
                 TextColumn::make('user.name')
                     ->searchable()
                     ->sortable()
@@ -143,7 +157,7 @@ class OrderResource extends Resource
                     ->color(fn(string $state): string => match ($state) {
                         'pending' => 'warning',
                         'processing' => 'info',
-                        'shipped' => 'primary',
+                        'shipping' => 'primary',
                         'delivered' => 'success',
                         'cancelled' => 'danger',
                     })
@@ -171,7 +185,7 @@ class OrderResource extends Resource
                     ->options([
                         'pending' => 'Pending',
                         'processing' => 'Processing',
-                        'shipped' => 'Shipped',
+                        'shipping' => 'Shipping',
                         'delivered' => 'Delivered',
                         'cancelled' => 'Cancelled',
                     ]),
@@ -205,6 +219,46 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('printInvoice')
+                    ->label('Print Invoice')
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->url(fn (Order $record): string => route('orders.print-invoice', $record))
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('inputResi')
+                    ->label('Input Resi')
+                    ->icon('heroicon-o-truck')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\TextInput::make('resi')
+                            ->label('Nomor Resi')
+                            ->default(fn (Order $record): ?string => $record->resi)
+                            ->required(),
+                    ])
+                    ->action(function (Order $record, array $data): void {
+                        $record->update([
+                            'resi' => $data['resi'],
+                            'status' => 'shipping',
+                        ]);
+                        
+                        \Filament\Notifications\Notification::make()
+                            ->title('Nomor resi berhasil disimpan')
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('trackShipment')
+                    ->label('Lacak')
+                    ->icon('heroicon-o-map-pin')
+                    ->color('warning')
+                    ->visible(fn (Order $record): bool => !empty($record->resi))
+                    ->modalHeading(fn (Order $record): string => "Lacak Resi: {$record->resi} ({$record->courier})")
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->modalContent(function (Order $record) {
+                        return view('filament.components.tracking-info', [
+                            'getRecord' => $record,
+                        ]);
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation(),
             ])
@@ -219,7 +273,7 @@ class OrderResource extends Resource
                                 ->options([
                                     'pending' => 'Pending',
                                     'processing' => 'Processing',
-                                    'shipped' => 'Shipped',
+                                    'shipping' => 'Shipping',
                                     'delivered' => 'Delivered',
                                     'cancelled' => 'Cancelled',
                                 ])

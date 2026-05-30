@@ -20,8 +20,10 @@ class Order extends Model
         'total_amount',
         'payment_status',
         'status',
+        'resi',
         'external_id',
         'invoice_id',
+        'xendit_invoice_id',
         'payment_url',
     ];
 

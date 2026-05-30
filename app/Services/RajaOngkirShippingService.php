@@ -57,6 +57,60 @@ class RajaOngkirShippingService
         ];
     }
 
+    /**
+     * Track an airwaybill (AWB) status.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function trackWaybill(string $awb, string $courier, ?string $phoneNumber = null): ?array
+    {
+        $params = [
+            'awb' => $awb,
+            'courier' => $courier,
+        ];
+
+        if ($phoneNumber) {
+            // Keep only digits and get the last 5 characters
+            $digitsOnly = preg_replace('/\D/', '', $phoneNumber);
+            if (strlen($digitsOnly) >= 5) {
+                $params['last_phone_number'] = (int) substr($digitsOnly, -5);
+            }
+        }
+
+        try {
+            $response = Http::withHeaders($this->headers())
+                ->asForm()
+                ->timeout(12)
+                ->retry(2, 200)
+                ->post($this->endpoint('track/waybill'), $params);
+
+            if ($response->successful()) {
+                $json = $response->json();
+                if (data_get($json, 'meta.status') === 'success' || data_get($json, 'meta.code') == 200) {
+                    return data_get($json, 'data');
+                } else {
+                    Log::warning('RajaOngkir tracking API returned error', [
+                        'response' => $json,
+                        'params' => $params,
+                    ]);
+                }
+            } else {
+                Log::warning('RajaOngkir tracking request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'params' => $params,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('RajaOngkir tracking exception', [
+                'message' => $e->getMessage(),
+                'params' => $params,
+            ]);
+        }
+
+        return null;
+    }
+
     private function destinationIdForAddress(UserAddress $address): int
     {
         $response = Http::acceptJson()

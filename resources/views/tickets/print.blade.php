@@ -141,15 +141,18 @@
                 
                 <!-- Main Header -->
                 <div class="pl-4 flex items-start justify-between">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[#df1c24] font-extrabold tracking-widest text-[11px] uppercase font-mono">KOMUNITAS HISTORIA INDONESIA</span>
-                            <span class="h-1 w-1 bg-zinc-300 rounded-full"></span>
-                            <span class="bg-emerald-50 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Terkonfirmasi</span>
+                    <div class="flex items-center gap-3">
+                        <img alt="KHI Logo" class="h-10 w-auto object-contain shrink-0" src="{{ url('/images/logo.jpg') }}"/>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[#df1c24] font-extrabold tracking-widest text-[10px] uppercase font-mono">KOMUNITAS HISTORIA INDONESIA</span>
+                                <span class="h-1 w-1 bg-zinc-300 rounded-full"></span>
+                                <span class="bg-emerald-50 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Terkonfirmasi</span>
+                            </div>
+                            <h1 class="text-xl font-bold tracking-tight text-zinc-900 mt-1 leading-snug line-clamp-1">
+                                {{ $event->title }}
+                            </h1>
                         </div>
-                        <h1 class="text-2xl font-bold tracking-tight text-zinc-900 mt-1.5 leading-snug line-clamp-1">
-                            {{ $event->title }}
-                        </h1>
                     </div>
                 </div>
 
@@ -189,19 +192,26 @@
                     </div>
                 </div>
 
-                <!-- Attendee & Ticket Info Bar -->
+                 <!-- Attendee & Ticket Info Bar -->
                 <div class="pl-4 pt-4 border-t border-zinc-100 flex items-center justify-between">
                     <div>
-                        <span class="text-[9px] font-bold text-zinc-450 uppercase tracking-wider block">Nama Peserta</span>
+                        <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Nama Peserta</span>
                         <span class="text-sm font-extrabold text-zinc-900 leading-none block mt-0.5">{{ $user->name }}</span>
                         <span class="text-[10px] text-zinc-400 block mt-0.5">{{ $user->email }}</span>
                     </div>
                     
+                    @if($registration->invoice_id || $registration->external_id)
+                    <div class="text-center">
+                        <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Ref Pembayaran</span>
+                        <span class="text-[11px] font-mono font-bold text-zinc-700 block mt-0.5">{{ $registration->invoice_id ?? $registration->external_id }}</span>
+                    </div>
+                    @endif
+                    
                     <div class="text-right">
-                        <span class="text-[9px] font-bold text-zinc-450 uppercase tracking-wider block">Harga</span>
+                        <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Harga</span>
                         <span class="inline-flex items-center gap-1 mt-0.5">
                             @if($event->type === 'PAID')
-                                <span class="bg-amber-550 text-amber-700 bg-amber-50 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-200">Rp {{ number_format($event->price, 0, ',', '.') }}</span>
+                                <span class="bg-amber-50 text-amber-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-200">Rp {{ number_format($event->price, 0, ',', '.') }}</span>
                             @else
                                 <span class="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-emerald-100">Gratis</span>
                             @endif
@@ -223,9 +233,12 @@
                 <div class="absolute -right-12 -bottom-12 w-28 h-28 bg-[#df1c24]/5 rounded-full pointer-events-none"></div>
                 
                 <!-- Logo & Short event indicator -->
-                <div class="text-center w-full">
-                    <span class="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block font-mono">ADMISSION STUB</span>
-                    <span class="text-[10px] font-extrabold text-[#df1c24] mt-0.5 tracking-wider block uppercase">KHI GATEPASS</span>
+                <div class="text-center w-full flex flex-col items-center gap-1.5">
+                    <img alt="KHI Logo" class="h-8 w-auto object-contain" src="{{ url('/images/logo.jpg') }}"/>
+                    <div>
+                        <span class="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block font-mono">ADMISSION STUB</span>
+                        <span class="text-[10px] font-extrabold text-[#df1c24] mt-0.5 tracking-wider block uppercase font-mono">KHI GATEPASS</span>
+                    </div>
                 </div>
 
                 <!-- Custom SVG QR Code Placeholder -->
@@ -321,7 +334,7 @@
                         <rect x="192" y="5" width="2" height="30" fill="#18181B"/>
                     </svg>
                     <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block font-mono mt-1">
-                        {{ $registration->external_id ?? 'KHI-EVT-'.$event->id.'-'.$user->id }}
+                        {{ $ticketNumber }}
                     </span>
                 </div>
 

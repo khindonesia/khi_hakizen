@@ -93,7 +93,7 @@
                         @php
                             $statusClass = match ($order->status) {
                                 'delivered' => 'bg-card-tint-mint text-[#107F5B] border-[#EBF9F4]',
-                                'shipped' => 'bg-card-tint-sky text-[#006ADC] border-[#EBF5FF]',
+                                'shipping' => 'bg-card-tint-sky text-[#006ADC] border-[#EBF5FF]',
                                 'pending' => 'bg-card-tint-yellow text-[#B28200] border-[#FFF9E6]',
                                 default => 'bg-card-tint-peach text-[#E06D3B] border-[#FFF0EA]',
                             };
@@ -119,6 +119,12 @@
                                         @endif
                                     </h3>
                                     <p class="text-xs font-semibold text-slate dark:text-zinc-400 mt-1">Ordered on {{ $order->created_at->format('M d, Y') }}</p>
+                                    @if($order->resi)
+                                        <p class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs" style="font-size: 14px;">local_shipping</span>
+                                            <span>No. Resi: {{ $order->resi }}</span>
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
                             <div class="flex flex-col items-end space-y-2">

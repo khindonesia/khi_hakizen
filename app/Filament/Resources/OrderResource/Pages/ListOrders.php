@@ -44,12 +44,12 @@ class ListOrders extends ListRecords
                 })
                 ->badgeColor('info')
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'processing')),
-            'shipped' => Tab::make('Shipped')
+            'shipping' => Tab::make('Shipping')
                 ->badge(function () {
-                    return $this->getResource()::getEloquentQuery()->where('status', 'shipped')->count();
+                    return $this->getResource()::getEloquentQuery()->where('status', 'shipping')->count();
                 })
                 ->badgeColor('primary')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'shipped')),
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'shipping')),
             'delivered' => Tab::make('Delivered')
                 ->badge(function () {
                     return $this->getResource()::getEloquentQuery()->where('status', 'delivered')->count();

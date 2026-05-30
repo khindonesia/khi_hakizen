@@ -101,6 +101,14 @@ class ProductResource extends Resource
                                                     ])
                                                     ->default('draft')
                                                     ->required(),
+
+                                                Forms\Components\TextInput::make('weight')
+                                                    ->label('Weight (grams)')
+                                                    ->integer()
+                                                    ->required()
+                                                    ->default(1000)
+                                                    ->suffix('g')
+                                                    ->helperText('Weight of the product in grams'),
                                             ])
                                             ->columns(2),
 
@@ -573,6 +581,10 @@ class ProductResource extends Resource
                                                 'active' => 'success',
                                                 default => 'gray',
                                             }),
+
+                                        Infolists\Components\TextEntry::make('weight')
+                                            ->label('Weight')
+                                            ->suffix(' grams'),
 
                                         Infolists\Components\TextEntry::make('created_at')
                                             ->label('Created At')

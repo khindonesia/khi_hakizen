@@ -116,16 +116,25 @@ class RajaOngkirLocationLookup
             return $cached instanceof Collection ? $cached : collect($cached ?? []);
         }
 
-        $response = Http::acceptJson()
-            ->timeout(10)
-            ->retry(2, 250)
-            ->withHeaders($this->headers())
-            ->get($this->endpoint($path));
+        try {
+            $response = Http::acceptJson()
+                ->timeout(10)
+                ->retry(2, 250)
+                ->withHeaders($this->headers())
+                ->get($this->endpoint($path));
 
-        if (! $response->successful()) {
-            Log::warning('RajaOngkir location request failed', [
+            if (! $response->successful()) {
+                Log::warning('RajaOngkir location request failed', [
+                    'path' => $path,
+                    'status' => $response->status(),
+                ]);
+
+                return collect();
+            }
+        } catch (\Throwable $e) {
+            Log::error('RajaOngkir location request exception', [
                 'path' => $path,
-                'status' => $response->status(),
+                'message' => $e->getMessage(),
             ]);
 
             return collect();
@@ -160,17 +169,27 @@ class RajaOngkirLocationLookup
             return $cached instanceof Collection ? $cached : collect($cached ?? []);
         }
 
-        $response = Http::acceptJson()
-            ->timeout(10)
-            ->retry(2, 250)
-            ->withHeaders($this->headers())
-            ->get($this->endpoint($path), $query);
+        try {
+            $response = Http::acceptJson()
+                ->timeout(10)
+                ->retry(2, 250)
+                ->withHeaders($this->headers())
+                ->get($this->endpoint($path), $query);
 
-        if (! $response->successful()) {
-            Log::warning('RajaOngkir destination search failed', [
+            if (! $response->successful()) {
+                Log::warning('RajaOngkir destination search failed', [
+                    'path' => $path,
+                    'query' => $query,
+                    'status' => $response->status(),
+                ]);
+
+                return collect();
+            }
+        } catch (\Throwable $e) {
+            Log::error('RajaOngkir destination search exception', [
                 'path' => $path,
                 'query' => $query,
-                'status' => $response->status(),
+                'message' => $e->getMessage(),
             ]);
 
             return collect();

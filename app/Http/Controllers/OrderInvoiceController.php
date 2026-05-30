@@ -9,20 +9,17 @@ class OrderInvoiceController extends Controller
 {
     public function printInvoice(int|string $order)
     {
-        $order = Order::query()
-            ->with(['user', 'items.product', 'address'])
-            ->where('user_id', auth()->id())
-            ->findOrFail($order);
+        $query = Order::query()
+            ->with(['user', 'items.product', 'address']);
+
+        if (!auth()->user()->hasRole('admin')) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $order = $query->findOrFail($order);
         
-        // Generate PDF
-        $pdf = PDF::loadView('invoices.print', [
+        return view('invoices.print', [
             'order' => $order
         ]);
-        
-        // Return PDF for download or viewing
-        return $pdf->stream("invoice-{$order->invoice_id}.pdf");
-        
-        // Alternative: force download
-        // return $pdf->download("invoice-{$order->invoice_id}.pdf");
     }
 }

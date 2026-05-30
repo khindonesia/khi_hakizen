@@ -29,10 +29,25 @@ class EventTicketController extends Controller
             abort(403, 'Anda tidak terdaftar untuk event ini.');
         }
 
+        // Calculate sequence number (nomor urut)
+        $sequenceNumber = DB::table('event_user')
+            ->where('event_id', $event->id)
+            ->where('id', '<=', $registration->id)
+            ->count();
+
+        // Parse purchase date (created_at)
+        $purchaseDate = $registration->created_at 
+            ? \Carbon\Carbon::parse($registration->created_at)->format('dmY') 
+            : now()->format('dmY');
+
+        // Compile ticket number
+        $ticketNumber = 'EVENT-' . $event->id . '-' . $purchaseDate . '-' . sprintf('%03d', $sequenceNumber);
+
         return view('tickets.print', [
             'event' => $event,
             'user' => $user,
             'registration' => $registration,
+            'ticketNumber' => $ticketNumber,
         ]);
     }
 }

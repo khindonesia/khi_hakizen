@@ -46,7 +46,7 @@ class XenditController extends Controller
             );
 
             $order->update([
-                'invoice_id' => $response['id'],
+                'xendit_invoice_id' => $response['id'],
                 'payment_url' => $response['invoice_url'],
             ]);
 

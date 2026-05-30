@@ -38,11 +38,21 @@ name('checkout');
         // Calculate subtotal
         $subtotal = $cart ? $cart->getTotalPrice() : 0;
         
+        // Calculate total weight in grams
+        $totalWeight = 0;
+        if ($cart) {
+            foreach ($cart->items as $item) {
+                $productWeight = $item->variant?->product?->weight ?? 1000;
+                $totalWeight += (int) $item->quantity * (int) ($productWeight > 0 ? $productWeight : 1000);
+            }
+        }
+        $totalWeight = max(1, $totalWeight);
+        
         // Convert addresses to JSON for Alpine.js
         $addressesJson = $addresses->toJson();
     @endphp
 
-    <div class="relative min-h-screen" x-data="checkoutPage({{ $subtotal }}, {{ $addressesJson }})">
+    <div class="relative min-h-screen" x-data="checkoutPage({{ $subtotal }}, {{ $addressesJson }}, {{ $totalWeight }})">
         <main class="relative mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-8 px-4 py-12 sm:px-6 md:py-20 lg:grid-cols-12">
             
             <!-- Left Column: Delivery Address & Courier Selection -->
@@ -167,9 +177,10 @@ name('checkout');
                             </template>
                             
                             <template x-if="!isLoading && shippingError">
-                                <div class="text-center py-8 text-red-600 text-sm bg-white px-4">
-                                    <p class="font-medium" x-text="shippingError"></p>
-                                    <p class="mt-1 text-xs text-red-400">Periksa key RajaOngkir, origin, dan kecocokan alamat tujuan.</p>
+                                <div class="text-center py-8 text-zinc-500 text-sm bg-white px-4 flex flex-col items-center justify-center gap-1.5">
+                                    <span class="material-symbols-outlined text-zinc-400 text-3xl">info</span>
+                                    <p class="font-medium text-zinc-800">Layanan pengiriman tidak tersedia saat ini</p>
+                                    <p class="text-xs text-zinc-400 max-w-md">Terjadi kesalahan saat memproses data pengiriman. Silakan periksa kembali alamat Anda atau coba beberapa saat lagi.</p>
                                 </div>
                             </template>
                             
@@ -316,7 +327,7 @@ name('checkout');
      * @param {Array} addresses - List of user addresses
      * @return {Object} Alpine.js component definition
      */
-     function checkoutPage(itemSubtotal = 0, addresses = []) {
+     function checkoutPage(itemSubtotal = 0, addresses = [], totalWeight = 1000) {
         return {
             // State variables
             selectedAddressId: null,
@@ -331,7 +342,7 @@ name('checkout');
             destinationId: null,
             originCity: {{ config('services.rajaongkir.origin_id', 17693) }},
             shippingPriceType: @json(config('services.rajaongkir.price_type', 'lowest')),
-            totalWeight: 1000,
+            totalWeight: totalWeight,
             searchResults: [],
             selectedDestination: null,
             addressCache: {},
@@ -473,7 +484,9 @@ name('checkout');
                 fetch(`/api/checkout/search-destination?search=${encodeURIComponent(postalCode)}`)
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                            return response.json().catch(() => ({})).then(errorBody => {
+                                throw new Error(errorBody.message || errorBody.error || 'Gagal mencari destinasi pengiriman.');
+                            });
                         }
                         return response.json();
                     })

@@ -145,7 +145,7 @@ class ExportOrdersAction extends Action
                     ->options([
                         'pending' => 'Pending',
                         'processing' => 'Processing',
-                        'shipped' => 'Shipped',
+                        'shipping' => 'Shipping',
                         'delivered' => 'Delivered',
                         'cancelled' => 'Cancelled',
                     ])

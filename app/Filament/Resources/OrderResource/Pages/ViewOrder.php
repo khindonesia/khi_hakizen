@@ -44,7 +44,7 @@ class ViewOrder extends ViewRecord
                             ->color(fn (string $state): string => match ($state) {
                                 'pending' => 'warning',
                                 'processing' => 'info',
-                                'shipped' => 'primary',
+                                'shipping' => 'primary',
                                 'delivered' => 'success',
                                 'cancelled' => 'danger',
                             }),
@@ -99,6 +99,10 @@ class ViewOrder extends ViewRecord
                             ->label('Payment Reference')
                             ->copyable()
                             ->visible(fn ($record) => !empty($record->external_id)),
+                        TextEntry::make('xendit_invoice_id')
+                            ->label('Xendit Invoice ID')
+                            ->copyable()
+                            ->visible(fn ($record) => !empty($record->xendit_invoice_id)),
                         TextEntry::make('payment_url')
                             ->label('Payment URL')
                             ->url(fn ($record) => $record->payment_url)
@@ -116,6 +120,11 @@ class ViewOrder extends ViewRecord
                             ->icon('heroicon-o-shopping-cart')
                             ->color('success'),
                     ]),
+
+                \Filament\Infolists\Components\ViewEntry::make('tracking_status')
+                    ->view('filament.components.tracking-info')
+                    ->columnSpanFull()
+                    ->visible(fn ($record) => !empty($record->resi)),
             ]);
     }
 }

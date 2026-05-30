@@ -17,8 +17,12 @@ class CreateOrder extends CreateRecord
     
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Generate a unique invoice ID
-        $data['invoice_id'] = 'INV-' . Str::upper(Str::random(8));
+        // Generate a unique conceptualized invoice ID
+        $firstProduct = 1; // Fallback since no items exist yet on manual creation
+        $today = now()->format('dmY');
+        $orderCountToday = \App\Models\Order::query()->whereDate('created_at', now())->count();
+        $increment = str_pad($orderCountToday + 1, 3, '0', STR_PAD_LEFT);
+        $data['invoice_id'] = "ORDER-{$firstProduct}-{$today}-{$increment}";
         
         // If external_id is empty, generate one
         if (empty($data['external_id'])) {

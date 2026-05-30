@@ -37,40 +37,62 @@ class UpdateUserAddressAction
         $subdistricts = [];
         $locationResolved = true;
 
-        $destination = $this->locations->destinationByPostalCode($address->postal_code);
-        $province = $destination ? $this->locations->provinceByName((string) data_get($destination, 'province_name', '')) : null;
+        $provinceId = $address->province_id;
+        $cityId = $address->city_id;
+        $districtId = $address->district_id;
+        $subdistrictId = $address->subdistrict_id;
 
-        if (! $destination || ! $province) {
-            $locationResolved = false;
+        if ($provinceId && $cityId && $districtId && $subdistrictId) {
+            $cities = $this->locations->cities($provinceId)->all();
+            $districts = $this->locations->districts($cityId)->all();
+            $subdistricts = $this->locations->subdistricts($districtId)->all();
+
+            $state = array_merge($state, [
+                'province_id' => $provinceId,
+                'province_name' => $address->state,
+                'city_id' => $cityId,
+                'city_name' => $address->city,
+                'district_id' => $districtId,
+                'district_name' => $address->district,
+                'subdistrict_id' => $subdistrictId,
+                'subdistrict_name' => $address->village,
+            ]);
         } else {
-            $cities = $this->locations->cities($province['code'])->all();
-            $city = $this->locations->cityByName($province['code'], (string) data_get($destination, 'city_name', ''));
+            $destination = $this->locations->destinationByPostalCode($address->postal_code);
+            $province = $destination ? $this->locations->provinceByName((string) data_get($destination, 'province_name', '')) : null;
 
-            if (! $city) {
+            if (! $destination || ! $province) {
                 $locationResolved = false;
             } else {
-                $districts = $this->locations->districts($city['code'])->all();
-                $district = $this->locations->districtByName($city['code'], (string) data_get($destination, 'district_name', ''));
+                $cities = $this->locations->cities($province['code'])->all();
+                $city = $this->locations->cityByName($province['code'], (string) data_get($destination, 'city_name', ''));
 
-                if (! $district) {
+                if (! $city) {
                     $locationResolved = false;
                 } else {
-                    $subdistricts = $this->locations->subdistricts($district['code'])->all();
-                    $subdistrict = $this->locations->subdistrictByName($district['code'], (string) data_get($destination, 'subdistrict_name', ''));
+                    $districts = $this->locations->districts($city['code'])->all();
+                    $district = $this->locations->districtByName($city['code'], (string) data_get($destination, 'district_name', ''));
 
-                    if (! $subdistrict) {
+                    if (! $district) {
                         $locationResolved = false;
                     } else {
-                        $state = array_merge($state, [
-                            'province_id' => $province['code'],
-                            'province_name' => $province['name'],
-                            'city_id' => $city['code'],
-                            'city_name' => $city['name'],
-                            'district_id' => $district['code'],
-                            'district_name' => $district['name'],
-                            'subdistrict_id' => $subdistrict['code'],
-                            'subdistrict_name' => $subdistrict['name'],
-                        ]);
+                        $subdistricts = $this->locations->subdistricts($district['code'])->all();
+                        $subdistrict = $this->locations->subdistrictByName($district['code'], (string) data_get($destination, 'subdistrict_name', ''));
+
+                        if (! $subdistrict) {
+                            $locationResolved = false;
+                        } else {
+                            $state = array_merge($state, [
+                                'province_id' => $province['code'],
+                                'province_name' => $province['name'],
+                                'city_id' => $city['code'],
+                                'city_name' => $city['name'],
+                                'district_id' => $district['code'],
+                                'district_name' => $district['name'],
+                                'subdistrict_id' => $subdistrict['code'],
+                                'subdistrict_name' => $subdistrict['name'],
+                            ]);
+                        }
                     }
                 }
             }
@@ -188,6 +210,10 @@ class UpdateUserAddressAction
             'address_type' => $state['address_type'],
             'postal_code' => $state['postal_code'],
             'phone_number' => $state['phone_number'],
+            'province_id' => $state['province_id'] ?? null,
+            'city_id' => $state['city_id'] ?? null,
+            'district_id' => $state['district_id'] ?? null,
+            'subdistrict_id' => $state['subdistrict_id'] ?? null,
         ];
     }
 }

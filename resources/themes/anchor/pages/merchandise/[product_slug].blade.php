@@ -105,7 +105,86 @@
 
                 <!-- Right Column: Product Info & Purchase -->
                 <aside class="lg:col-span-6 lg:sticky lg:top-[100px]">
-                    <div class="stitch-panel flex flex-col gap-6 p-6 md:p-8">
+                    <div class="stitch-panel flex flex-col gap-6 p-6 md:p-8"
+                         x-data="{
+                             addUrl: @js(route('shopping-cart.add')),
+                             csrfToken: @js(csrf_token()),
+                             variants: @js($variantPayload->all()),
+                             selectedVariantId: @js($selectedVariant?->id),
+                             quantity: 1,
+                             loading: false,
+                             message: '',
+                             messageType: 'success',
+                             get selectedVariant() {
+                                 return this.variants.find((variant) => variant.id === this.selectedVariantId) ?? null;
+                             },
+                             get priceLabel() {
+                                 return new Intl.NumberFormat('id-ID').format(this.selectedVariant?.price ?? @js($selectedVariantPrice));
+                             },
+                             get stockLabel() {
+                                 return this.selectedVariant
+                                     ? (this.selectedVariant.stock_quantity > 0 ? 'In stock' : 'Out of stock')
+                                     : @js($selectedVariantStatus);
+                             },
+                             get stockHint() {
+                                 return this.selectedVariant
+                                     ? (this.selectedVariant.stock_quantity > 0 ? `${this.selectedVariant.stock_quantity} available` : 'Out of stock')
+                                     : @js($selectedVariantStock > 0 ? $selectedVariantStock . ' available' : 'Out of stock');
+                             },
+                             get maxQuantity() {
+                                 return this.selectedVariant?.stock_quantity ?? @js(max(1, (int) $selectedVariantStock));
+                             },
+                             decreaseQuantity() {
+                                 if (this.quantity > 1) {
+                                     this.quantity -= 1;
+                                 }
+                             },
+                             increaseQuantity() {
+                                 if (this.quantity < this.maxQuantity) {
+                                     this.quantity += 1;
+                                 }
+                             },
+                             async addToCart() {
+                                 if (!this.selectedVariantId) {
+                                     this.messageType = 'danger';
+                                     this.message = 'Select variant first.';
+                                     return;
+                                 }
+
+                                 this.loading = true;
+                                 this.message = '';
+
+                                 try {
+                                     const response = await fetch(this.addUrl, {
+                                         method: 'POST',
+                                         headers: {
+                                             'Accept': 'application/json',
+                                             'X-CSRF-TOKEN': this.csrfToken,
+                                         },
+                                         body: new URLSearchParams({
+                                             variant_id: this.selectedVariantId,
+                                             quantity: this.quantity,
+                                         }),
+                                     });
+
+                                     const payload = await response.json();
+
+                                     if (!response.ok || !payload.success) {
+                                         throw new Error(payload.message ?? 'Failed to add item to cart.');
+                                     }
+
+                                     this.messageType = 'success';
+                                     this.message = payload.message ?? 'Item added to cart successfully.';
+                                     window.dispatchEvent(new CustomEvent('cart-updated'));
+                                 } catch (error) {
+                                     this.messageType = 'danger';
+                                     this.message = error.message ?? 'Failed to add item to cart.';
+                                 } finally {
+                                     this.loading = false;
+                                 }
+                             },
+                         }"
+                    >
                         <!-- Category Tag -->
                         @if($product->category)
                             <div class="stitch-chip inline-flex w-fit">
@@ -160,87 +239,7 @@
                         @endif
 
                         <!-- Add to Cart CTA -->
-                        <div
-                            class="flex flex-col gap-3 mt-4"
-                            x-data="{
-                                addUrl: @js(route('shopping-cart.add')),
-                                csrfToken: @js(csrf_token()),
-                                variants: @js($variantPayload->all()),
-                                selectedVariantId: @js($selectedVariant?->id),
-                                quantity: 1,
-                                loading: false,
-                                message: '',
-                                messageType: 'success',
-                                get selectedVariant() {
-                                    return this.variants.find((variant) => variant.id === this.selectedVariantId) ?? null;
-                                },
-                                get priceLabel() {
-                                    return new Intl.NumberFormat('id-ID').format(this.selectedVariant?.price ?? @js($selectedVariantPrice));
-                                },
-                                get stockLabel() {
-                                    return this.selectedVariant
-                                        ? (this.selectedVariant.stock_quantity > 0 ? 'In stock' : 'Out of stock')
-                                        : @js($selectedVariantStatus);
-                                },
-                                get stockHint() {
-                                    return this.selectedVariant
-                                        ? (this.selectedVariant.stock_quantity > 0 ? `${this.selectedVariant.stock_quantity} available` : 'Out of stock')
-                                        : @js($selectedVariantStock > 0 ? $selectedVariantStock . ' available' : 'Out of stock');
-                                },
-                                get maxQuantity() {
-                                    return this.selectedVariant?.stock_quantity ?? @js(max(1, (int) $selectedVariantStock));
-                                },
-                                decreaseQuantity() {
-                                    if (this.quantity > 1) {
-                                        this.quantity -= 1;
-                                    }
-                                },
-                                increaseQuantity() {
-                                    if (this.quantity < this.maxQuantity) {
-                                        this.quantity += 1;
-                                    }
-                                },
-                                async addToCart() {
-                                    if (!this.selectedVariantId) {
-                                        this.messageType = 'danger';
-                                        this.message = 'Select variant first.';
-                                        return;
-                                    }
-
-                                    this.loading = true;
-                                    this.message = '';
-
-                                    try {
-                                        const response = await fetch(this.addUrl, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Accept': 'application/json',
-                                                'X-CSRF-TOKEN': this.csrfToken,
-                                            },
-                                            body: new URLSearchParams({
-                                                variant_id: this.selectedVariantId,
-                                                quantity: this.quantity,
-                                            }),
-                                        });
-
-                                        const payload = await response.json();
-
-                                        if (!response.ok || !payload.success) {
-                                            throw new Error(payload.message ?? 'Failed to add item to cart.');
-                                        }
-
-                                        this.messageType = 'success';
-                                        this.message = payload.message ?? 'Item added to cart successfully.';
-                                        window.dispatchEvent(new CustomEvent('cart-updated'));
-                                    } catch (error) {
-                                        this.messageType = 'danger';
-                                        this.message = error.message ?? 'Failed to add item to cart.';
-                                    } finally {
-                                        this.loading = false;
-                                    }
-                                },
-                            }"
-                        >
+                        <div class="flex flex-col gap-3 mt-4">
                         @auth
                             <div class="flex flex-col gap-3">
                                 <div class="flex items-center gap-3">

@@ -37,7 +37,7 @@ class LatestOrdersWidget extends BaseWidget
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
                         'processing' => 'info',
-                        'shipped' => 'primary',
+                        'shipping' => 'primary',
                         'delivered' => 'success',
                         'cancelled' => 'danger',
                     }),
