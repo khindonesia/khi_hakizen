@@ -19,7 +19,7 @@ return [
     ],
     'color' => [
         'text' => '#0f172a',
-        'button' => '#2563eb',
+        'button' => '#e01b24',
         'button_text' => '#ffffff',
         'input_text' => '#0f172a',
         'input_border' => '#cbd5e1',

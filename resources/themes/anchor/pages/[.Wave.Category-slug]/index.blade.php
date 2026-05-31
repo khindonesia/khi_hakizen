@@ -1,22 +1,24 @@
 <?php
-    use function Laravel\Folio\{name};
-    name('blog.category');
+use function Laravel\Folio\{name};
+name('blog.category');
 ?>
 
 <x-layouts.marketing>
 
     @php
-        $posts = $category->posts()->where('status', 'PUBLISHED')->paginate(6);
+        $posts = $category
+            ->posts()
+            ->where('status', 'PUBLISHED')
+            ->orderByRaw('featured DESC') // Mengutamakan featured (true/1 sebelum false/0)
+            ->latest() // Sama dengan orderBy('created_at', 'desc')
+            ->paginate(6);
     @endphp
 
     <x-container>
         <div class="relative pt-6">
-            <x-marketing.elements.heading
-                title="{{ $category->name }}"
-                description="Our latest {{ $category->name }} posts below."
-                align="left"
-            />
-            
+            <x-marketing.elements.heading title="{{ $category->name }}"
+                description="Our latest {{ $category->name }} posts below." align="left" />
+
             {{-- @include('theme::partials.blog.categories') --}}
 
             <div class="grid gap-5 mx-auto mt-7 sm:grid-cols-2 lg:grid-cols-3">

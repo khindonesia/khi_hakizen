@@ -72,7 +72,7 @@ Route::post('/api/xendit/callback', [XenditController::class, 'handleCallback'])
 Route::middleware(['web', 'guest', 'throttle:login'])->group(function () {
     Route::get('auth/login', function () {
         return view('theme::pages.auth.login');
-    })->name('login');
+    });
 
     Route::get('auth/password/reset', function () {
         return view('theme::pages.auth.password.reset');
@@ -84,7 +84,7 @@ Route::middleware(['web', 'guest', 'throttle:login'])->group(function () {
 
     Route::get('auth/register', function () {
         return redirect('/join');
-    })->name('register');
+    });
 
     Route::get('auth/register-devdojo', function () {
         return redirect('/join');

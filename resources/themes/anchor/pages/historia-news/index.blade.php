@@ -5,10 +5,11 @@ name('historia-news');
 ?>
 
 @php
-$posts = \Wave\Post::query()
-    ->where('status', 'PUBLISHED')
-    ->latest()
-    ->paginate(9);
+    $posts = \Wave\Post::query()
+        ->where('status', 'PUBLISHED')
+        ->orderByRaw('featured DESC') // Mengutamakan featured (true/1 sebelum false/0)
+        ->latest() // Sama dengan orderBy('created_at', 'desc')
+        ->paginate(9);
 @endphp
 
 <x-layouts.marketing :seo="[
@@ -20,7 +21,8 @@ $posts = \Wave\Post::query()
     <div class="bg-[#F8FAFC] min-h-screen font-['Inter'] pb-20">
         <section class="bg-white border-b border-gray-200/80 py-16 md:py-24 text-center">
             <x-container class="max-w-4xl mx-auto px-6">
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#df1c24]/10 border border-[#df1c24]/20 text-xs font-bold text-[#df1c24] uppercase tracking-wider mb-6">
+                <div
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#df1c24]/10 border border-[#df1c24]/20 text-xs font-bold text-[#df1c24] uppercase tracking-wider mb-6">
                     Historialita
                 </div>
                 <h1 class="text-4xl md:text-[56px] font-extrabold text-gray-900 tracking-tight leading-none">
@@ -34,7 +36,8 @@ $posts = \Wave\Post::query()
 
         <main class="w-full max-w-[1280px] mx-auto px-6 mt-16">
             @if ($posts->isEmpty())
-                <div class="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-600">
+                <div
+                    class="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-600">
                     Belum ada artikel Historialita saat ini.
                 </div>
             @else
