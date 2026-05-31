@@ -17,6 +17,7 @@
         "devdojo/themes": "0.0.11",
         "filament/filament": "^3.2",
         "gehrisandro/tailwind-merge-laravel": "^1.2",
+        "guava/filament-icon-picker": "^2.3",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.7",
         "lab404/laravel-impersonate": "^1.7.5",
