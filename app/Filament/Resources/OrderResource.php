@@ -198,10 +198,8 @@ class OrderResource extends Resource
                     ]),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from')
-                            ->columnSpan(2), // Ensure this spans across columns for larger screens
-                        Forms\Components\DatePicker::make('created_until')
-                            ->columnSpan(2), // Ensure this spans across columns for larger screens
+                        Forms\Components\DatePicker::make('created_from'),
+                        Forms\Components\DatePicker::make('created_until'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -213,9 +211,12 @@ class OrderResource extends Resource
                                 $data['created_until'],
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
-                    }),
+                    })
+                    ->columns(2)
+                    ->columnSpan(2),
             ])
             ->filtersLayout(FiltersLayout::AboveContent)
+            ->filtersFormColumns(4)
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -224,6 +225,12 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->color('info')
                     ->url(fn (Order $record): string => route('orders.print-invoice', $record))
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('printDeliveryOrder')
+                    ->label('Print Delivery Order')
+                    ->icon('heroicon-o-truck')
+                    ->color('warning')
+                    ->url(fn (Order $record): string => route('orders.print-delivery-order', $record))
                     ->openUrlInNewTab(),
                 Tables\Actions\Action::make('inputResi')
                     ->label('Input Resi')
@@ -250,7 +257,8 @@ class OrderResource extends Resource
                     ->label('Lacak')
                     ->icon('heroicon-o-map-pin')
                     ->color('warning')
-                    ->visible(fn (Order $record): bool => !empty($record->resi))
+                    // ->visible(fn (Order $record): bool => !empty($record->resi))
+                    ->visible(false)
                     ->modalHeading(fn (Order $record): string => "Lacak Resi: {$record->resi} ({$record->courier})")
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Tutup')

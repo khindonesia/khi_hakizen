@@ -22,4 +22,20 @@ class OrderInvoiceController extends Controller
             'order' => $order
         ]);
     }
+
+    public function printDeliveryOrder(int|string $order)
+    {
+        $query = Order::query()
+            ->with(['user', 'items.product', 'address']);
+
+        if (!auth()->user()->hasRole('admin')) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $order = $query->findOrFail($order);
+        
+        return view('orders.delivery', [
+            'order' => $order
+        ]);
+    }
 }

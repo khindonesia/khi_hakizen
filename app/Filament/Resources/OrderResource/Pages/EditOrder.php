@@ -33,6 +33,12 @@ class EditOrder extends EditRecord
                 ->icon('heroicon-o-printer')
                 ->url(fn ($record) => route('orders.print-invoice', $record))
                 ->openUrlInNewTab(),
+            Actions\Action::make('printDeliveryOrder')
+                ->label('Print Delivery Order')
+                ->icon('heroicon-o-truck')
+                ->color('warning')
+                ->url(fn ($record) => route('orders.print-delivery-order', $record))
+                ->openUrlInNewTab(),
         ];
     }
 }

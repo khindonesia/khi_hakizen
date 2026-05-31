@@ -59,6 +59,10 @@ Route::get('/orders/{order}/print-invoice', [App\Http\Controllers\OrderInvoiceCo
     ->middleware('auth')
     ->name('orders.print-invoice');
 
+Route::get('/orders/{order}/print-delivery-order', [App\Http\Controllers\OrderInvoiceController::class, 'printDeliveryOrder'])
+    ->middleware('auth')
+    ->name('orders.print-delivery-order');
+
 Route::get('/dashboard/events/{event}/ticket', [App\Http\Controllers\EventTicketController::class, 'showTicket'])
     ->middleware('auth')
     ->name('dashboard.events.ticket');
