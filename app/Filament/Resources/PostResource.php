@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Set;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Str;
 
 class PostResource extends Resource
@@ -90,7 +91,8 @@ class PostResource extends Resource
 
                                 Forms\Components\Toggle::make('featured')
                                     ->onIcon('heroicon-m-star')
-                                    ->offIcon('heroicon-m-x-mark'),
+                                    ->offIcon('heroicon-m-x-mark')
+                                    ->onColor('amber'),
 
                                 Forms\Components\Select::make('author_id')
                                     ->relationship('user', 'name')
@@ -170,6 +172,10 @@ class PostResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->defaultSort('created_at', 'desc')
+
+            // Mengubah posisi layout filter agar terbuka di atas konten tabel (seperti pada gambar)
+            ->filtersLayout(FiltersLayout::AboveContent)
+
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -181,7 +187,6 @@ class PostResource extends Resource
                     ->label('Category')
                     ->relationship('category', 'name'),
 
-                // PERBAIKAN DI SINI:
                 TernaryFilter::make('featured')
                     ->label('Featured Post')
                     ->placeholder('All Posts')

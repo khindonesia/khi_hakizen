@@ -5,16 +5,12 @@ namespace App\Filament\Resources;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\UserResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\UserResource\RelationManagers;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
@@ -43,7 +39,7 @@ class UserResource extends Resource
             Forms\Components\DateTimePicker::make('email_verified_at'),
             Forms\Components\TextInput::make('password')
                 ->password()
-                ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                ->dehydrateStateUsing(fn($state) => \Illuminate\Support\Facades\Hash::make($state))
                 ->dehydrated(fn($state) => filled($state))
                 ->required(fn(string $context): bool => $context === 'create'),
             Forms\Components\Select::make('roles')
@@ -65,28 +61,24 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                // 1. Avatar Column with circular styling and default fallback
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Avatar')
                     ->circular()
                     ->defaultImageUrl(url('storage/demo/default.png')),
 
-                // 2. Name Column with Username displayed as a description below it
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
                     ->sortable()
-                    ->copyable() // Click to copy feature
+                    ->copyable()
                     ->description(fn(User $record): ?string => "@{$record->username}"),
 
-                // 3. Email Column with quick copy support
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email Address')
                     ->searchable()
                     ->sortable()
                     ->copyable(),
 
-                // 4. Roles Account Type displayed as BADGES with dynamic coloring
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Role')
                     ->badge()
@@ -99,27 +91,37 @@ class UserResource extends Resource
                     })
                     ->searchable(),
 
-                // 5. Verification Toggle directly inside the table row
                 Tables\Columns\ToggleColumn::make('verified')
                     ->label('Verified')
                     ->sortable(),
 
-                // 6. Creation Date (Hidden by default, can be enabled via Column Toggle)
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Joined Date')
                     ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+
+            // Mengubah posisi layout filter agar terbuka di atas konten tabel (seperti pada gambar)
+            ->filtersLayout(FiltersLayout::AboveContent)
+
             ->filters([
-                // Filter 1: Ternary filter for verification status (True / False / All)
                 Tables\Filters\TernaryFilter::make('verified')
                     ->label('Verification Status')
                     ->placeholder('All Users')
                     ->trueLabel('Verified Only')
-                    ->falseLabel('Unverified Only'),
+                    ->falseLabel('Unverified Only')
+                    // PERBAIKAN DI SINI: Paksa query agar mendeteksi 0 dan null untuk status unverified
+                    ->queries(
+                        true: fn(Builder $query) => $query->where('verified', true),
+                        false: fn(Builder $query) => $query->where(function (Builder $q) {
+                            $q->where('verified', false)
+                                ->orWhere('verified', 0)
+                                ->orWhereNull('verified');
+                        }),
+                        blank: fn(Builder $query) => $query, // Jika pilih 'All Users', tidak merubah query
+                    ),
 
-                // Filter 2: Multi-select filter for Roles with data preloading
                 Tables\Filters\SelectFilter::make('roles')
                     ->label('Filter by Role')
                     ->relationship('roles', 'name')
@@ -127,7 +129,6 @@ class UserResource extends Resource
                     ->preload(),
             ])
             ->actions([
-                // Grouping actions into a clean dropdown menu
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
@@ -144,8 +145,8 @@ class UserResource extends Resource
             ])
             ->emptyStateIcon('heroicon-o-users')
             ->emptyStateDescription('Start by creating a new user to populate this list.')
-            ->striped() // Alternating row backgrounds for better readability
-            ->defaultSort('created_at', 'desc'); // Always show newest users first
+            ->striped()
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
