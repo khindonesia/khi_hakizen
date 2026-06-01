@@ -46,7 +46,8 @@
 		public function save()
 		{
 			$this->validate([
-				'avatar' => 'sometimes|nullable|imageable',
+				// Whitelist eksplisit: hanya format raster aman, max 5MB
+				'avatar' => 'sometimes|nullable|mimes:jpg,jpeg,png,gif,webp|max:5120|imageable',
 			]);
 
 			$state = $this->form->getState();
@@ -64,12 +65,33 @@
                 ->send();
 		}
 
-		private function saveNewUserAvatar(){
-			$path = 'avatars/' . auth()->user()->username . '.png';
-			$image = \Intervention\Image\ImageManagerStatic::make($this->avatar)->resize(800, 800);
-			Storage::disk('public')->put($path, $image->encode());
+		private function saveNewUserAvatar(): void
+		{
+			$userId = auth()->id();
+			$username = auth()->user()->username;
+
+			// Sanitasi: hanya izinkan karakter alfanumerik, dash, dan underscore
+			$safeUsername = preg_replace('/[^a-zA-Z0-9_\-]/', '', $username);
+			if (empty($safeUsername)) {
+				$safeUsername = (string) $userId; // Fallback ke user ID
+			}
+
+			// Gunakan user ID sebagai prefiks agar unik
+			$path = 'avatars/' . $userId . '_' . $safeUsername . '.png';
+
+			// Re-encode paksa ke PNG: menghilangkan metadata EXIF, payload tersembunyi,
+			// dan memastikan format output selalu bersih tanpa eksekusi konten berbahaya.
+			$image = \Intervention\Image\ImageManagerStatic::make($this->avatar)
+				->resize(800, 800, function ($constraint) {
+					$constraint->aspectRatio();
+					$constraint->upsize(); // Cegah gambar kecil diperbesar
+				})
+				->encode('png', 90); // Paksa encode PNG — bukan format asli
+
+			Storage::disk('public')->put($path, $image);
 			auth()->user()->avatar = $path;
 			auth()->user()->save();
+
 			// This will update/refresh the avatar in the sidebar
 			$this->js('window.dispatchEvent(new CustomEvent("refresh-avatar"));');
 		}
@@ -170,7 +192,7 @@
 						<img id="preview" src="{{ auth()->user()->avatar() . '?' . time() }}" class="w-32 h-32 rounded-full">
 						
 						<div class="absolute inset-0 w-full h-full">
-							<input type="file" id="upload" class="absolute inset-0 z-20 w-full h-full opacity-0 cursor-pointer group">
+							<input type="file" id="upload" accept="image/jpeg,image/png,image/webp" class="absolute inset-0 z-20 w-full h-full opacity-0 cursor-pointer group">
 							<button class="absolute bottom-0 z-10 flex items-center justify-center w-10 h-10 mb-2 -ml-5 bg-black bg-opacity-75 rounded-full opacity-75 left-1/2 group-hover:opacity-100">
 								<svg class="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
 							</button>
@@ -238,9 +260,9 @@
 				height:auto !important;
 			}
 		</style>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.2/croppie.min.css">
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.2/croppie.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js" integrity="sha384-lY3kvVQ+V0PVBIZXIDRHqS5puww73PS/mczZnLbmzkb4ji2AvKdckl8lSzhur8aj" crossorigin="anonymous"></script>
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.2/croppie.min.css" integrity="sha384-5WF0uhuJRur7f4Y2UmCyJ4SpttLLG8y/fnhu01/QRiYFBnB0v9a9z4dqCphGD0m5" crossorigin="anonymous">
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.2/croppie.min.js" integrity="sha384-Pt+ZvlkPk7++oRjeq2jdbwPk9OdwsJpngrrHiTB3fwyD5SDf28ZdWpgmdUTlzfTx" crossorigin="anonymous"></script>
 	</x-slot>
 
 </x-layouts.app>

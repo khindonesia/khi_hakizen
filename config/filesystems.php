@@ -44,6 +44,21 @@ return [
             'throw' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Private Disk
+        |--------------------------------------------------------------------------
+        | Untuk menyimpan file sensitif (tiket event, invoice, bukti bayar) yang
+        | TIDAK BOLEH diakses langsung via URL publik. File hanya bisa diakses
+        | melalui controller yang memverifikasi kepemilikan & autentikasi.
+        */
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

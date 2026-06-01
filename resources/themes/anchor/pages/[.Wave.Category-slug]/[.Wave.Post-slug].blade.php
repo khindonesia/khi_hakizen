@@ -32,17 +32,7 @@ render(function (View $view, \Wave\Category $category, \Wave\Post $post) {
     'image' => $coverImage,
     'type' => 'article',
 ]">
-    @push('styles')
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-        <style>
-            .material-symbols-outlined {
-                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            }
-        </style>
-    @endpush
-
-    @include('theme::partials.blog.article-detail', [
+@include('theme::partials.blog.article-detail', [
         'backHref' => url($post->category->slug),
         'backText' => 'Back to ' . $post->category->name,
         'categoryLabel' => $categoryLabel,

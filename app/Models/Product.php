@@ -25,7 +25,9 @@ class Product extends Model
      */
     public function getDisplayPriceAttribute()
     {
-        $variants = $this->variants()->active()->get();
+        $variants = $this->relationLoaded('variants')
+            ? $this->variants->filter(fn($v) => $v->status === 'active')
+            : $this->variants()->active()->get();
         
         if ($variants->count() > 1) {
             $minPrice = $variants->min('price') ?? 0;
@@ -42,7 +44,16 @@ class Product extends Model
         }
         
         // Produk dengan satu varian atau varian default
-        $defaultVariant = $this->defaultVariant;
+        $defaultVariant = $this->relationLoaded('defaultVariant')
+            ? $this->defaultVariant
+            : ($this->relationLoaded('variants')
+                ? $this->variants->firstWhere('is_default', true)
+                : $this->defaultVariant);
+
+        if (!$defaultVariant) {
+            $defaultVariant = $variants->first();
+        }
+
         return $defaultVariant ? $defaultVariant->price : 0;
     }
 
@@ -51,14 +62,31 @@ class Product extends Model
      */
     public function getAvailableStockAttribute()
     {
-        $variants = $this->variants()->active();
-        
-        if ($variants->count() > 1) {
-            return $variants->sum('stock_quantity') ?? 0;
+        if ($this->relationLoaded('variants')) {
+            $activeVariants = $this->variants->filter(fn($v) => $v->status === 'active');
+            if ($activeVariants->count() > 1) {
+                return $activeVariants->sum('stock_quantity') ?? 0;
+            }
+        } else {
+            $variantsQuery = $this->variants()->active();
+            if ($variantsQuery->count() > 1) {
+                return $variantsQuery->sum('stock_quantity') ?? 0;
+            }
         }
         
         // Produk dengan satu varian atau varian default
-        $defaultVariant = $this->defaultVariant;
+        $defaultVariant = $this->relationLoaded('defaultVariant')
+            ? $this->defaultVariant
+            : ($this->relationLoaded('variants')
+                ? $this->variants->firstWhere('is_default', true)
+                : $this->defaultVariant);
+
+        if (!$defaultVariant) {
+            $defaultVariant = $this->relationLoaded('variants')
+                ? $this->variants->first()
+                : $this->variants()->first();
+        }
+
         return $defaultVariant ? $defaultVariant->stock_quantity : 0;
     }
 

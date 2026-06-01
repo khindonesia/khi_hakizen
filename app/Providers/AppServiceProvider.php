@@ -15,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->extend(\Illuminate\Contracts\Foundation\ExceptionRenderer::class, function (\Illuminate\Contracts\Foundation\ExceptionRenderer $renderer) {
+            return new \App\Exceptions\LaravelExceptionRenderer($renderer);
+        });
     }
 
     /**

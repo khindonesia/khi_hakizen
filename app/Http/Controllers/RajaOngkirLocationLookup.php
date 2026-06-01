@@ -109,50 +109,47 @@ class RajaOngkirLocationLookup
     private function locationList(string $path): Collection
     {
         $cacheKey = $this->cacheKey($path);
+        $ttl = (int) config('services.rajaongkir.cache_ttl', 86400);
 
-        if (Cache::has($cacheKey)) {
-            $cached = Cache::get($cacheKey);
+        $cached = Cache::remember($cacheKey, now()->addSeconds($ttl), function () use ($path): array {
+            try {
+                $response = Http::acceptJson()
+                    ->timeout(10)
+                    ->retry(2, 250)
+                    ->withHeaders($this->headers())
+                    ->get($this->endpoint($path));
 
-            return $cached instanceof Collection ? $cached : collect($cached ?? []);
-        }
+                if (! $response->successful()) {
+                    Log::warning('RajaOngkir location request failed', [
+                        'path' => $path,
+                        'status' => $response->status(),
+                    ]);
 
-        try {
-            $response = Http::acceptJson()
-                ->timeout(10)
-                ->retry(2, 250)
-                ->withHeaders($this->headers())
-                ->get($this->endpoint($path));
-
-            if (! $response->successful()) {
-                Log::warning('RajaOngkir location request failed', [
+                    return [];
+                }
+            } catch (\Throwable $e) {
+                Log::error('RajaOngkir location request exception', [
                     'path' => $path,
-                    'status' => $response->status(),
+                    'message' => $e->getMessage(),
                 ]);
 
-                return collect();
+                return [];
             }
-        } catch (\Throwable $e) {
-            Log::error('RajaOngkir location request exception', [
-                'path' => $path,
-                'message' => $e->getMessage(),
-            ]);
 
-            return collect();
-        }
+            return collect(data_get($response->json(), 'data', []))
+                ->filter(fn ($item): bool => is_array($item))
+                ->map(fn (array $item): array => [
+                    'code' => (string) data_get($item, 'id', data_get($item, 'code', '')),
+                    'name' => (string) data_get($item, 'name', ''),
+                    'normalized_name' => preg_replace('/\s+/', ' ', trim(mb_strtolower((string) data_get($item, 'name', '')))),
+                    'zip_code' => (string) data_get($item, 'zip_code', ''),
+                ])
+                ->filter(fn (array $item): bool => $item['code'] !== '' && $item['name'] !== '')
+                ->values()
+                ->all();
+        });
 
-        $records = collect(data_get($response->json(), 'data', []))
-            ->filter(fn ($item): bool => is_array($item))
-            ->map(fn (array $item): array => [
-                'code' => (string) data_get($item, 'id', data_get($item, 'code', '')),
-                'name' => (string) data_get($item, 'name', ''),
-                'zip_code' => (string) data_get($item, 'zip_code', ''),
-            ])
-            ->filter(fn (array $item): bool => $item['code'] !== '' && $item['name'] !== '')
-            ->values();
-
-        Cache::put($cacheKey, $records, now()->addSeconds((int) config('services.rajaongkir.cache_ttl', 86400)));
-
-        return $records;
+        return collect($cached);
     }
 
     /**
@@ -162,67 +159,61 @@ class RajaOngkirLocationLookup
     private function searchList(string $path, array $query): Collection
     {
         $cacheKey = $this->cacheKey($path . ':' . md5(json_encode($query)));
+        $ttl = (int) config('services.rajaongkir.cache_ttl', 86400);
 
-        if (Cache::has($cacheKey)) {
-            $cached = Cache::get($cacheKey);
+        $cached = Cache::remember($cacheKey, now()->addSeconds($ttl), function () use ($path, $query): array {
+            try {
+                $response = Http::acceptJson()
+                    ->timeout(10)
+                    ->retry(2, 250)
+                    ->withHeaders($this->headers())
+                    ->get($this->endpoint($path), $query);
 
-            return $cached instanceof Collection ? $cached : collect($cached ?? []);
-        }
+                if (! $response->successful()) {
+                    Log::warning('RajaOngkir destination search failed', [
+                        'path' => $path,
+                        'query' => $query,
+                        'status' => $response->status(),
+                    ]);
 
-        try {
-            $response = Http::acceptJson()
-                ->timeout(10)
-                ->retry(2, 250)
-                ->withHeaders($this->headers())
-                ->get($this->endpoint($path), $query);
-
-            if (! $response->successful()) {
-                Log::warning('RajaOngkir destination search failed', [
+                    return [];
+                }
+            } catch (\Throwable $e) {
+                Log::error('RajaOngkir destination search exception', [
                     'path' => $path,
                     'query' => $query,
-                    'status' => $response->status(),
+                    'message' => $e->getMessage(),
                 ]);
 
-                return collect();
+                return [];
             }
-        } catch (\Throwable $e) {
-            Log::error('RajaOngkir destination search exception', [
-                'path' => $path,
-                'query' => $query,
-                'message' => $e->getMessage(),
-            ]);
 
-            return collect();
-        }
+            return collect(data_get($response->json(), 'data', []))
+                ->filter(fn ($item): bool => is_array($item))
+                ->map(function (array $item): array {
+                    return [
+                        'id' => (string) data_get($item, 'id', ''),
+                        'label' => (string) data_get($item, 'label', ''),
+                        'province_name' => (string) data_get($item, 'province_name', ''),
+                        'city_name' => (string) data_get($item, 'city_name', ''),
+                        'district_name' => (string) data_get($item, 'district_name', ''),
+                        'subdistrict_name' => (string) data_get($item, 'subdistrict_name', ''),
+                        'zip_code' => (string) data_get($item, 'zip_code', ''),
+                    ];
+                })
+                ->filter(fn (array $item): bool => $item['id'] !== '' && $item['label'] !== '')
+                ->values()
+                ->all();
+        });
 
-        $records = collect(data_get($response->json(), 'data', []))
-            ->filter(fn ($item): bool => is_array($item))
-            ->map(function (array $item): array {
-                return [
-                    'id' => (string) data_get($item, 'id', ''),
-                    'label' => (string) data_get($item, 'label', ''),
-                    'province_name' => (string) data_get($item, 'province_name', ''),
-                    'city_name' => (string) data_get($item, 'city_name', ''),
-                    'district_name' => (string) data_get($item, 'district_name', ''),
-                    'subdistrict_name' => (string) data_get($item, 'subdistrict_name', ''),
-                    'zip_code' => (string) data_get($item, 'zip_code', ''),
-                ];
-            })
-            ->filter(fn (array $item): bool => $item['id'] !== '' && $item['label'] !== '')
-            ->values();
-
-        Cache::put($cacheKey, $records, now()->addSeconds((int) config('services.rajaongkir.cache_ttl', 86400)));
-
-        return $records;
+        return collect($cached);
     }
 
     private function findByName(Collection $items, string $name): ?array
     {
         $needle = $this->normalizeName($name);
 
-        return $items->first(function (array $item) use ($needle): bool {
-            return $this->normalizeName((string) ($item['name'] ?? '')) === $needle;
-        });
+        return $items->keyBy('normalized_name')->get($needle);
     }
 
     private function normalizeName(string $value): string

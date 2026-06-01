@@ -15,31 +15,46 @@ class RajaOngkirShippingService
     public function quoteForAddress(UserAddress $address, string $courierCode, string $serviceCode, int $weight): array
     {
         $destinationId = $this->destinationIdForAddress($address);
+        $origin = (int) setting('shop.seller_subdistrict_id', config('services.rajaongkir.origin_id', 17693));
+        $priceType = (string) config('services.rajaongkir.price_type', 'lowest');
 
-        $response = Http::withHeaders($this->headers())
-            ->asForm()
-            ->timeout(10)
-            ->retry(2, 250)
-            ->post($this->endpoint('calculate/domestic-cost'), [
-                'origin' => (int) setting('shop.seller_subdistrict_id', config('services.rajaongkir.origin_id', 17693)),
-                'destination' => $destinationId,
-                'weight' => $weight,
-                'courier' => $courierCode,
-                'price' => (string) config('services.rajaongkir.price_type', 'lowest'),
-            ]);
+        // Cache shipping quote calculation for 30 minutes to make form adjustments instant
+        $cacheKey = 'rajaongkir_quote_' . md5(implode('_', [
+            $origin,
+            $destinationId,
+            $weight,
+            $courierCode,
+            $priceType
+        ]));
 
-        if (! $response->successful()) {
-            Log::warning('RajaOngkir shipping quote failed', [
-                'address_id' => $address->id,
-                'status' => $response->status(),
-            ]);
+        $shippingData = cache()->remember($cacheKey, now()->addMinutes(30), function () use ($origin, $destinationId, $weight, $courierCode, $priceType, $address) {
+            $response = Http::withHeaders($this->headers())
+                ->asForm()
+                ->timeout(10)
+                ->retry(2, 250)
+                ->post($this->endpoint('calculate/domestic-cost'), [
+                    'origin' => $origin,
+                    'destination' => $destinationId,
+                    'weight' => $weight,
+                    'courier' => $courierCode,
+                    'price' => $priceType,
+                ]);
 
-            throw ValidationException::withMessages([
-                'courier_code' => 'Unable to calculate shipping cost for selected address.',
-            ]);
-        }
+            if (! $response->successful()) {
+                Log::warning('RajaOngkir shipping quote failed', [
+                    'address_id' => $address->id,
+                    'status' => $response->status(),
+                ]);
 
-        $quote = collect(data_get($response->json(), 'data', []))
+                throw ValidationException::withMessages([
+                    'courier_code' => 'Unable to calculate shipping cost for selected address.',
+                ]);
+            }
+
+            return data_get($response->json(), 'data', []);
+        });
+
+        $quote = collect($shippingData)
             ->filter(fn (mixed $item): bool => is_array($item))
             ->first(fn (array $item): bool => strcasecmp((string) data_get($item, 'service'), $serviceCode) === 0);
 
@@ -113,40 +128,44 @@ class RajaOngkirShippingService
 
     private function destinationIdForAddress(UserAddress $address): int
     {
-        $response = Http::acceptJson()
-            ->timeout(10)
-            ->retry(2, 250)
-            ->withHeaders($this->headers())
-            ->get($this->endpoint('destination/domestic-destination'), [
-                'search' => $address->postal_code,
-                'limit' => 5,
-                'offset' => 0,
-            ]);
+        $cacheKey = 'rajaongkir_destination_id_' . md5($address->postal_code);
 
-        if (! $response->successful()) {
-            Log::warning('RajaOngkir destination lookup failed during checkout', [
-                'address_id' => $address->id,
-                'status' => $response->status(),
-            ]);
+        return cache()->remember($cacheKey, now()->addDays(30), function () use ($address) {
+            $response = Http::acceptJson()
+                ->timeout(10)
+                ->retry(2, 250)
+                ->withHeaders($this->headers())
+                ->get($this->endpoint('destination/domestic-destination'), [
+                    'search' => $address->postal_code,
+                    'limit' => 5,
+                    'offset' => 0,
+                ]);
 
-            throw ValidationException::withMessages([
-                'address_id' => 'Unable to resolve shipping destination for selected address.',
-            ]);
-        }
+            if (! $response->successful()) {
+                Log::warning('RajaOngkir destination lookup failed during checkout', [
+                    'address_id' => $address->id,
+                    'status' => $response->status(),
+                ]);
 
-        $destination = collect(data_get($response->json(), 'data', []))
-            ->filter(fn (mixed $item): bool => is_array($item))
-            ->first();
+                throw ValidationException::withMessages([
+                    'address_id' => 'Unable to resolve shipping destination for selected address.',
+                ]);
+            }
 
-        $destinationId = (int) data_get($destination, 'id', 0);
+            $destination = collect(data_get($response->json(), 'data', []))
+                ->filter(fn (mixed $item): bool => is_array($item))
+                ->first();
 
-        if ($destinationId <= 0) {
-            throw ValidationException::withMessages([
-                'address_id' => 'Selected address cannot be matched to a shipping destination.',
-            ]);
-        }
+            $destinationId = (int) data_get($destination, 'id', 0);
 
-        return $destinationId;
+            if ($destinationId <= 0) {
+                throw ValidationException::withMessages([
+                    'address_id' => 'Selected address cannot be matched to a shipping destination.',
+                ]);
+            }
+
+            return $destinationId;
+        });
     }
 
     /**

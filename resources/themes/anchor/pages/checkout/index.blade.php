@@ -8,17 +8,7 @@ name('checkout');
     'title' => 'Checkout - Komunitas Historia Indonesia',
     'description' => 'Complete your order securely and support historical education programs and archive conservation.',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
-
-    @php
+@php
         // Get the authenticated user
         $user = auth()->user();
 
@@ -26,7 +16,7 @@ name('checkout');
         $cart = null;
         $addresses = collect();
         if ($user) {
-            $cart = \App\Models\Cart::with(['items.variant.product', 'items.variant.variantAttributes.attributeValue'])
+            $cart = \App\Models\Cart::with(['items.variant.product.images', 'items.variant.variantAttributes.attributeValue'])
                 ->where('user_id', $user->id)
                 ->where('status', 'active')
                 ->first();

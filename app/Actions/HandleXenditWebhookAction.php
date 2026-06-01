@@ -199,13 +199,21 @@ class HandleXenditWebhookAction
     private function restoreOrderStock(Order $order): void
     {
         $orderItems = $order->items()->get();
+        if ($orderItems->isEmpty()) {
+            return;
+        }
+
+        $variantIds = $orderItems->pluck('variant_id')->filter()->all();
+        
+        // Pessimistic lock on all variant records in a single thread-safe batch query
+        $variants = Variant::query()
+            ->whereIn('id', $variantIds)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
 
         foreach ($orderItems as $item) {
-            // Pessimistic lock on variant record to ensure thread-safe stock updates
-            $variant = Variant::query()
-                ->whereKey($item->variant_id)
-                ->lockForUpdate()
-                ->first();
+            $variant = $variants->get($item->variant_id);
 
             if ($variant) {
                 $variant->increaseStock($item->quantity);

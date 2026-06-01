@@ -44,17 +44,7 @@
     'title' => 'Events - Komunitas Historia Indonesia',
     'description' => 'Join our upcoming walking tours, heritage seminars, museum exhibitions, and historical education events.',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
-
-    <div class="relative min-h-screen py-12 md:py-20">
+<div class="relative min-h-screen py-12 md:py-20">
         <x-container>
             
             <!-- Page Header Section -->

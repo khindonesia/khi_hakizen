@@ -7,15 +7,7 @@ name("merchandise");
     'title' => 'Komunitas Historia Indonesia - Merchandise',
     'description' => 'Official merchandise from Komunitas Historia Indonesia. Support historical preservation with every purchase.',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
+
 
     @php
         $selectedCategory = request()->integer("category");
@@ -92,7 +84,7 @@ name("merchandise");
             <!-- Product Grid -->
             <div class="mb-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($products as $product)
-                    <x-merchandise.card :product="$product" />
+                    <x-merchandise.card :product="$product" :is-first="$loop->first" />
                 @endforeach
             </div>
 

@@ -73,7 +73,12 @@ class CheckoutController extends Controller
         if (auth()->check()) {
             $user = auth()->user();
             $cart = \App\Models\Cart::query()
-                ->with('items.variant.product')
+                ->select(['id', 'user_id', 'status'])
+                ->with([
+                    'items:id,cart_id,variant_id,quantity',
+                    'items.variant:id,product_id',
+                    'items.variant.product:id,weight'
+                ])
                 ->where('user_id', $user->id)
                 ->where('status', 'active')
                 ->first();

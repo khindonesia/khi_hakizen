@@ -69,14 +69,7 @@
     'image' => $mainImageUrl,
     'type' => 'product',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    </style>
-    @endpush
-    @if($product)
+@if($product)
     <div class="relative min-h-screen py-12 md:py-16">
         <x-container>
             <!-- Back Link -->
@@ -89,7 +82,13 @@
                 <!-- Left Column: Image Gallery -->
                 <div class="lg:col-span-6">
                     <div class="relative overflow-hidden rounded-[28px] border border-zinc-200/80 bg-white shadow-sm">
-                        <img src="{{ $galleryItems->first() ?? $fallbackImageUrl }}" alt="{{ $product->name }}" class="w-full h-auto object-cover">
+                        <img src="{{ $galleryItems->first() ?? $fallbackImageUrl }}"
+                             alt="{{ $product->name }}"
+                             width="800"
+                             height="800"
+                             fetchpriority="high"
+                             decoding="sync"
+                             class="w-full h-auto object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                     </div>
                     <!-- Thumbnail carousel (if more images) -->
@@ -97,9 +96,15 @@
                         <div class="mt-4 grid grid-cols-4 gap-2">
                             @foreach($galleryItems->skip(1) as $thumb)
                             <button type="button" class="relative overflow-hidden rounded-2xl border border-zinc-200/80 transition-all hover:border-red-300" onclick="this.parentElement.parentElement.querySelector('img').src='{{ $thumb }}'">
-                                <img src="{{ $thumb }}" alt="Thumbnail" class="w-full h-20 object-cover">
+                                <img src="{{ $thumb }}"
+                                     alt="Thumbnail"
+                                     width="200"
+                                     height="200"
+                                     loading="lazy"
+                                     decoding="async"
+                                     class="w-full h-20 object-cover">
                             </button>
-                        @endforeach
+                            @endforeach
                         </div>
                     @endif
                 </div>
@@ -300,7 +305,7 @@
                         <div class="border-t border-zinc-200/70 pt-4">
                             <h2 class="mb-2 text-lg font-semibold text-zinc-900">Product Description</h2>
                             <div class="prose prose-sm max-w-none text-zinc-500">
-                                {!! $product->description !!}
+                                {!! clean($product->description) !!}
                             </div>
                         </div>
                     </div>

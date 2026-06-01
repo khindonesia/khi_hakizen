@@ -26,10 +26,6 @@ new class extends Component implements HasForms
     use InteractsWithForms;
 
     public ?array $data = [];
-    public array $provinces = [];
-    public array $cities = [];
-    public array $districts = [];
-    public array $subdistricts = [];
     public int|string|null $addressId = null;
     public bool $isPrimary = false;
     public bool $locationResolved = true;
@@ -46,10 +42,6 @@ new class extends Component implements HasForms
 
         $this->isPrimary = $initialState['is_primary'];
         $this->locationResolved = $initialState['location_resolved'];
-        $this->provinces = $initialState['provinces'];
-        $this->cities = $initialState['cities'];
-        $this->districts = $initialState['districts'];
-        $this->subdistricts = $initialState['subdistricts'];
         $this->form->fill($initialState['form']);
     }
 
@@ -82,13 +74,13 @@ new class extends Component implements HasForms
                                     ->required(),
                                 Select::make('province_id')
                                     ->label('Province')
-                                    ->options(fn (): array => collect($this->provinces)->pluck('name', 'code')->all())
+                                    ->options(fn (): array => app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->provinceOptions())
                                     ->searchable()
                                     ->reactive()
                                     ->required()
                                     ->placeholder('Select province')
                                     ->afterStateUpdated(function (Set $set, Get $get): void {
-                                        $province = collect($this->provinces)->firstWhere('code', $get('province_id'));
+                                        $province = app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->provinceByCode((string) $get('province_id'));
                                         $set('province_name', data_get($province, 'name'));
                                         $set('city_id', null);
                                         $set('city_name', null);
@@ -100,7 +92,7 @@ new class extends Component implements HasForms
                                 Select::make('city_id')
                                     ->label('City / Regency')
                                     ->options(fn (Get $get): array => filled($get('province_id'))
-                                        ? collect($this->cities)->pluck('name', 'code')->all()
+                                        ? app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->cityOptions((string) $get('province_id'))
                                         : [])
                                     ->searchable()
                                     ->reactive()
@@ -108,7 +100,7 @@ new class extends Component implements HasForms
                                     ->placeholder('Select city or regency')
                                     ->disabled(fn (Get $get): bool => blank($get('province_id')))
                                     ->afterStateUpdated(function (Set $set, Get $get): void {
-                                        $city = collect($this->cities)->firstWhere('code', $get('city_id'));
+                                        $city = app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->cityByCode((string) $get('province_id'), (string) $get('city_id'));
                                         $set('city_name', data_get($city, 'name'));
                                         $set('district_id', null);
                                         $set('district_name', null);
@@ -118,7 +110,7 @@ new class extends Component implements HasForms
                                 Select::make('district_id')
                                     ->label('District / Kecamatan')
                                     ->options(fn (Get $get): array => filled($get('city_id'))
-                                        ? collect($this->districts)->pluck('name', 'code')->all()
+                                        ? app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->districtOptions((string) $get('city_id'))
                                         : [])
                                     ->searchable()
                                     ->reactive()
@@ -126,7 +118,7 @@ new class extends Component implements HasForms
                                     ->placeholder('Select district')
                                     ->disabled(fn (Get $get): bool => blank($get('city_id')))
                                     ->afterStateUpdated(function (Set $set, Get $get): void {
-                                        $district = collect($this->districts)->firstWhere('code', $get('district_id'));
+                                        $district = app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->districtByCode((string) $get('city_id'), (string) $get('district_id'));
                                         $set('district_name', data_get($district, 'name'));
                                         $set('subdistrict_id', null);
                                         $set('subdistrict_name', null);
@@ -134,7 +126,7 @@ new class extends Component implements HasForms
                                 Select::make('subdistrict_id')
                                     ->label('Subdistrict / Kelurahan')
                                     ->options(fn (Get $get): array => filled($get('district_id'))
-                                        ? collect($this->subdistricts)->pluck('name', 'code')->all()
+                                        ? app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->subdistrictOptions((string) $get('district_id'))
                                         : [])
                                     ->searchable()
                                     ->reactive()
@@ -142,7 +134,7 @@ new class extends Component implements HasForms
                                     ->placeholder('Select subdistrict')
                                     ->disabled(fn (Get $get): bool => blank($get('district_id')))
                                     ->afterStateUpdated(function (Set $set, Get $get): void {
-                                        $subdistrict = collect($this->subdistricts)->firstWhere('code', $get('subdistrict_id'));
+                                        $subdistrict = app(\App\Http\Controllers\RajaOngkirLocationLookup::class)->subdistrictByCode((string) $get('district_id'), (string) $get('subdistrict_id'));
                                         $set('subdistrict_name', data_get($subdistrict, 'name'));
                                         if (filled(data_get($subdistrict, 'zip_code'))) {
                                             $set('postal_code', data_get($subdistrict, 'zip_code'));
@@ -200,24 +192,6 @@ new class extends Component implements HasForms
                 ->body('RajaOngkir data could not be resolved. Please re-select the region fields.')
                 ->send();
         }
-    }
-
-    public function updatedDataProvinceId(?string $value): void
-    {
-        $this->cities = $this->action()->cities($value);
-        $this->districts = [];
-        $this->subdistricts = [];
-    }
-
-    public function updatedDataCityId(?string $value): void
-    {
-        $this->districts = $this->action()->districts($value);
-        $this->subdistricts = [];
-    }
-
-    public function updatedDataDistrictId(?string $value): void
-    {
-        $this->subdistricts = $this->action()->subdistricts($value);
     }
 };
 ?>

@@ -109,14 +109,12 @@ class Variant extends Model
      */
     protected static function booted()
     {
-        static::saved(function ($variant) {
+        static::saving(function ($variant) {
             // Update stock status jika diperlukan
             if ($variant->stock_quantity <= 0 && $variant->status !== 'out_of_stock') {
                 $variant->status = 'out_of_stock';
-                $variant->saveQuietly();
             } elseif ($variant->stock_quantity > 0 && $variant->status === 'out_of_stock') {
                 $variant->status = 'active';
-                $variant->saveQuietly();
             }
         });
     }

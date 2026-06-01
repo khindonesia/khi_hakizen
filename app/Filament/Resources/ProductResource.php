@@ -391,6 +391,11 @@ class ProductResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['category', 'defaultVariant', 'variants', 'images']);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -401,11 +406,11 @@ class ProductResource extends Resource
                         fn(Product $record) => $record->defaultVariant && $record->defaultVariant->image_url
                             ? asset('storage/' . $record->defaultVariant->image_url)
                             : (
-                                $record->variants()->exists() && $record->variants()->first()->image_url
-                                ? asset('storage/' . $record->variants()->first()->image_url)
+                                ($firstVariant = $record->variants->first()) && $firstVariant->image_url
+                                ? asset('storage/' . $firstVariant->image_url)
                                 : (
-                                    $record->images()->first()
-                                    ? asset('storage/' . $record->images()->first()->image_url)
+                                    ($firstImage = $record->images->first())
+                                    ? asset('storage/' . $firstImage->image_url)
                                     : asset('images/no-image.jpg')
                                 )
                             )
@@ -430,7 +435,7 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('displayPrice')
                     ->label('Price')
                     ->formatStateUsing(function ($state, Product $record) {
-                        $defaultVariant = $record->variants()->where('is_default', true)->first();
+                        $defaultVariant = $record->defaultVariant ?? $record->variants->first();
 
                         if ($defaultVariant) {
                             return 'Rp ' . number_format((float)$defaultVariant->price, 0, ',', '.');
@@ -443,7 +448,7 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('availableStock')
                     ->label('Stock')
                     ->formatStateUsing(function ($state, Product $record) {
-                        $defaultVariant = $record->variants()->where('is_default', true)->first();
+                        $defaultVariant = $record->defaultVariant ?? $record->variants->first();
 
                         if ($defaultVariant) {
                             return $defaultVariant->stock_quantity;

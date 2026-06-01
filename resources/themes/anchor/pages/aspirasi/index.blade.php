@@ -97,17 +97,7 @@ new class extends Component {
     'title' => 'Aspirasi Komunitas - Komunitas Historia Indonesia',
     'description' => 'Platform aspirasi, artikel, usulan cagar budaya, dan opini sejarah yang ditulis langsung oleh anggota Komunitas Historia Indonesia.',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
-
-    <div class="bg-[#fffafb] min-h-screen font-['Inter'] py-12 md:py-20" x-data="{ createOpen: false, authOpen: false }" @close-modal.window="createOpen = false" x-cloak>
+<div class="bg-[#fffafb] min-h-screen font-['Inter'] py-12 md:py-20" x-data="{ createOpen: false, authOpen: false }" @close-modal.window="createOpen = false" x-cloak>
         <x-container>
             @volt('aspirasi')
             <div class="w-full">

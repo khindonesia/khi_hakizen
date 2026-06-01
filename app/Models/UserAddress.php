@@ -97,12 +97,11 @@ class UserAddress extends Model
         });
 
         // Untuk memastikan user selalu memiliki alamat primary jika ini adalah alamat pertamanya
-        static::created(function ($address) {
+        static::creating(function ($address) {
             // Jika ini alamat pertama user, jadikan sebagai primary
             $count = self::where('user_id', $address->user_id)->count();
-            if ($count === 1) {
+            if ($count === 0) {
                 $address->is_primary = true;
-                $address->save();
             }
         });
     }

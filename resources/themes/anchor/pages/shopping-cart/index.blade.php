@@ -5,7 +5,7 @@
     name('shopping-cart');
 
     render(function (View $view): View {
-        $cart = \App\Models\Cart::with(['items.variant.product', 'items.variant.variantAttributes.attributeValue'])
+        $cart = \App\Models\Cart::with(['items.variant.product.images', 'items.variant.variantAttributes.attributeValue'])
             ->where('user_id', auth()->id())
             ->where('status', 'active')
             ->first();
@@ -25,17 +25,7 @@
     'title' => 'Shopping Cart - Komunitas Historia Indonesia',
     'description' => 'Review the items in your cart, adjust quantities, and continue to checkout with a premium historical store experience.',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
-
-    <div class="relative min-h-screen">
+<div class="relative min-h-screen">
         <!-- Main Content -->
         <main class="relative mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-8 px-4 py-12 sm:px-6 md:py-20 lg:grid-cols-12">
             

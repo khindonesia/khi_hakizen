@@ -1,4 +1,4 @@
-@props(['product'])
+@props(['product', 'isFirst' => false])
 
 @php
     $normalizeImageUrl = static fn (?string $path) => $path ? (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://']) ? $path : \Illuminate\Support\Facades\Storage::url(ltrim($path, '/'))) : null;
@@ -21,9 +21,18 @@
 <article class="bg-white border border-[#E9E9E8] rounded-xl overflow-hidden group hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
     <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="aspect-square bg-[#e7e0eb]/30 relative overflow-hidden flex items-center justify-center p-8">
         @if ($productImage)
-            <img alt="{{ $product->name }}" 
-                 class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" 
-                 src="{{ $productImage }}">
+            <img alt="{{ $product->name }}"
+                 class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                 src="{{ $productImage }}"
+                 @if ($isFirst)
+                     fetchpriority="high"
+                     loading="eager"
+                 @else
+                     loading="lazy"
+                     decoding="async"
+                 @endif
+                 width="400"
+                 height="400">
         @else
             <div class="text-[#979A9B] flex flex-col items-center">
                 <span class="material-symbols-outlined text-5xl mb-2">image</span>

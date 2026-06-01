@@ -16,25 +16,7 @@
     'image' => ($book && $book->cover_image) ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url(ltrim($book->cover_image, '/'))) : url('/og_image.png'),
     'type' => 'book',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .book-cover-container {
-            max-width: 340px;
-        }
-        @media (max-width: 767px) {
-            .book-cover-container {
-                max-width: 100%;
-            }
-        }
-    </style>
-    @endpush
-
-    <div class="bg-[#fffafb] min-h-screen font-['Inter'] py-12 md:py-16">
+<div class="bg-[#fffafb] min-h-screen font-['Inter'] py-12 md:py-16">
         <x-container class="px-6">
 
             <!-- Breadcrumbs / Back navigation link -->

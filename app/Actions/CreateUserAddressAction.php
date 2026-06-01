@@ -37,26 +37,15 @@ class CreateUserAddressAction
             $location = $this->resolveLocationData($state);
             $shouldBePrimary = (bool) ($state['is_primary'] ?? false) || ! $user->userAddresses()->exists();
 
-            $address = UserAddress::query()->create(array_merge(
+            return UserAddress::query()->create(array_merge(
                 $this->editableData($state),
                 $location,
                 [
                     'country' => 'Indonesia',
                     'user_id' => $user->id,
-                    'is_primary' => false,
+                    'is_primary' => $shouldBePrimary,
                 ],
             ));
-
-            if ($shouldBePrimary) {
-                UserAddress::query()
-                    ->where('user_id', $user->id)
-                    ->whereKeyNot($address->id)
-                    ->update(['is_primary' => false]);
-
-                $address->forceFill(['is_primary' => true])->save();
-            }
-
-            return $address;
         });
     }
 

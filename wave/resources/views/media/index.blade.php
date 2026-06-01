@@ -267,23 +267,49 @@ use Filament\Actions\DeleteAction;
 
         // Upload functionality
 
-        public function updatedUpload()
+        /** @var list<string> */
+        private array $allowedMimes = [
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            'application/pdf',
+            'application/zip', 'application/x-zip-compressed',
+            'video/mp4',
+            'audio/mpeg',
+            'text/csv', 'text/plain',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+
+        public function updatedUpload(): void
         {
+            // Layer 1: validasi ekstensi (whitelist) dan ukuran
             $this->validate([
-                'upload' => 'required|file|max:10240', // 10MB Max
+                'upload' => [
+                    'required',
+                    'file',
+                    'max:10240',
+                    'mimes:jpg,jpeg,png,gif,webp,pdf,zip,mp4,mp3,csv,txt,xlsx,docx',
+                ],
             ]);
 
-            $fileName = $this->upload->getClientOriginalName();
-            $filePath = $this->stripDoubleSlashesFromString($this->folder . '/' . $fileName);
-
-            // Check if file already exists
-            if ($this->storage($this->disk)->exists($filePath)) {
-                $this->addError('upload', 'A file with this name already exists.');
+            // Layer 2: verifikasi MIME dari ISI file sesungguhnya (bukan header client)
+            $detectedMime = $this->upload->getMimeType();
+            if (! in_array($detectedMime, $this->allowedMimes, true)) {
+                $this->addError(
+                    'upload',
+                    'Tipe file tidak diizinkan. File terdeteksi sebagai: ' . $detectedMime
+                );
                 return;
             }
 
+            // Layer 3: gunakan nama file acak (UUID) — JANGAN percaya nama dari client
+            $clientExtension = strtolower($this->upload->getClientOriginalExtension());
+            $safeExtension   = preg_replace('/[^a-z0-9]/i', '', $clientExtension);
+            $safeFileName    = \Illuminate\Support\Str::uuid() . '.' . $safeExtension;
+
+            $filePath = $this->stripDoubleSlashesFromString($this->folder . '/' . $safeFileName);
+
             // Store the file
-            $path = $this->upload->storeAs($this->folder, $fileName, $this->disk);
+            $path = $this->upload->storeAs($this->folder, $safeFileName, $this->disk);
 
             if ($path) {
                 Notification::make()
@@ -291,8 +317,8 @@ use Filament\Actions\DeleteAction;
                     ->success()
                     ->send();
 
-                $this->upload = null; // Reset the upload property
-                $this->refresh(); // Refresh the file list
+                $this->upload = null;
+                $this->refresh();
             } else {
                 Notification::make()
                     ->title('File upload failed')
@@ -301,23 +327,25 @@ use Filament\Actions\DeleteAction;
             }
         }
 
-        public function getUploadRules()
+        public function getUploadRules(): array
         {
             return [
                 'upload' => [
                     'required',
                     'file',
-                    'max:10240', // 10MB Max
+                    'max:10240',
+                    'mimes:jpg,jpeg,png,gif,webp,pdf,zip,mp4,mp3,csv,txt,xlsx,docx',
                 ],
             ];
         }
 
-        public function getUploadMessages()
+        public function getUploadMessages(): array
         {
             return [
-                'upload.required' => 'Please select a file to upload.',
-                'upload.file' => 'The uploaded file is not valid.',
-                'upload.max' => 'The file size should not exceed 10MB.',
+                'upload.required' => 'Pilih file yang akan diupload.',
+                'upload.file'     => 'File yang diupload tidak valid.',
+                'upload.max'      => 'Ukuran file tidak boleh melebihi 10MB.',
+                'upload.mimes'    => 'Tipe file tidak diizinkan.',
             ];
         }
 

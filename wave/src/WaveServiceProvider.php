@@ -87,9 +87,47 @@ class WaveServiceProvider extends ServiceProvider
         ]);
 
         Validator::extend('imageable', function ($attribute, $value, $params, $validator) {
+            // Untuk base64 string (avatar dari Livewire)
+            if (is_string($value) && str_starts_with($value, 'data:')) {
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+                // Ekstrak MIME dari header base64
+                if (!preg_match('/^data:(image\/\w+);base64,/', $value, $matches)) {
+                    return false;
+                }
+                
+                if (empty($matches[1]) || !in_array($matches[1], $allowedMimes)) {
+                    return false;
+                }
+
+                // Decode dan validasi ukuran
+                $base64Data = explode(',', $value)[1] ?? '';
+                $decoded = base64_decode($base64Data, true);
+                if ($decoded === false || strlen($decoded) > 5 * 1024 * 1024) {
+                    return false; // Tolak jika bukan base64 valid atau > 5MB
+                }
+
+                // Cek magic bytes (image header sebenarnya, bukan hanya klaim MIME)
+                $magicBytes = substr($decoded, 0, 12);
+                $isJpeg = str_starts_with($magicBytes, "\xFF\xD8\xFF");
+                $isPng  = str_starts_with($magicBytes, "\x89PNG\r\n");
+                $isGif  = str_starts_with($magicBytes, "GIF8");
+                $isWebP = str_starts_with($magicBytes, "RIFF") && str_contains(substr($magicBytes, 0, 12), "WEBP");
+
+                return $isJpeg || $isPng || $isGif || $isWebP;
+            }
+
+            // Untuk UploadedFile object (upload langsung)
+            if ($value instanceof \Illuminate\Http\UploadedFile) {
+                return in_array($value->getMimeType(), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                    && $value->getSize() <= 5 * 1024 * 1024;
+            }
+
+            // Fallback jika berupa path file / string biasa
             try {
-                ImageManagerStatic::make($value);
-                return true;
+                $image = ImageManagerStatic::make($value);
+                $allowedImageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                return in_array($image->mime(), $allowedImageMimes, true);
             } catch (\Exception $e) {
                 return false;
             }

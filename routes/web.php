@@ -74,6 +74,10 @@ Route::get('/dashboard/events/{event}/ticket', [App\Http\Controllers\EventTicket
     ->middleware('auth')
     ->name('dashboard.events.ticket');
 
+Route::get('/files/exports/{filename}', [App\Http\Controllers\PrivateFileController::class, 'downloadExport'])
+    ->middleware('auth')
+    ->name('files.export');
+
 
 // Xendit webhook callback
 Route::post('/api/xendit/callback', [XenditController::class, 'handleCallback'])

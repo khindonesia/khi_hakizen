@@ -75,7 +75,7 @@
 
                     <div
                         class="prose prose-zinc max-w-none text-[#575e75] prose-headings:text-[#37352F] prose-headings:font-semibold prose-a:text-[#df1c24] prose-strong:text-[#37352F] prose-img:rounded-2xl prose-img:shadow-sm leading-[1.8]">
-                        {!! $body !!}
+                        {!! clean($body) !!}
                     </div>
                 </div>
             </div>

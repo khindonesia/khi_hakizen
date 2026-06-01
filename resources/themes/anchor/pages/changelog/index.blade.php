@@ -28,7 +28,7 @@
                         <div class="relative">
                             <a href="{{ route('changelog', ['changelog' => $changelog->id]) }}" class="text-xl no-underline hover:underline" wire:navigate>{{ $changelog->title }}</a>
                             <div class="mx-auto mt-5 prose-sm prose text-zinc-600 dark:text-zinc-300">
-                                {!! $changelog->body !!}
+                                {!! clean($changelog->body) !!}
                             </div>
                             @if(!$loop->last)
                                 <hr class="block my-10 border-dashed">

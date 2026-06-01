@@ -54,53 +54,7 @@
 ?>
 
 <x-layouts.app>
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        /* Custom styles matching premium Google Stitch/Notion design system */
-        .stitch-chip {
-            background-color: #FFF9E6;
-            color: #B28200;
-            border: 1px solid #FFEBB3;
-            border-radius: 9999px;
-            padding: 4px 12px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .dark .stitch-chip {
-            background-color: rgba(178, 130, 0, 0.1);
-            color: #FFD566;
-            border-color: rgba(178, 130, 0, 0.2);
-        }
-        .stitch-panel {
-            background: #FFFFFF;
-            border: 1px solid #E9E9E8;
-            box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.02), 0px 4px 16px rgba(0, 0, 0, 0.01);
-            border-radius: 20px;
-        }
-        .dark .stitch-panel {
-            background: #18181B;
-            border-color: #27272A;
-            box-shadow: none;
-        }
-        .bg-card-tint-peach { background-color: #FFF0EA; }
-        .bg-card-tint-sky { background-color: #EBF5FF; }
-        .bg-card-tint-mint { background-color: #EBF9F4; }
-        .bg-card-tint-cream { background-color: #FDFCF7; }
-        .bg-card-tint-lavender { background-color: #fff5f5; }
-    </style>
-    @endpush
-
-    <div class="max-w-[1200px] mx-auto space-y-8" 
+<div class="max-w-[1200px] mx-auto space-y-8" 
          x-data="{ showModal: false, activeEvent: null }"
          x-init="window.addEventListener('keydown', (e) => { if(e.key === 'Escape') showModal = false; })">
         

@@ -26,32 +26,15 @@ class ExportOrdersAction extends Action
                     'to_date' => $data['to_date'] ?? 'No end date'
                 ]);
 
-                // Efficient query with eager loading to minimize database calls
-                $orders = Order::query()
-                    ->with(['user', 'address', 'items.product', 'items.variant'])
-                    ->when(
-                        $data['from_date'] ?? null,
-                        fn($query, $fromDate) => $query->whereDate('created_at', '>=', $fromDate)
-                    )
-                    ->when(
-                        $data['to_date'] ?? null,
-                        fn($query, $toDate) => $query->whereDate('created_at', '<=', $toDate)
-                    )
-                    ->when(
-                        $data['status'] ?? null,
-                        fn($query, $status) => $query->where('status', $status)
-                    )
-                    ->when(
-                        $data['payment_status'] ?? null,
-                        fn($query, $paymentStatus) => $query->where('payment_status', $paymentStatus)
-                    )
-                    ->get();
+                // Generate filename with timestamp for uniqueness
+                $filename = 'exports/orders_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
-                // Log the query result count
-                Log::info('Orders fetched', ['count' => $orders->count()]);
+                // Ensure directory exists
+                Storage::disk('private')->makeDirectory('exports');
+                $filePath = Storage::disk('private')->path($filename);
 
-                // Create CSV with optimized memory usage
-                $csv = Writer::createFromString();
+                // Create CSV writer from path to stream directly to disk (O(1) memory)
+                $csv = Writer::createFromPath($filePath, 'w+');
 
                 // Add headers
                 $csv->insertOne([
@@ -71,28 +54,47 @@ class ExportOrdersAction extends Action
                     'Order Status',
                 ]);
 
-                // Add data
-                foreach ($orders as $order) {
+                // Efficient query with column selection to reduce payload
+                $ordersQuery = Order::query()
+                    ->select([
+                        'id', 'invoice_id', 'created_at', 'user_id', 'address_id',
+                        'subtotal', 'shipping_fee', 'total_amount', 'payment_status', 'status'
+                    ])
+                    ->with([
+                        'user:id,name,email,phone',
+                        'address:id,address_line,city,postal_code',
+                        'items:id,order_id,product_id,variant_id,quantity',
+                        'items.product:id,name',
+                        'items.variant:id,sku'
+                    ])
+                    ->when(
+                        $data['from_date'] ?? null,
+                        fn($query, $fromDate) => $query->whereDate('created_at', '>=', $fromDate)
+                    )
+                    ->when(
+                        $data['to_date'] ?? null,
+                        fn($query, $toDate) => $query->whereDate('created_at', '<=', $toDate)
+                    )
+                    ->when(
+                        $data['status'] ?? null,
+                        fn($query, $status) => $query->where('status', $status)
+                    )
+                    ->when(
+                        $data['payment_status'] ?? null,
+                        fn($query, $paymentStatus) => $query->where('payment_status', $paymentStatus)
+                    );
+
+                // Process records using lazy cursor chunking to prevent memory bloat (O(1) Memory Complexity)
+                $ordersQuery->lazy(500)->each(function ($order) use ($csv) {
                     Log::info('Processing Order', ['invoice_id' => $order->invoice_id]);
 
                     $itemsList = $order->items->map(function ($item) {
-                        // Log each item to check for unexpected arrays
-                        Log::info('Processing Item', [
-                            'product_name' => optional($item->product)->name,
-                            'variant_name' => optional($item->variant)->name,
-                            'quantity' => $item->quantity
-                        ]);
-
-                        // Use optional() to handle potential null values for product or variant
-                        $productName = optional($item->product)->name ?? 'N/A';  // Default if null
-                        $variantName = optional($item->variant)->name ?? '';     // Default if null
+                        $productName = optional($item->product)->name ?? 'N/A';
+                        $variantSku = optional($item->variant)->sku ?? '';
 
                         return $item->quantity . 'x ' . $productName .
-                            ($variantName ? ' (' . $variantName . ')' : '');
+                            ($variantSku ? ' (' . $variantSku . ')' : '');
                     })->join(', ');
-
-                    // Log the itemsList being inserted
-                    Log::info('Items List', ['items' => $itemsList]);
 
                     $csv->insertOne([
                         $order->invoice_id,
@@ -100,9 +102,9 @@ class ExportOrdersAction extends Action
                         $order->user->name,
                         $order->user->email,
                         $order->user->phone ?? '-',
-                        $order->address->address,
-                        $order->address->city,
-                        $order->address->postal_code,
+                        $order->address->address_line ?? '-', // FIXED BUG: changed 'address' to 'address_line'
+                        $order->address->city ?? '-',
+                        $order->address->postal_code ?? '-',
                         $itemsList,
                         $order->subtotal,
                         $order->shipping_fee,
@@ -110,16 +112,10 @@ class ExportOrdersAction extends Action
                         $order->payment_status,
                         $order->status,
                     ]);
-                }
-
-                // Generate filename with timestamp for uniqueness
-                $filename = 'orders_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
-
-                // Save to storage
-                Storage::disk('public')->put('exports/' . $filename, $csv->toString());
+                });
 
                 // Provide download link
-                $url = Storage::url('exports/' . $filename);
+                $url = route('files.export', ['filename' => basename($filename)]);
 
                 Notification::make()
                     ->title('Export completed')

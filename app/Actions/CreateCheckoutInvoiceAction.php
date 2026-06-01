@@ -76,16 +76,27 @@ class CreateCheckoutInvoiceAction
                 ]);
             }
 
+            // Batch retrieve and pessimistic lock all variants in a single query
+            $variantIds = $cartItems->pluck('variant_id')->filter()->all();
+            $variants = Variant::query()
+                ->with('product')
+                ->whereIn('id', $variantIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
             $subtotal = 0;
             $invoiceItems = [];
             $lockedItems = [];
 
             foreach ($cartItems as $cartItem) {
-                $variant = Variant::query()
-                    ->with('product')
-                    ->whereKey($cartItem->variant_id)
-                    ->lockForUpdate()
-                    ->firstOrFail();
+                $variant = $variants->get($cartItem->variant_id);
+
+                if (! $variant) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'Selected product variant is no longer available.',
+                    ]);
+                }
 
                 if ($variant->stock_quantity < $cartItem->quantity) {
                     throw ValidationException::withMessages([

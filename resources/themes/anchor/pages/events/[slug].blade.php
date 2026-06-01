@@ -37,17 +37,7 @@
     'image' => $event?->image ? Storage::url(ltrim($event->image, '/')) : url('/og_image.png'),
     'type' => 'article',
 ]">
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
-
-    <div class="bg-[#fffafb] min-h-screen font-['Inter'] py-12 md:py-16">
+<div class="bg-[#fffafb] min-h-screen font-['Inter'] py-12 md:py-16">
         <x-container>
             
             <!-- Back Button Row -->
@@ -107,7 +97,7 @@
 
                     <!-- Event Main Article / Body Content -->
                     <div class="prose prose-zinc max-w-none text-[#575e75] leading-[1.7] mt-2 prose-headings:text-[#37352F] prose-headings:font-semibold prose-a:text-[#df1c24] prose-strong:text-[#37352F] font-normal">
-                        {!! $event->body !!}
+                        {!! clean($event->body) !!}
                     </div>
 
                 </div>

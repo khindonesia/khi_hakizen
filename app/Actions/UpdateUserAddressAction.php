@@ -132,15 +132,6 @@ class UpdateUserAddressAction
                 ],
             ));
 
-            if ($shouldBePrimary) {
-                UserAddress::query()
-                    ->where('user_id', $user->id)
-                    ->whereKeyNot($address->id)
-                    ->update(['is_primary' => false]);
-
-                $address->forceFill(['is_primary' => true])->save();
-            }
-
             return $address;
         });
     }

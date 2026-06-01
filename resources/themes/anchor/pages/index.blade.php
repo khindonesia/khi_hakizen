@@ -18,17 +18,7 @@ name('home');
     :showDecor="false"
     bodyClass="bg-[#fffafb] text-[#1d1a22]"
 >
-    @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    @endpush
-
-    @php
+@php
         $homePageContent = HomePageContent::with(['achievements' => fn ($query) => $query->ordered()])->first();
 
         $heroTitle = $homePageContent?->hero_title
@@ -140,7 +130,7 @@ name('home');
                             <div class="w-3 h-3 rounded-full bg-card-tint-yellow-bold"></div>
                             <div class="w-3 h-3 rounded-full bg-card-tint-mint"></div>
                         </div>
-                        <img alt="KHI Team at historical site" class="w-full h-auto rounded-lg object-cover aspect-[1.15] shadow-inner" src="{{ $heroImage }}">
+                        <img alt="KHI Team at historical site" class="w-full h-auto rounded-lg object-cover aspect-[1.15] shadow-inner" src="{{ $heroImage }}" fetchpriority="high" loading="eager" width="640" height="557">
                     </div>
                     <!-- Decorative Element -->
                     <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -179,7 +169,7 @@ name('home');
                                 <div>
                                     <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center relative block">
                                         @if ($productImage)
-                                            <img alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ $productImage }}"/>
+                                            <img alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ $productImage }}" loading="lazy" decoding="async" width="300" height="300"/>
                                         @else
                                             <div class="text-slate flex flex-col items-center">
                                                 <span class="material-symbols-outlined text-4xl mb-1">image</span>
@@ -202,7 +192,7 @@ name('home');
                         <div class="group flex flex-col justify-between h-full">
                             <div>
                                 <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="KHI Official T-Shirt" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7ipM72L6cuYHt3YWsvlVIOIgv7VhVp3c5GhZ_NVBLvb57vAe8dXKHqDFVLjZ2D_eR8V-EUfuwfk0wx14xddmTP6SLxYtgXn231Ha93xOKNFwEM2Ivp7e6C3ewlqrZ9eHIkjjvKQzwUZfC5JKMWKi4qDomN3rMz-ob9U1z7zwcD9EP-A4Y0jD-frg3CgqpdEeydZhUnun7e2TwYb_ynGWqnvrVshehFJ7xGZMmcGSt6mynkcyA5xnCdk6fJOl7egxxBx6IWDpgC5lD"/>
+                                    <img alt="KHI Official T-Shirt" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7ipM72L6cuYHt3YWsvlVIOIgv7VhVp3c5GhZ_NVBLvb57vAe8dXKHqDFVLjZ2D_eR8V-EUfuwfk0wx14xddmTP6SLxYtgXn231Ha93xOKNFwEM2Ivp7e6C3ewlqrZ9eHIkjjvKQzwUZfC5JKMWKi4qDomN3rMz-ob9U1z7zwcD9EP-A4Y0jD-frg3CgqpdEeydZhUnun7e2TwYb_ynGWqnvrVshehFJ7xGZMmcGSt6mynkcyA5xnCdk6fJOl7egxxBx6IWDpgC5lD" loading="lazy" decoding="async" width="300" height="300"/>
                                 </div>
                                 <h4 class="text-base font-semibold text-charcoal">KHI Official T-Shirt</h4>
                                 <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 150.000</p>
@@ -212,7 +202,7 @@ name('home');
                         <div class="group flex flex-col justify-between h-full">
                             <div>
                                 <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Historia Tote Bag" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiIoz7wKEHebu-L2j6FZYswNUdF4SpxYSf6ikU7MAaxIHq7xS3RaipGuJCGQ1y931pwraOABcmJb18_6wKaOwAvzp9sB9bhGV9gHeCz1ZORAg_8EGZSbfnfc4ou4AJbC1dh9xVZ4KqroXy7rkbxs5Fcy_M0B1Ly37uPmXK59M9eB9Csh7zE548_PkTuZ-XL4AuwMmbFdCRHkYT1AsarXYLHA1yVh05CK4rRbOScXrELKDHUhReplGV-74re6lsQOWSjhsX4MLjDhPo"/>
+                                    <img alt="Historia Tote Bag" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiIoz7wKEHebu-L2j6FZYswNUdF4SpxYSf6ikU7MAaxIHq7xS3RaipGuJCGQ1y931pwraOABcmJb18_6wKaOwAvzp9sB9bhGV9gHeCz1ZORAg_8EGZSbfnfc4ou4AJbC1dh9xVZ4KqroXy7rkbxs5Fcy_M0B1Ly37uPmXK59M9eB9Csh7zE548_PkTuZ-XL4AuwMmbFdCRHkYT1AsarXYLHA1yVh05CK4rRbOScXrELKDHUhReplGV-74re6lsQOWSjhsX4MLjDhPo" loading="lazy" decoding="async" width="300" height="300"/>
                                 </div>
                                 <h4 class="text-base font-semibold text-charcoal">Historia Tote Bag</h4>
                                 <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 85.000</p>
@@ -222,7 +212,7 @@ name('home');
                         <div class="group flex flex-col justify-between h-full">
                             <div>
                                 <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Old Batavia Map Print" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsQiTLdoeqsz-YlYRQdWM-4hSzz5sXy58pedSqBSOCa2ph33EQ2_0kJ0ZTR_4B15aZ0B5aYDLZI3lDVn-Cm7kPienQoH7iKgxsxFj2guMRilt6NSqMLMHg5DxD08OWmYOpGB_ZYDEo2ARNp_EynHvPPRIL0KJjpYXBlVIvYTmNug9AH8r37FmGvAif6xzn7kbXE117XmM3NJ4g9vjkU7GYKDOGnK75FE87JSaukL79U-VM3UmCk1st5vFqU5DGY2MDZyCv0Xxw70n"/>
+                                    <img alt="Old Batavia Map Print" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsQiTLdoeqsz-YlYRQdWM-4hSzz5sXy58pedSqBSOCa2ph33EQ2_0kJ0ZTR_4B15aZ0B5aYDLZI3lDVn-Cm7kPienQoH7iKgxsxFj2guMRilt6NSqMLMHg5DxD08OWmYOpGB_ZYDEo2ARNp_EynHvPPRIL0KJjpYXBlVIvYTmNug9AH8r37FmGvAif6xzn7kbXE117XmM3NJ4g9vjkU7GYKDOGnK75FE87JSaukL79U-VM3UmCk1st5vFqU5DGY2MDZyCv0Xxw70n" loading="lazy" decoding="async" width="300" height="300"/>
                                 </div>
                                 <h4 class="text-base font-semibold text-charcoal">Old Batavia Map Print</h4>
                                 <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 120.000</p>
@@ -232,7 +222,7 @@ name('home');
                         <div class="group flex flex-col justify-between h-full">
                             <div>
                                 <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Exclusive Pin Set" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7qade8_xtkqbbnia5hmSbONXlsWtFAW8-X9jdsoxPE4um7tr-VGWH3otc6hFQFMCZC6htcDdkwhmDjXgll7NK-cZXuVTBAMkWiO5ppf4nBi75shSnrMrAJf1SVHTN7NEMAGL5gzit4JEUM9ZCyCNaalmdD2NLexWXIWU9eueLVqpeDsB7U36IftpF7J5j_3HW1TNUimX0yS9amAT5LyajVOrEfKIVvl10w8L_iOf39JNRVSIPzaIhsoGj7jTAYPJJAcLOt5UERROz"/>
+                                    <img alt="Exclusive Pin Set" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7qade8_xtkqbbnia5hmSbONXlsWtFAW8-X9jdsoxPE4um7tr-VGWH3otc6hFQFMCZC6htcDdkwhmDjXgll7NK-cZXuVTBAMkWiO5ppf4nBi75shSnrMrAJf1SVHTN7NEMAGL5gzit4JEUM9ZCyCNaalmdD2NLexWXIWU9eueLVqpeDsB7U36IftpF7J5j_3HW1TNUimX0yS9amAT5LyajVOrEfKIVvl10w8L_iOf39JNRVSIPzaIhsoGj7jTAYPJJAcLOt5UERROz" loading="lazy" decoding="async" width="300" height="300"/>
                                 </div>
                                 <h4 class="text-base font-semibold text-charcoal">Exclusive Pin Set</h4>
                                 <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 45.000</p>
@@ -514,7 +504,7 @@ name('home');
 
                 <!-- Leader Image Card -->
                 <div class="md:col-span-5 rounded-xl overflow-hidden shadow-md relative group border border-hairline h-full min-h-[400px]">
-                    <img alt="{{ $leaderName }}, {{ $leaderPosition }}" class="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-105" src="{{ $leaderImage }}">
+                    <img alt="{{ $leaderName }}, {{ $leaderPosition }}" class="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-105" src="{{ $leaderImage }}" loading="lazy" decoding="async" width="500" height="600">
                     <div class="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/20 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 p-6 z-10 w-full">
                         <h3 class="font-bold text-xl lg:text-2xl text-white mb-1">{{ $leaderName }}</h3>
