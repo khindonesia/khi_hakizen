@@ -37,6 +37,13 @@ Route::middleware(['auth', 'throttle:cart'])->group(function () {
 });
 
 
+Route::middleware(['auth', 'throttle:checkout'])->group(function () {
+    Route::get('/api/checkout/search-destination', [App\Http\Controllers\CheckoutController::class, 'searchDestination'])
+        ->name('checkout.search-destination');
+    Route::post('/api/checkout/shipping-cost', [App\Http\Controllers\CheckoutController::class, 'getShippingCost'])
+        ->name('checkout.shipping-cost');
+});
+
 Route::post('/api/checkout/create-invoice', [XenditController::class, 'createInvoice'])
     ->middleware(['auth', 'throttle:checkout'])
     ->name('checkout.create-invoice');

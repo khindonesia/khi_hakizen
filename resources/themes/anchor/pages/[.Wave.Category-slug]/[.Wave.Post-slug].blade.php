@@ -1,7 +1,20 @@
 <?php
-use function Laravel\Folio\name;
+use function Laravel\Folio\{name, render};
+use Illuminate\View\View;
 
 name('blog.post');
+
+render(function (View $view, \Wave\Category $category, \Wave\Post $post) {
+    if ((int) $post->category_id !== (int) $category->id) {
+        abort(404);
+    }
+
+    if ($post->status !== 'PUBLISHED') {
+        abort(404);
+    }
+
+    return $view;
+});
 ?>
 
 @php

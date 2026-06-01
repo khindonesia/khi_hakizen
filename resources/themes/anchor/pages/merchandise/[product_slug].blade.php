@@ -9,6 +9,7 @@
 
     if ($slug) {
         $product = \App\Models\Product::query()
+            ->where('status', 'active')
             ->with(['category', 'variants.variantAttributes.attribute', 'variants.variantAttributes.attributeValue', 'images', 'productAttributes.attribute'])
             ->where('slug', $slug)
             ->first();

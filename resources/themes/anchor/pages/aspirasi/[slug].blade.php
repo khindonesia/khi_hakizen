@@ -12,6 +12,7 @@ name('aspirasi.detail');
     if (filled($slug)) {
         $aspirasi = Aspirasi::query()
             ->with(['user', 'category'])
+            ->where('status', 'PUBLISHED')
             ->where('slug', $slug)
             ->first();
 

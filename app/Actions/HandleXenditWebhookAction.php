@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Order;
+use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -90,46 +91,54 @@ class HandleXenditWebhookAction
      */
     private function handleEventRegistration(string $externalId, string $status): array
     {
-        $registration = DB::table('event_user')
-            ->where('external_id', $externalId)
-            ->first();
+        return DB::transaction(function () use ($externalId, $status) {
+            // Pessimistic lock on registration record to block duplicate webhooks concurrently
+            $registration = DB::table('event_user')
+                ->where('external_id', $externalId)
+                ->lockForUpdate()
+                ->first();
 
-        if (! $registration) {
-            return [
-                'body' => ['status' => 'error', 'message' => 'Registration not found'],
-                'status' => 404,
-            ];
-        }
+            if (! $registration) {
+                return [
+                    'body' => ['status' => 'error', 'message' => 'Registration not found'],
+                    'status' => 404,
+                ];
+            }
 
-        if ($registration->payment_status === 'paid' || $registration->status === 'active') {
+            if ($registration->payment_status === 'paid' || $registration->status === 'active') {
+                return [
+                    'body' => ['status' => 'success'],
+                    'status' => 200,
+                ];
+            }
+
+            if ($status === 'PAID') {
+                DB::table('event_user')
+                    ->where('external_id', $externalId)
+                    ->update([
+                        'payment_status' => 'paid',
+                        'status' => 'active',
+                        'updated_at' => now(),
+                    ]);
+                
+                Log::info("Event registration successfully verified for ID: {$registration->id}");
+            } elseif ($status === 'EXPIRED') {
+                DB::table('event_user')
+                    ->where('external_id', $externalId)
+                    ->update([
+                        'payment_status' => 'expired',
+                        'status' => 'cancelled',
+                        'updated_at' => now(),
+                    ]);
+                
+                Log::info("Event registration expired for ID: {$registration->id}");
+            }
+
             return [
                 'body' => ['status' => 'success'],
                 'status' => 200,
             ];
-        }
-
-        if ($status === 'PAID') {
-            DB::table('event_user')
-                ->where('external_id', $externalId)
-                ->update([
-                    'payment_status' => 'paid',
-                    'status' => 'active',
-                    'updated_at' => now(),
-                ]);
-        } elseif ($status === 'EXPIRED') {
-            DB::table('event_user')
-                ->where('external_id', $externalId)
-                ->update([
-                    'payment_status' => 'expired',
-                    'status' => 'cancelled',
-                    'updated_at' => now(),
-                ]);
-        }
-
-        return [
-            'body' => ['status' => 'success'],
-            'status' => 200,
-        ];
+        });
     }
 
     /**
@@ -137,39 +146,71 @@ class HandleXenditWebhookAction
      */
     private function handleOrder(string $externalId, string $status): array
     {
-        $order = Order::query()
-            ->where('external_id', $externalId)
-            ->first();
+        return DB::transaction(function () use ($externalId, $status) {
+            // Pessimistic lock on order record to block duplicate webhooks concurrently
+            $order = Order::query()
+                ->where('external_id', $externalId)
+                ->lockForUpdate()
+                ->first();
 
-        if (! $order) {
-            return [
-                'body' => ['status' => 'error', 'message' => 'Order not found'],
-                'status' => 404,
-            ];
-        }
+            if (! $order) {
+                return [
+                    'body' => ['status' => 'error', 'message' => 'Order not found'],
+                    'status' => 404,
+                ];
+            }
 
-        if ($order->payment_status === 'paid') {
+            if ($order->payment_status === 'paid') {
+                return [
+                    'body' => ['status' => 'success'],
+                    'status' => 200,
+                ];
+            }
+
+            if ($status === 'PAID') {
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'processing',
+                ]);
+                
+                Log::info("Order ID {$order->id} payment confirmed via webhook.");
+            } elseif ($status === 'EXPIRED') {
+                $order->update([
+                    'payment_status' => 'expired',
+                    'status' => 'cancelled',
+                ]);
+                
+                // RESTORE STOCK SAFETY!
+                $this->restoreOrderStock($order);
+                
+                Log::info("Order ID {$order->id} expired. Stock restored.");
+            }
+
             return [
                 'body' => ['status' => 'success'],
                 'status' => 200,
             ];
-        }
+        });
+    }
 
-        if ($status === 'PAID') {
-            $order->update([
-                'payment_status' => 'paid',
-                'status' => 'processing',
-            ]);
-        } elseif ($status === 'EXPIRED') {
-            $order->update([
-                'payment_status' => 'expired',
-                'status' => 'cancelled',
-            ]);
-        }
+    /**
+     * Restore product stock from expired order items
+     */
+    private function restoreOrderStock(Order $order): void
+    {
+        $orderItems = $order->items()->get();
 
-        return [
-            'body' => ['status' => 'success'],
-            'status' => 200,
-        ];
+        foreach ($orderItems as $item) {
+            // Pessimistic lock on variant record to ensure thread-safe stock updates
+            $variant = Variant::query()
+                ->whereKey($item->variant_id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($variant) {
+                $variant->increaseStock($item->quantity);
+                Log::info("Stock restored for variant ID {$variant->id} (qty: {$item->quantity}) from cancelled order {$order->id}");
+            }
+        }
     }
 }

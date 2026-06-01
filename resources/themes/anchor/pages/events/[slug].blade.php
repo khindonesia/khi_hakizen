@@ -8,7 +8,8 @@
 
     // Retrieve the active event by its unique slug.
     if (isset($slug) && $slug !== '') {
-        $event = \App\Models\Event::where('slug', $slug)
+        $event = \App\Models\Event::published()
+            ->where('slug', $slug)
             ->with(['author'])
             ->first();
 

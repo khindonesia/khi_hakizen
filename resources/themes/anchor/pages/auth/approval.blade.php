@@ -5,7 +5,7 @@ use Devdojo\Auth\Traits\HasConfigs;
 use function Laravel\Folio\{middleware, name};
 use Livewire\Volt\Component;
 
-//middleware(['auth', 'throttle:6,1']);
+middleware(['auth', 'throttle:6,1']);
 name('auth.approval');
 
 new class extends Component

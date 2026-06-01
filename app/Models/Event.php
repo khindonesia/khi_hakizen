@@ -27,6 +27,7 @@ class Event extends Model
         'status',
         'type',
         'price',
+        'capacity',
         'start_datetime',
         'end_datetime'
     ];
@@ -40,6 +41,7 @@ class Event extends Model
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
         'price' => 'decimal:2',
+        'capacity' => 'integer',
     ];
 
     /**
@@ -103,5 +105,22 @@ class Event extends Model
     {
         return $query->where('start_datetime', '<=', now())
                      ->where('end_datetime', '>=', now());
+    }
+
+    /**
+     * Check if the event is full.
+     */
+    public function isFull(): bool
+    {
+        if ($this->capacity === null) {
+            return false;
+        }
+
+        $activeRegistrationsCount = \Illuminate\Support\Facades\DB::table('event_user')
+            ->where('event_id', $this->id)
+            ->whereIn('status', ['active', 'pending'])
+            ->count();
+
+        return $activeRegistrationsCount >= $this->capacity;
     }
 }

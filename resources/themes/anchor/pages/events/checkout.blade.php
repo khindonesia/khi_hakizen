@@ -12,7 +12,7 @@ name('events.checkout');
     // Abort if no event parameter is provided
     abort_unless($eventId, 404, 'Event parameter is required.');
 
-    $event = \App\Models\Event::with(['author'])->findOrFail($eventId);
+    $event = \App\Models\Event::published()->with(['author'])->findOrFail($eventId);
 
     // Check if the user is already registered for this event
     $isAlreadyRegistered = \Illuminate\Support\Facades\DB::table('event_user')

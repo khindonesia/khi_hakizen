@@ -8,6 +8,7 @@ use App\Services\XenditInvoiceGateway;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -97,71 +98,125 @@ class XenditController extends Controller
         }
 
         $user = $request->user();
-        $user->update([
-            'phone_number' => $validated['phone_number']
-        ]);
-
-        $event = \App\Models\Event::find($validated['event_id']);
-
-        if (!$event) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Event tidak ditemukan.',
-            ], 404);
-        }
-
-        // Check if already registered and active
-        $existing = \Illuminate\Support\Facades\DB::table('event_user')
-            ->where('event_id', $event->id)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if ($existing && $existing->status === 'active') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Anda sudah terdaftar untuk event ini.',
-            ], 400);
-        }
 
         try {
-            if ($event->type === 'FREE' || (float)$event->price == 0) {
-                // Register immediately
-                if ($existing) {
-                    \Illuminate\Support\Facades\DB::table('event_user')
-                        ->where('id', $existing->id)
-                        ->update([
+            // Step 1: Atomic transaction to check/lock status and validate capacity
+            $registrationResult = DB::transaction(function () use ($validated, $user) {
+                // Lock the User record to block concurrent registration requests from the same user
+                $lockedUser = \App\Models\User::query()
+                    ->whereKey($user->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $lockedUser->update([
+                    'phone_number' => $validated['phone_number']
+                ]);
+
+                // Pessimistic lock the Event row to securely enforce event ticketing quota checks
+                $event = \App\Models\Event::query()
+                    ->whereKey($validated['event_id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $event) {
+                    throw new \Exception('Event tidak ditemukan.', 404);
+                }
+
+                // Check if already registered and active
+                $existing = DB::table('event_user')
+                    ->where('event_id', $event->id)
+                    ->where('user_id', $lockedUser->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existing && $existing->status === 'active') {
+                    throw new \Exception('Anda sudah terdaftar untuk event ini.', 400);
+                }
+
+                // SECURE CAPACITY/QUOTA CHECK
+                if ($event->capacity !== null) {
+                    $activeCount = DB::table('event_user')
+                        ->where('event_id', $event->id)
+                        ->whereIn('status', ['active', 'pending'])
+                        ->count();
+
+                    if ($activeCount >= $event->capacity) {
+                        throw new \Exception('Maaf, kuota pendaftaran tiket untuk event ini sudah penuh.', 422);
+                    }
+                }
+
+                // Free Event registration
+                if ($event->type === 'FREE' || (float)$event->price == 0) {
+                    if ($existing) {
+                        DB::table('event_user')
+                            ->where('id', $existing->id)
+                            ->update([
+                                'status' => 'active',
+                                'payment_status' => 'free',
+                                'amount' => 0,
+                                'updated_at' => now(),
+                            ]);
+                    } else {
+                        DB::table('event_user')->insert([
+                            'event_id' => $event->id,
+                            'user_id' => $lockedUser->id,
                             'status' => 'active',
                             'payment_status' => 'free',
                             'amount' => 0,
+                            'created_at' => now(),
                             'updated_at' => now(),
                         ]);
-                } else {
-                    \Illuminate\Support\Facades\DB::table('event_user')->insert([
-                        'event_id' => $event->id,
-                        'user_id' => $user->id,
-                        'status' => 'active',
-                        'payment_status' => 'free',
-                        'amount' => 0,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                    }
+
+                    return [
+                        'status' => 'free_success',
+                        'invoice_url' => route('dashboard.events') . '?payment_status=success'
+                    ];
                 }
 
+                // Paid Event: Prevent duplicate invoice overwrite!
+                // If a pending registration already exists with a payment URL, reuse it!
+                if ($existing && $existing->status === 'pending' && filled($existing->payment_url)) {
+                    return [
+                        'status' => 'reuse_pending',
+                        'invoice_url' => $existing->payment_url
+                    ];
+                }
+
+                // New Paid Registration Setup
+                $amount = (float) $event->price;
+                $externalId = 'EVT-' . $event->id . '-' . $lockedUser->id . '-' . time();
+
+                return [
+                    'status' => 'create_new',
+                    'event' => $event,
+                    'user' => $lockedUser,
+                    'amount' => $amount,
+                    'external_id' => $externalId,
+                    'existing' => $existing
+                ];
+            });
+
+            // Return immediate response if Free or Reused Pending
+            if ($registrationResult['status'] === 'free_success' || $registrationResult['status'] === 'reuse_pending') {
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'Successfully registered for free event.',
+                    'message' => $registrationResult['status'] === 'free_success' 
+                        ? 'Successfully registered for free event.' 
+                        : 'Menampilkan tagihan pembayaran yang sudah ada.',
                     'data' => [
-                        'invoice_url' => route('dashboard.events') . '?payment_status=success'
+                        'invoice_url' => $registrationResult['invoice_url']
                     ]
                 ]);
             }
 
-            $amount = (float) $event->price;
-            
-            // Generate unique external ID
-            $externalId = 'EVT-' . $event->id . '-' . $user->id . '-' . time();
+            // Create new invoice with Xendit API outside the DB transaction (to avoid holding DB locks during network calls)
+            $amount = $registrationResult['amount'];
+            $externalId = $registrationResult['external_id'];
+            $event = $registrationResult['event'];
+            $lockedUser = $registrationResult['user'];
+            $existing = $registrationResult['existing'];
 
-            // Prepare Invoice Items format
             $invoiceItems = [
                 [
                     'name' => 'Registration: ' . $event->title,
@@ -170,8 +225,6 @@ class XenditController extends Controller
                 ]
             ];
 
-            // URLs for redirecting user after success/fail
-            // Let's redirect back to user's dashboard events list
             $successUrl = route('dashboard.events') . '?payment_status=success';
             $failureUrl = route('dashboard.events') . '?payment_status=failed';
 
@@ -179,39 +232,42 @@ class XenditController extends Controller
                 $externalId,
                 $amount,
                 'Registration Event: ' . $event->title,
-                $user,
+                $lockedUser,
                 $invoiceItems,
                 $successUrl,
                 $failureUrl
             );
 
-            // Save or update pivot registration
-            if ($existing) {
-                \Illuminate\Support\Facades\DB::table('event_user')
-                    ->where('id', $existing->id)
-                    ->update([
+            // Record invoice details to event_user pivot under transaction
+            DB::transaction(function () use ($event, $lockedUser, $existing, $amount, $externalId, $response) {
+                if ($existing) {
+                    DB::table('event_user')
+                        ->where('event_id', $event->id)
+                        ->where('user_id', $lockedUser->id)
+                        ->update([
+                            'status' => 'pending',
+                            'payment_status' => 'pending',
+                            'amount' => $amount,
+                            'external_id' => $externalId,
+                            'invoice_id' => $response['id'],
+                            'payment_url' => $response['invoice_url'],
+                            'updated_at' => now(),
+                        ]);
+                } else {
+                    DB::table('event_user')->insert([
+                        'event_id' => $event->id,
+                        'user_id' => $lockedUser->id,
                         'status' => 'pending',
                         'payment_status' => 'pending',
                         'amount' => $amount,
                         'external_id' => $externalId,
                         'invoice_id' => $response['id'],
                         'payment_url' => $response['invoice_url'],
+                        'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-            } else {
-                \Illuminate\Support\Facades\DB::table('event_user')->insert([
-                    'event_id' => $event->id,
-                    'user_id' => $user->id,
-                    'status' => 'pending',
-                    'payment_status' => 'pending',
-                    'amount' => $amount,
-                    'external_id' => $externalId,
-                    'invoice_id' => $response['id'],
-                    'payment_url' => $response['invoice_url'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
+                }
+            });
 
             return response()->json([
                 'status' => 'success',
@@ -220,17 +276,20 @@ class XenditController extends Controller
                     'invoice_url' => $response['invoice_url']
                 ]
             ]);
-        } catch (\Throwable $throwable) {
-            Log::error('Failed to create Xendit invoice for event', [
+
+        } catch (\Throwable $exception) {
+            $code = $exception->getCode();
+            $status = in_array($code, [400, 404, 422]) ? $code : 500;
+
+            Log::error('Failed to handle event booking invoice creation', [
                 'user_id' => $user->id,
-                'event_id' => $event->id,
-                'message' => $throwable->getMessage(),
+                'message' => $exception->getMessage(),
             ]);
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to create invoice for event booking: ' . $throwable->getMessage()
-            ], 500);
+                'message' => $exception->getMessage()
+            ], $status);
         }
     }
 
