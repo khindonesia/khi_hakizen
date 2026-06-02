@@ -51,6 +51,13 @@ new class extends Component
             return;
         }
 
+        if (\Illuminate\Support\Facades\Hash::check($this->password, $userAttemptingLogin->password)) {
+            if (!$userAttemptingLogin->verified) {
+                $this->addError('email', 'Akun Anda sedang menunggu persetujuan admin.');
+                return;
+            }
+        }
+
         if($this->twoFactorEnabled && !is_null($userAttemptingLogin->two_factor_confirmed_at)){
             // We want this user to login via 2fa
             session()->put([
