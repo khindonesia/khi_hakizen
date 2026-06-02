@@ -22,6 +22,7 @@ class PostResource extends Resource
 
     protected static ?string $navigationIcon = 'phosphor-pencil-line-duotone';
 
+    protected static ?string $navigationLabel = 'Historialita';
     protected static ?string $navigationGroup = 'Post Management';
 
     protected static ?int $navigationSort = 3;

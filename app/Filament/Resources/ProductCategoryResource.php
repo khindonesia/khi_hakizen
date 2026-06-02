@@ -48,7 +48,7 @@ class ProductCategoryResource extends Resource
                             ->placeholder('Enter category name')
                             ->autocapitalize('words')
                             ->columnSpan(1),
-                        
+
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->required()
@@ -74,29 +74,29 @@ class ProductCategoryResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-                    
+
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->sortable()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'inactive' => 'danger',
                         'archived' => 'warning',
                         'active' => 'success',
                         default => 'gray',
                     }),
-                    
+
                 Tables\Columns\TextColumn::make('products_count')
                     ->label('Products')
                     ->counts('products')
                     ->alignCenter()
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                    
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Last Updated')
                     ->dateTime()
@@ -111,10 +111,10 @@ class ProductCategoryResource extends Resource
                         'inactive' => 'Inactive',
                         'archived' => 'Archived',
                     ]),
-                    
+
                 Tables\Filters\Filter::make('has_products')
                     ->label('With Products')
-                    ->query(fn (Builder $query): Builder => $query->whereHas('products'))
+                    ->query(fn(Builder $query): Builder => $query->whereHas('products'))
                     ->toggle(),
             ])
             ->actions([
@@ -128,7 +128,7 @@ class ProductCategoryResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->requiresConfirmation(),
-                        
+
                     Tables\Actions\BulkAction::make('updateStatus')
                         ->label('Update Status')
                         ->icon('heroicon-o-check-circle')
@@ -149,8 +149,8 @@ class ProductCategoryResource extends Resource
                         })
                         ->successNotification(
                             notification: \Filament\Notifications\Notification::make()
-                            ->success()
-                            ->title('Categories updated successfully'),
+                                ->success()
+                                ->title('Categories updated successfully'),
                         ),
                 ]),
             ])
@@ -176,17 +176,17 @@ class ProductCategoryResource extends Resource
             'edit' => Pages\EditProductCategory::route('/{record}/edit'),
         ];
     }
-    
+
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
     }
-    
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['name'];
     }
-    
+
     public static function getNavigationBadgeColor(): ?string
     {
         return 'success';
