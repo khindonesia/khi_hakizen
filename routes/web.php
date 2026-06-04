@@ -11,6 +11,7 @@
 |
 */
 
+use App\Http\Controllers\Auth\EmailOtpController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\XenditController;
 use Illuminate\Support\Facades\Route;
