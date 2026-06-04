@@ -32,7 +32,11 @@ class User extends WaveUser
         'age',          
         'occupation',    
         'reason_for_joining', 
-        'consent',       
+        'consent',
+        'birth_year',
+        'country',
+        'province',
+        'city',
     ];
 
     /**

@@ -1,5 +1,25 @@
 @filamentScripts
 @livewireScripts
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.hook('request', ({ fail }) => {
+            fail(({ status, preventDefault }) => {
+                if (status === 429 || status === 409) {
+                    preventDefault();
+                    if (typeof FilamentNotification !== 'undefined') {
+                        new FilamentNotification()
+                            .title('Terlalu Banyak Permintaan')
+                            .icon('heroicon-o-exclamation-triangle')
+                            .iconColor('danger')
+                            .send();
+                    } else {
+                        alert('Terlalu banyak permintaan. Silakan tunggu beberapa saat.');
+                    }
+                }
+            });
+        });
+    });
+</script>
 @if(config('wave.dev_bar'))
     @include('theme::partials.dev_bar')
 @endif

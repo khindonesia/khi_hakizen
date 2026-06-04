@@ -46,6 +46,14 @@ Route::middleware(['auth', 'throttle:checkout'])->group(function () {
         ->name('checkout.shipping-cost');
 });
 
+Route::get('/api/geonames/cities', [App\Http\Controllers\GeoNamesController::class, 'searchCities'])
+    ->middleware('throttle:60,1')
+    ->name('geonames.cities');
+
+Route::get('/api/geonames/provinces', [App\Http\Controllers\GeoNamesController::class, 'searchProvinces'])
+    ->middleware('throttle:60,1')
+    ->name('geonames.provinces');
+
 Route::post('/api/checkout/create-invoice', [XenditController::class, 'createInvoice'])
     ->middleware(['auth', 'throttle:checkout'])
     ->name('checkout.create-invoice');
