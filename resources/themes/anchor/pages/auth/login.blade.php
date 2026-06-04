@@ -59,7 +59,7 @@ new class extends Component {
         }
 
         // ================= UBAH DI SINI =================
-        if ($this->twoFactorEnabled && !is_null($userAttemptingLogin->two_factor_confirmed_at)) {
+        if ($this->twoFactorEnabled) {
             $userId = $userAttemptingLogin->getKey();
 
             // 1. Amankan ID user ke session (User belum login)
