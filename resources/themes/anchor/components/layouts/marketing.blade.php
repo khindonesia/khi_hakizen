@@ -37,6 +37,8 @@
         {{ $slot }}
     </main>
 
+    <x-app.live-chat />
+
     @livewire('notifications')
     @if ($showFooter)
         @include('theme::partials.footer')

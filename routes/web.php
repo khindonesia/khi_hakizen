@@ -13,6 +13,7 @@
 
 use App\Http\Controllers\Auth\EmailOtpController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\XenditController;
 use Illuminate\Support\Facades\Route;
 use Wave\Facades\Wave;
@@ -106,3 +107,5 @@ Route::middleware(['web', 'guest', 'throttle:login'])->group(function () {
         return redirect('/join');
     })->name('auth.register');
 });
+
+Route::post('/ai-chat', [ChatController::class, 'chat']);
