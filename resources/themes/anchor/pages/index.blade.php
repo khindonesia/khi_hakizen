@@ -101,140 +101,82 @@ name('home');
                 ->take(3)
                 ->get();
         }
+
+        $heroPosts = \App\Models\Post::query()
+            ->with('category')
+            ->where('status', 'PUBLISHED')
+            ->latest()
+            ->take(3)
+            ->get();
+
+        if ($heroPosts->isEmpty()) {
+            $heroPosts = collect([
+                (object) [
+                    'title' => $heroTitle,
+                    'excerpt' => $heroSubtitle,
+                    'body' => $heroSubtitle,
+                    'category' => (object) ['name' => 'Featured']
+                ]
+            ]);
+        }
     @endphp
 
     <!-- Main Content Wrapper -->
     <div class="font-sans antialiased text-zinc-900">
         
         <!-- 1. Hero Section -->
-        <section class="bg-primary-fixed py-20 lg:py-28 px-6 relative overflow-hidden">
-            <div class="max-w-[1280px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
-                <div class="flex flex-col gap-6 lg:gap-8">
-                    <h1 class="font-bold text-4xl lg:text-7xl tracking-tight leading-[1.1] text-charcoal">
-                        {{ $heroTitle }}
-                    </h1>
-                    <p class="text-lg lg:text-xl text-zinc-500 leading-relaxed max-w-xl">
-                        {{ $heroSubtitle }}
-                    </p>
-                    <div class="pt-2">
-                        <a class="inline-flex items-center justify-center px-8 py-3.5 bg-primary text-white rounded-full font-semibold text-sm shadow-md hover:bg-[#c41219] hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5" href="{{ route('join') }}" wire:navigate>
-                            {{ $heroButtonText }}
-                        </a>
-                    </div>
-                </div>
-                <div class="relative mt-8 lg:mt-0 lg:ml-8">
-                    <!-- Workspace Mockup Card -->
-                    <div class="bg-white rounded-xl p-4 shadow-2xl transform lg:-rotate-2 transition-transform hover:rotate-0 duration-500 border border-zinc-200/40">
-                        <div class="flex items-center gap-2 mb-3 px-1 pt-1">
-                            <div class="w-3 h-3 rounded-full bg-primary"></div>
-                            <div class="w-3 h-3 rounded-full bg-card-tint-yellow-bold"></div>
-                            <div class="w-3 h-3 rounded-full bg-card-tint-mint"></div>
-                        </div>
-                        <img alt="KHI Team at historical site" class="w-full h-auto rounded-lg object-cover aspect-[1.15] shadow-inner" src="{{ $heroImage }}" fetchpriority="high" loading="eager" width="640" height="557">
-                    </div>
-                    <!-- Decorative Element -->
-                    <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. Merchandise Catalog Section -->
-        <section class="py-20 bg-white border-t border-hairline">
-            <div class="max-w-[1280px] mx-auto px-6">
-                <div class="flex justify-between items-end mb-8">
-                    <div>
-                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal">Merchandise Catalog</h2>
-                        <p class="text-sm lg:text-base text-zinc-500 mt-1">Support our mission by wearing history.</p>
-                    </div>
-                    <a class="text-primary font-semibold text-sm hover:underline" href="{{ route('merchandise') }}" wire:navigate>View All Shop</a>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    @if ($products->isNotEmpty())
-                        @foreach ($products as $product)
-                            @php
-                                $productImage = null;
-                                $variantImage = $product->defaultVariant?->image_url;
-                                if ($variantImage) {
-                                    $productImage = $normalizeImageUrl($variantImage);
-                                } else {
-                                    $productImage = $normalizeImageUrl($product->images->sortBy('sort_order')->first()?->image_url);
-                                }
-                                $price = 'Coming soon';
-                                if ($product->defaultVariant) {
-                                    $price = 'Rp ' . number_format($product->defaultVariant->price, 0, ',', '.');
-                                }
-                            @endphp
-                            <div class="group flex flex-col justify-between h-full">
-                                <div>
-                                    <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center relative block">
-                                        @if ($productImage)
-                                            <img alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ $productImage }}" loading="lazy" decoding="async" width="300" height="300"/>
-                                        @else
-                                            <div class="text-slate flex flex-col items-center">
-                                                <span class="material-symbols-outlined text-4xl mb-1">image</span>
-                                                <span class="text-[10px] uppercase font-semibold">No Image</span>
-                                            </div>
-                                        @endif
+        <section class="relative bg-primary-fixed overflow-hidden border-b border-hairline py-12 lg:py-20 px-6" x-data="{ activeIndex: 0, postsCount: {{ count($heroPosts) }} }">
+            <div class="max-w-[1280px] mx-auto">
+                @foreach ($heroPosts as $idx => $post)
+                    @php
+                        $postImage = ($post instanceof \App\Models\Post) ? $post->image() : $heroImage;
+                        $postLink = ($post instanceof \App\Models\Post) ? $post->link() : route('join');
+                        $postCategory = ($post instanceof \App\Models\Post) ? ($post->category?->name ?? 'Featured') : 'Featured';
+                        $postExcerpt = ($post instanceof \App\Models\Post) ? ($post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 150)) : $post->excerpt;
+                    @endphp
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center" x-show="activeIndex === {{ $idx }}" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-cloak>
+                        <!-- Featured Content Side -->
+                        <div class="lg:col-span-5 flex flex-col relative z-10">
+                            <div class="flex flex-col gap-6 lg:gap-8">
+                                <div class="inline-flex items-center">
+                                    <span class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-sm uppercase tracking-widest">{{ $postCategory }}</span>
+                                </div>
+                                <h1 class="font-bold text-4xl lg:text-6xl tracking-tight leading-[1.1] text-charcoal">
+                                    {{ $post->title }}
+                                </h1>
+                                <p class="text-base lg:text-lg text-secondary leading-relaxed max-w-md">
+                                    {{ $postExcerpt }}
+                                </p>
+                                <div class="flex flex-wrap items-center gap-6 mt-2">
+                                    <a class="inline-flex items-center justify-center px-8 py-3.5 bg-primary text-white rounded-lg font-semibold text-sm shadow-md hover:bg-[#c41219] hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5" href="{{ $postLink }}" wire:navigate>
+                                        {{ ($post instanceof \App\Models\Post) ? 'Read More' : $heroButtonText }}
                                     </a>
-                                    <h4 class="text-base font-semibold text-charcoal">
-                                        <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="hover:text-primary transition-colors line-clamp-1">{{ $product->name }}</a>
-                                    </h4>
-                                    <p class="font-bold text-sm text-primary mb-4 mt-1">{{ $price }}</p>
+                                    <div class="flex items-center gap-3" x-show="postsCount > 1">
+                                        <button @click="activeIndex = (activeIndex === 0) ? postsCount - 1 : activeIndex - 1" class="w-12 h-12 rounded-full border border-hairline-strong flex items-center justify-center text-charcoal hover:border-primary hover:text-primary transition-all">
+                                            <span class="material-symbols-outlined text-lg">arrow_back</span>
+                                        </button>
+                                        <button @click="activeIndex = (activeIndex === postsCount - 1) ? 0 : activeIndex + 1" class="w-12 h-12 rounded-full border border-hairline-strong flex items-center justify-center text-charcoal hover:border-primary hover:text-primary transition-all">
+                                            <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                                        </button>
+                                    </div>
                                 </div>
-                                <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">
-                                    View Product
-                                </a>
-                            </div>
-                        @endforeach
-                    @else
-                        <!-- Fallback Stitch mockups with local styles -->
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="KHI Official T-Shirt" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7ipM72L6cuYHt3YWsvlVIOIgv7VhVp3c5GhZ_NVBLvb57vAe8dXKHqDFVLjZ2D_eR8V-EUfuwfk0wx14xddmTP6SLxYtgXn231Ha93xOKNFwEM2Ivp7e6C3ewlqrZ9eHIkjjvKQzwUZfC5JKMWKi4qDomN3rMz-ob9U1z7zwcD9EP-A4Y0jD-frg3CgqpdEeydZhUnun7e2TwYb_ynGWqnvrVshehFJ7xGZMmcGSt6mynkcyA5xnCdk6fJOl7egxxBx6IWDpgC5lD" loading="lazy" decoding="async" width="300" height="300"/>
+                                <div class="flex gap-2 mt-4 items-center" x-show="postsCount > 1">
+                                    @foreach ($heroPosts as $dotIdx => $dotPost)
+                                        <div @click="activeIndex = {{ $dotIdx }}" class="cursor-pointer transition-all duration-300" :class="activeIndex === {{ $dotIdx }} ? 'w-8 h-[2px] bg-primary' : 'w-4 h-[2px] bg-hairline-strong'"></div>
+                                    @endforeach
                                 </div>
-                                <h4 class="text-base font-semibold text-charcoal">KHI Official T-Shirt</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 150.000</p>
                             </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
                         </div>
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Historia Tote Bag" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiIoz7wKEHebu-L2j6FZYswNUdF4SpxYSf6ikU7MAaxIHq7xS3RaipGuJCGQ1y931pwraOABcmJb18_6wKaOwAvzp9sB9bhGV9gHeCz1ZORAg_8EGZSbfnfc4ou4AJbC1dh9xVZ4KqroXy7rkbxs5Fcy_M0B1Ly37uPmXK59M9eB9Csh7zE548_PkTuZ-XL4AuwMmbFdCRHkYT1AsarXYLHA1yVh05CK4rRbOScXrELKDHUhReplGV-74re6lsQOWSjhsX4MLjDhPo" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">Historia Tote Bag</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 85.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
+                        <!-- Image Side -->
+                        <div class="lg:col-span-7 relative h-[400px] lg:h-[550px] w-full rounded-2xl overflow-hidden shadow-xl border border-hairline/40 group">
+                            <img alt="{{ $post->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" src="{{ $postImage }}" fetchpriority="high" loading="eager">
                         </div>
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Old Batavia Map Print" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsQiTLdoeqsz-YlYRQdWM-4hSzz5sXy58pedSqBSOCa2ph33EQ2_0kJ0ZTR_4B15aZ0B5aYDLZI3lDVn-Cm7kPienQoH7iKgxsxFj2guMRilt6NSqMLMHg5DxD08OWmYOpGB_ZYDEo2ARNp_EynHvPPRIL0KJjpYXBlVIvYTmNug9AH8r37FmGvAif6xzn7kbXE117XmM3NJ4g9vjkU7GYKDOGnK75FE87JSaukL79U-VM3UmCk1st5vFqU5DGY2MDZyCv0Xxw70n" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">Old Batavia Map Print</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 120.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
-                        </div>
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Exclusive Pin Set" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7qade8_xtkqbbnia5hmSbONXlsWtFAW8-X9jdsoxPE4um7tr-VGWH3otc6hFQFMCZC6htcDdkwhmDjXgll7NK-cZXuVTBAMkWiO5ppf4nBi75shSnrMrAJf1SVHTN7NEMAGL5gzit4JEUM9ZCyCNaalmdD2NLexWXIWU9eueLVqpeDsB7U36IftpF7J5j_3HW1TNUimX0yS9amAT5LyajVOrEfKIVvl10w8L_iOf39JNRVSIPzaIhsoGj7jTAYPJJAcLOt5UERROz" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">Exclusive Pin Set</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 45.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
-                        </div>
-                    @endif
-                </div>
+                    </div>
+                @endforeach
             </div>
         </section>
 
-        <!-- 3. Upcoming Events Section -->
+        <!-- 2. Upcoming Events Section -->
         <section class="py-20 bg-zinc-50 border-t border-hairline">
             <div class="max-w-[1280px] mx-auto px-6">
                 <div class="flex justify-between items-end mb-8">
@@ -345,7 +287,7 @@ name('home');
             </div>
         </section>
 
-        <!-- 4. E-Book Showcase Section -->
+        <!-- 3. E-Book Showcase Section -->
         <section class="py-20 bg-card-tint-lavender border-t border-hairline">
             <div class="max-w-[1280px] mx-auto px-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -417,6 +359,102 @@ name('home');
                             </div>
                         @endif
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Merchandise Catalog Section -->
+        <section class="py-20 bg-white border-t border-hairline">
+            <div class="max-w-[1280px] mx-auto px-6">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal">Merchandise Catalog</h2>
+                        <p class="text-sm lg:text-base text-zinc-500 mt-1">Support our mission by wearing history.</p>
+                    </div>
+                    <a class="text-primary font-semibold text-sm hover:underline" href="{{ route('merchandise') }}" wire:navigate>View All Shop</a>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    @if ($products->isNotEmpty())
+                        @foreach ($products as $product)
+                            @php
+                                $productImage = null;
+                                $variantImage = $product->defaultVariant?->image_url;
+                                if ($variantImage) {
+                                    $productImage = $normalizeImageUrl($variantImage);
+                                } else {
+                                    $productImage = $normalizeImageUrl($product->images->sortBy('sort_order')->first()?->image_url);
+                                }
+                                $price = 'Coming soon';
+                                if ($product->defaultVariant) {
+                                    $price = 'Rp ' . number_format($product->defaultVariant->price, 0, ',', '.');
+                                }
+                            @endphp
+                            <div class="group flex flex-col justify-between h-full">
+                                <div>
+                                    <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center relative block">
+                                        @if ($productImage)
+                                            <img alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ $productImage }}" loading="lazy" decoding="async" width="300" height="300"/>
+                                        @else
+                                            <div class="text-slate flex flex-col items-center">
+                                                <span class="material-symbols-outlined text-4xl mb-1">image</span>
+                                                <span class="text-[10px] uppercase font-semibold">No Image</span>
+                                            </div>
+                                        @endif
+                                    </a>
+                                    <h4 class="text-base font-semibold text-charcoal">
+                                        <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="hover:text-primary transition-colors line-clamp-1">{{ $product->name }}</a>
+                                    </h4>
+                                    <p class="font-bold text-sm text-primary mb-4 mt-1">{{ $price }}</p>
+                                </div>
+                                <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">
+                                    View Product
+                                </a>
+                            </div>
+                        @endforeach
+                    @else
+                        <!-- Fallback Stitch mockups with local styles -->
+                        <div class="group flex flex-col justify-between h-full">
+                            <div>
+                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
+                                    <img alt="KHI Official T-Shirt" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7ipM72L6cuYHt3YWsvlVIOIgv7VhVp3c5GhZ_NVBLvb57vAe8dXKHqDFVLjZ2D_eR8V-EUfuwfk0wx14xddmTP6SLxYtgXn231Ha93xOKNFwEM2Ivp7e6C3ewlqrZ9eHIkjjvKQzwUZfC5JKMWKi4qDomN3rMz-ob9U1z7zwcD9EP-A4Y0jD-frg3CgqpdEeydZhUnun7e2TwYb_ynGWqnvrVshehFJ7xGZMmcGSt6mynkcyA5xnCdk6fJOl7egxxBx6IWDpgC5lD" loading="lazy" decoding="async" width="300" height="300"/>
+                                </div>
+                                <h4 class="text-base font-semibold text-charcoal">KHI Official T-Shirt</h4>
+                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 150.000</p>
+                            </div>
+                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
+                        </div>
+                        <div class="group flex flex-col justify-between h-full">
+                            <div>
+                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
+                                    <img alt="Historia Tote Bag" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiIoz7wKEHebu-L2j6FZYswNUdF4SpxYSf6ikU7MAaxIHq7xS3RaipGuJCGQ1y931pwraOABcmJb18_6wKaOwAvzp9sB9bhGV9gHeCz1ZORAg_8EGZSbfnfc4ou4AJbC1dh9xVZ4KqroXy7rkbxs5Fcy_M0B1Ly37uPmXK59M9eB9Csh7zE548_PkTuZ-XL4AuwMmbFdCRHkYT1AsarXYLHA1yVh05CK4rRbOScXrELKDHUhReplGV-74re6lsQOWSjhsX4MLjDhPo" loading="lazy" decoding="async" width="300" height="300"/>
+                                </div>
+                                <h4 class="text-base font-semibold text-charcoal">Historia Tote Bag</h4>
+                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 85.000</p>
+                            </div>
+                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
+                        </div>
+                        <div class="group flex flex-col justify-between h-full">
+                            <div>
+                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
+                                    <img alt="Old Batavia Map Print" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsQiTLdoeqsz-YlYRQdWM-4hSzz5sXy58pedSqBSOCa2ph33EQ2_0kJ0ZTR_4B15aZ0B5aYDLZI3lDVn-Cm7kPienQoH7iKgxsxFj2guMRilt6NSqMLMHg5DxD08OWmYOpGB_ZYDEo2ARNp_EynHvPPRIL0KJjpYXBlVIvYTmNug9AH8r37FmGvAif6xzn7kbXE117XmM3NJ4g9vjkU7GYKDOGnK75FE87JSaukL79U-VM3UmCk1st5vFqU5DGY2MDZyCv0Xxw70n" loading="lazy" decoding="async" width="300" height="300"/>
+                                </div>
+                                <h4 class="text-base font-semibold text-charcoal">Old Batavia Map Print</h4>
+                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 120.000</p>
+                            </div>
+                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
+                        </div>
+                        <div class="group flex flex-col justify-between h-full">
+                            <div>
+                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
+                                    <img alt="Exclusive Pin Set" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7qade8_xtkqbbnia5hmSbONXlsWtFAW8-X9jdsoxPE4um7tr-VGWH3otc6hFQFMCZC6htcDdkwhmDjXgll7NK-cZXuVTBAMkWiO5ppf4nBi75shSnrMrAJf1SVHTN7NEMAGL5gzit4JEUM9ZCyCNaalmdD2NLexWXIWU9eueLVqpeDsB7U36IftpF7J5j_3HW1TNUimX0yS9amAT5LyajVOrEfKIVvl10w8L_iOf39JNRVSIPzaIhsoGj7jTAYPJJAcLOt5UERROz" loading="lazy" decoding="async" width="300" height="300"/>
+                                </div>
+                                <h4 class="text-base font-semibold text-charcoal">Exclusive Pin Set</h4>
+                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 45.000</p>
+                            </div>
+                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </section>
