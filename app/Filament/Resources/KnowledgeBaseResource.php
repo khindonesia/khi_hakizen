@@ -3,21 +3,19 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\KnowledgeBaseResource\Pages;
-use App\Filament\Resources\KnowledgeBaseResource\RelationManagers;
 use App\Models\KnowledgeBase;
-use Filament\Forms;
-use Filament\Forms\Components\KeyValue;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
+use App\Services\MetaGeneratorService;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Actions;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn;
 
 class KnowledgeBaseResource extends Resource
 {
@@ -25,13 +23,22 @@ class KnowledgeBaseResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
+    protected static ?string $navigationLabel = 'Knowledge Base';
+
     protected static ?int $navigationSort = 13;
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORM
+    |--------------------------------------------------------------------------
+    */
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Section::make('Knowledge Data')
                 ->schema([
+
                     TextInput::make('title')
                         ->required()
                         ->maxLength(255),
@@ -41,13 +48,59 @@ class KnowledgeBaseResource extends Resource
                         ->rows(12)
                         ->columnSpanFull(),
 
-                    KeyValue::make('meta')
-                        ->label('Meta (RAG Intents & Keywords)')
-                        ->keyLabel('Key')
-                        ->valueLabel('Value')
-                        ->reorderable()
-                        ->columnSpanFull()
-                        ->helperText('Contoh key: intents, keywords, synonyms, type'),
+                    /*
+                    |--------------------------------------------------------------------------
+                    | AUTO META AI BUTTON
+                    |--------------------------------------------------------------------------
+                    */
+
+                    Actions::make([
+                        Action::make('generateMeta')
+                            ->label('🤖 Generate Meta AI')
+                            ->icon('heroicon-o-sparkles')
+                            ->color('success')
+                            ->action(function (callable $set, callable $get) {
+
+                                $title = $get('title');
+                                $content = $get('content');
+
+                                if (!$title || !$content) {
+                                    return;
+                                }
+
+                                $service = app(MetaGeneratorService::class);
+
+                                $meta = $service->generate($title, $content);
+
+
+                                // 🔥 paksa bersih total
+                                $meta = [
+                                    'intents' => $meta['intents'] ?? [],
+                                    'keywords' => $meta['keywords'] ?? [],
+                                    'synonyms' => collect($meta['synonyms'] ?? [])
+                                        ->mapWithKeys(fn($v, $k) => [
+                                            $k => is_array($v) ? implode(', ', $v) : $v
+                                        ])
+                                        ->toArray(),
+                                ];
+
+                                // dd($meta);
+
+                                $set('meta.intents', $meta['intents']);
+                                $set('meta.keywords', $meta['keywords']);
+                                $set('meta.synonyms', $meta['synonyms']);
+                            }),
+                    ]),
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | META FIELD
+                    |--------------------------------------------------------------------------
+                    */
+
+                    TextInput::make('meta.intents'),
+                    TextInput::make('meta.keywords'),
+                    KeyValue::make('meta.synonyms')
                 ])
         ]);
     }
@@ -62,23 +115,29 @@ class KnowledgeBaseResource extends Resource
     {
         return $table
             ->columns([
+
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable()
                     ->wrap(),
 
                 TextColumn::make('meta')
-                    ->label('Meta')
+                    ->label('Meta Keys')
                     ->formatStateUsing(function ($state) {
-                        if (!$state) return '-';
 
-                        $meta = json_decode($state, true);
+                        if (!$state) {
+                            return '-';
+                        }
 
-                        if (!is_array($meta)) return '-';
+                        $meta = is_array($state)
+                            ? $state
+                            : json_decode($state, true);
 
-                        return collect($meta)
-                            ->map(fn($v, $k) => $k)
-                            ->implode(', ');
+                        if (!is_array($meta)) {
+                            return '-';
+                        }
+
+                        return collect($meta)->keys()->implode(', ');
                     })
                     ->limit(50),
 
@@ -93,12 +152,11 @@ class KnowledgeBaseResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | PAGES
+    |--------------------------------------------------------------------------
+    */
 
     public static function getPages(): array
     {
