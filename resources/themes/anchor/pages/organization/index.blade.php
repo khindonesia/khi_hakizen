@@ -310,6 +310,68 @@ name('organization');
                         </div>
                     @endforeach
                 </div>
+            <!-- Collaboration & Sponsor CTA Section -->
+            <div class="border-t border-[#E9E9E8] pt-16 pb-12">
+                <div class="bg-gradient-to-br from-brand-navy-deep to-brand-navy-mid rounded-[32px] p-8 md:p-16 text-white relative overflow-hidden shadow-xl">
+                    <!-- Background decorative glow -->
+                    <div class="absolute -right-24 -bottom-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
+                    <div class="absolute -left-24 -top-24 w-80 h-80 bg-tertiary/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+                    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                        <div class="lg:col-span-7 space-y-6">
+                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-bold text-white uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-[14px]">handshake</span>
+                                Sponsorship & Partnership
+                            </span>
+                            <h2 class="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] text-white">
+                                Kolaborasi Bersama KHI
+                            </h2>
+                            <p class="text-sm md:text-base text-zinc-300 leading-relaxed max-w-2xl">
+                                Komunitas Historia Indonesia (KHI) membuka kesempatan seluas-luasnya bagi perusahaan, institusi, dan sponsor untuk bermitra dalam melestarikan sejarah, cagar budaya, dan mengedukasi publik. Mari bersama wujudkan sinergi positif demi menjaga memori kolektif bangsa.
+                            </p>
+                        </div>
+                        
+                        <div class="lg:col-span-5 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 space-y-6 backdrop-blur-sm">
+                            <h3 class="text-lg font-bold text-white tracking-tight border-b border-white/10 pb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[20px] text-primary-container">contact_support</span>
+                                Hubungi Tim Kemitraan
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-primary-container">
+                                        <span class="material-symbols-outlined text-[20px]">mail</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-zinc-400">Email Resmi</p>
+                                        <a href="mailto:info@komunitashistoria.com" class="text-sm md:text-base font-semibold text-white hover:text-primary-container transition">
+                                            info@komunitashistoria.com
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-primary-container">
+                                        <span class="material-symbols-outlined text-[20px]">phone_iphone</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-zinc-400">WhatsApp / Telepon</p>
+                                        <a href="https://wa.me/6281808073636" target="_blank" class="text-sm md:text-base font-semibold text-white hover:text-primary-container transition">
+                                            +62 818-0807-3636
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2">
+                                <a href="https://wa.me/6281808073636" target="_blank" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#c41219] hover:shadow-lg transition duration-200">
+                                    <span class="material-symbols-outlined text-[16px]">chat</span>
+                                    Ajukan Penawaran
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </x-container>
