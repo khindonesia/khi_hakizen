@@ -18,7 +18,7 @@
         <!-- HEADER (match your theme) -->
         <div class="bg-red-600 text-white px-4 py-3 flex justify-between items-center">
             <div class="font-semibold text-sm tracking-wide">
-                AI Historiana
+                Sobat Historiana
             </div>
             <button @click="open = false" class="text-white/80 hover:text-white">
                 ✕
@@ -43,7 +43,7 @@
 
             <!-- typing -->
             <div x-show="loading" class="text-xs text-gray-400 px-2">
-                AI sedang mengetik...
+                Sobat Historiana sedang mengetik...
             </div>
 
         </div>
@@ -77,7 +77,7 @@
             messages: [{
                 id: 1,
                 role: 'assistant',
-                content: 'Halo, selamat datang di Komunitas Historia Indonesia (KHI). Ada yang bisa saya bantu?'
+                content: 'Halo sobat, selamat datang di Komunitas Historia Indonesia (KHI). Ada yang bisa saya bantu?'
             }],
 
             async sendMessage() {
@@ -119,7 +119,7 @@
                     this.messages.push({
                         id: Date.now() + 2,
                         role: 'assistant',
-                        content: 'Error koneksi'
+                        content: 'Sobat Historiana mengalami gangguan teknis :('
                     });
                 }
 
