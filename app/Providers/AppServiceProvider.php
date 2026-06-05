@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
@@ -31,6 +32,13 @@ class AppServiceProvider extends ServiceProvider
             $this->app['request']->server->set('HTTPS', true);
         }
 
+        Gate::define('panel.access', function ($user) {
+            return $user->hasAnyPermission([
+                'panel.access',
+                'admin.access',
+            ]);
+        });
+
         $this->setSchemaDefaultLength();
 
         Validator::extend('base64image', function ($attribute, $value, $parameters, $validator) {
@@ -43,7 +51,9 @@ class AppServiceProvider extends ServiceProvider
                     'base64',
                 ],
                 [
-                    '', '', '',
+                    '',
+                    '',
+                    '',
                 ],
                 $explode[0]
             );
@@ -66,7 +76,7 @@ class AppServiceProvider extends ServiceProvider
     {
         try {
             Schema::defaultStringLength(191);
+        } catch (\Exception $exception) {
         }
-        catch (\Exception $exception){}
     }
 }

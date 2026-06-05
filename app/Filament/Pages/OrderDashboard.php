@@ -17,10 +17,15 @@ class OrderDashboard extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
 
-    protected static ?string $navigationGroup = 'Order Management';
+    protected static ?string $navigationGroup = 'Merchandise Management';
 
     protected static ?int $navigationSort = 1;
     protected static ?string $title = 'Dashboard';
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('order-dashboard.view');
+    }
 
     protected function getHeaderWidgets(): array
     {

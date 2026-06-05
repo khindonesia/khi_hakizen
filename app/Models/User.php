@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Support\Str;
 use Wave\User as WaveUser;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 use Wave\Traits\HasProfileKeyValues;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends WaveUser
 {
+    use HasRoles;
     use Notifiable, HasProfileKeyValues;
 
     public $guard_name = 'web';
@@ -30,10 +32,10 @@ class User extends WaveUser
         'verification_code',
         'verified',
         'trial_ends_at',
-        'phone_number', 
-        'age',          
-        'occupation',    
-        'reason_for_joining', 
+        'phone_number',
+        'age',
+        'occupation',
+        'reason_for_joining',
         'consent',
         'birth_year',
         'country',
@@ -102,7 +104,7 @@ class User extends WaveUser
     protected static function boot()
     {
         parent::boot();
-        
+
         // Listen for the creating event of the model
         static::creating(function ($user) {
             // Check if the username attribute is empty
@@ -123,7 +125,7 @@ class User extends WaveUser
             // Remove all roles
             $user->syncRoles([]);
             // Assign the default role
-            $user->assignRole( config('wave.default_user_role', 'registered') );
+            $user->assignRole(config('wave.default_user_role', 'registered'));
         });
     }
 }

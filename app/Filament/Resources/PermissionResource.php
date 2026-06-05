@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PermissionResource\Pages;
 use App\Filament\Resources\PermissionResource\RelationManagers;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PermissionResource extends Resource
 {
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = true;
     protected static ?string $model = Permission::class;
 
     protected static ?string $navigationIcon = 'phosphor-shield-check-duotone';
@@ -32,6 +32,11 @@ class PermissionResource extends Resource
                 Forms\Components\TextInput::make('guard_name')
                     ->required()
                     ->maxLength(191),
+                Forms\Components\Select::make('roles')
+                    ->multiple()
+                    ->relationship('roles', 'name')
+                    ->preload()
+                    ->label('Assign Roles'),
             ]);
     }
 

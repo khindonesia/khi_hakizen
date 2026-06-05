@@ -21,11 +21,11 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
-    protected static ?string $navigationGroup = 'Order Management';
+    protected static ?string $navigationGroup = 'Merchandise Management';
     protected static ?int $navigationSort = 1;
     protected static ?string $recordTitleAttribute = 'invoice_id';
 
-    
+
 
     public static function getNavigationBadge(): ?string
     {
@@ -224,13 +224,13 @@ class OrderResource extends Resource
                     ->label('Print Invoice')
                     ->icon('heroicon-o-printer')
                     ->color('info')
-                    ->url(fn (Order $record): string => route('orders.print-invoice', $record))
+                    ->url(fn(Order $record): string => route('orders.print-invoice', $record))
                     ->openUrlInNewTab(),
                 Tables\Actions\Action::make('printDeliveryOrder')
                     ->label('Print Delivery Order')
                     ->icon('heroicon-o-truck')
                     ->color('warning')
-                    ->url(fn (Order $record): string => route('orders.print-delivery-order', $record))
+                    ->url(fn(Order $record): string => route('orders.print-delivery-order', $record))
                     ->openUrlInNewTab(),
                 Tables\Actions\Action::make('inputResi')
                     ->label('Input Resi')
@@ -239,7 +239,7 @@ class OrderResource extends Resource
                     ->form([
                         Forms\Components\TextInput::make('resi')
                             ->label('Nomor Resi')
-                            ->default(fn (Order $record): ?string => $record->resi)
+                            ->default(fn(Order $record): ?string => $record->resi)
                             ->required(),
                     ])
                     ->action(function (Order $record, array $data): void {
@@ -247,7 +247,7 @@ class OrderResource extends Resource
                             'resi' => $data['resi'],
                             'status' => 'shipping',
                         ]);
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Nomor resi berhasil disimpan')
                             ->success()
@@ -259,7 +259,7 @@ class OrderResource extends Resource
                     ->color('warning')
                     // ->visible(fn (Order $record): bool => !empty($record->resi))
                     ->visible(false)
-                    ->modalHeading(fn (Order $record): string => "Lacak Resi: {$record->resi} ({$record->courier})")
+                    ->modalHeading(fn(Order $record): string => "Lacak Resi: {$record->resi} ({$record->courier})")
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Tutup')
                     ->modalContent(function (Order $record) {

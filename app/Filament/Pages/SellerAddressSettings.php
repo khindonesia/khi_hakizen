@@ -26,6 +26,11 @@ class SellerAddressSettings extends Page implements HasForms
 
     protected static string $view = 'filament.pages.seller-address-settings';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('seller-address.view');
+    }
+
     public ?array $data = [];
 
     public function mount(): void
@@ -106,7 +111,7 @@ class SellerAddressSettings extends Page implements HasForms
                                     ->searchable()
                                     ->required()
                                     ->live()
-                                    ->disabled(fn (Get $get): bool => blank($get('province_id')))
+                                    ->disabled(fn(Get $get): bool => blank($get('province_id')))
                                     ->afterStateUpdated(function (Set $set): void {
                                         $set('district_id', null);
                                         $set('subdistrict_id', null);
@@ -125,7 +130,7 @@ class SellerAddressSettings extends Page implements HasForms
                                     ->searchable()
                                     ->required()
                                     ->live()
-                                    ->disabled(fn (Get $get): bool => blank($get('city_id')))
+                                    ->disabled(fn(Get $get): bool => blank($get('city_id')))
                                     ->afterStateUpdated(function (Set $set): void {
                                         $set('subdistrict_id', null);
                                     })
@@ -143,7 +148,7 @@ class SellerAddressSettings extends Page implements HasForms
                                     ->searchable()
                                     ->required()
                                     ->live()
-                                    ->disabled(fn (Get $get): bool => blank($get('district_id')))
+                                    ->disabled(fn(Get $get): bool => blank($get('district_id')))
                                     ->placeholder('Select subdistrict'),
 
                                 TextInput::make('seller_postal_code')

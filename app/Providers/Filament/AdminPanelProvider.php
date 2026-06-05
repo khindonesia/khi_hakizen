@@ -20,7 +20,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Vormkracht10\FilamentMails\FilamentMailsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -85,9 +84,9 @@ class AdminPanelProvider extends PanelProvider
                 // \App\Http\Middleware\WaveEditTab::class
             ])
             ->authMiddleware([
-                Authenticate::class
+                // Authenticate::class,
+                'can:panel.access',
             ])
-            ->plugin(FilamentMailsPlugin::make())
             ->brandLogo(fn() => view('wave::admin.logo'))
             ->darkModeBrandLogo(fn() => view('wave::admin.logo-dark'));
     }

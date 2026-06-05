@@ -13,12 +13,16 @@ class Media extends Page
     protected static ?string $navigationIcon = 'heroicon-o-photo';
 
     protected static string $view = 'filament.pages.media';
-    
+
     protected static ?int $navigationSort = 5;
- 
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('media.view');
+    }
+
     public function getMaxContentWidth(): MaxWidth
     {
         return MaxWidth::Full;
     }
-
 }

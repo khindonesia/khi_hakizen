@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoleResource\Pages;
 use App\Filament\Resources\RoleResource\RelationManagers;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RoleResource extends Resource
 {
-    protected static bool $shouldRegisterNavigation = false;
+    // protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon = 'phosphor-address-book-duotone';
@@ -32,6 +32,10 @@ class RoleResource extends Resource
                 Forms\Components\TextInput::make('guard_name')
                     ->required()
                     ->maxLength(191),
+                Forms\Components\Select::make('permissions')
+                    ->multiple()
+                    ->relationship('permissions', 'name')
+                    ->preload(),
                 Forms\Components\TextInput::make('description')
                     ->required()
                     ->maxLength(191)
