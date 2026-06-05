@@ -24,7 +24,7 @@ class OrderDashboard extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can('order-dashboard.view');
+        return auth()->user()?->can('order-dashboard.view') ?? false;
     }
 
     protected function getHeaderWidgets(): array

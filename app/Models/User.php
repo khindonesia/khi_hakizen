@@ -9,6 +9,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Wave\Traits\HasProfileKeyValues;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Filament\Panel;
 
 class User extends WaveUser
 {
@@ -16,6 +17,15 @@ class User extends WaveUser
     use Notifiable, HasProfileKeyValues;
 
     public $guard_name = 'web';
+
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        if (! auth()->guard()->check()) {
+            return false;
+        }
+
+        return $this->can('panel.access');
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -98,7 +108,7 @@ class User extends WaveUser
     public function likedComments(): BelongsToMany
     {
         return $this->belongsToMany(Comment::class, 'comment_likes')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     protected static function boot()

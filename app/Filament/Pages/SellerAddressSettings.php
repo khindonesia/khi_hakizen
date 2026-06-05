@@ -28,7 +28,7 @@ class SellerAddressSettings extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can('seller-address.view');
+        return auth()->user()?->can('seller-address.view') ?? false;
     }
 
     public ?array $data = [];

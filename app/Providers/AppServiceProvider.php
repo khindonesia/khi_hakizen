@@ -35,7 +35,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('panel.access', function ($user) {
             return $user->hasAnyPermission([
                 'panel.access',
-                'admin.access',
             ]);
         });
 

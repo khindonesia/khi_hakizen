@@ -84,8 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 // \App\Http\Middleware\WaveEditTab::class
             ])
             ->authMiddleware([
-                // Authenticate::class,
-                'can:panel.access',
+                Authenticate::class
             ])
             ->brandLogo(fn() => view('wave::admin.logo'))
             ->darkModeBrandLogo(fn() => view('wave::admin.logo-dark'));
