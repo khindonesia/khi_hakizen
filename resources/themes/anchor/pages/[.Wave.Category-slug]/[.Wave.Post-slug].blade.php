@@ -32,7 +32,7 @@ render(function (View $view, \Wave\Category $category, \Wave\Post $post) {
     'image' => $coverImage,
     'type' => 'article',
 ]">
-@include('theme::partials.blog.article-detail', [
+    @include('theme::partials.blog.article-detail', [
         'model' => $post,
         'backHref' => url($post->category->slug),
         'backText' => 'Back to ' . $post->category->name,

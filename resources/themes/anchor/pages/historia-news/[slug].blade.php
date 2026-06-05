@@ -37,8 +37,9 @@ name('historia-news.detail');
     'image' => $coverImage,
     'type' => 'article',
 ]">
-@if ($post)
+    @if ($post)
         @include('theme::partials.blog.article-detail', [
+            'model' => $post,
             'backHref' => route('historia-news'),
             'backText' => 'Back to Historia News',
             'categoryLabel' => $categoryLabel,
