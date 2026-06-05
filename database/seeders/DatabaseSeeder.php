@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             $this->call(EbookSeeder::class);
             $this->call(OrganizationSeeder::class);
             $this->call(HomePageContentSeeder::class);
+            $this->call(CommentSeeder::class);
             fixPostgresSequence();
         } finally {
             Schema::enableForeignKeyConstraints();

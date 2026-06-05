@@ -78,6 +78,12 @@
                         {!! clean($body) !!}
                     </div>
                 </div>
+
+                @if(isset($model))
+                    <div class="mt-2">
+                        <livewire:comments :model="$model" />
+                    </div>
+                @endif
             </div>
 
             <aside class="lg:col-span-4 lg:sticky lg:top-[100px]">

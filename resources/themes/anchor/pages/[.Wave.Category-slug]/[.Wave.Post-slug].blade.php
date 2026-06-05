@@ -33,6 +33,7 @@ render(function (View $view, \Wave\Category $category, \Wave\Post $post) {
     'type' => 'article',
 ]">
 @include('theme::partials.blog.article-detail', [
+        'model' => $post,
         'backHref' => url($post->category->slug),
         'backText' => 'Back to ' . $post->category->name,
         'categoryLabel' => $categoryLabel,

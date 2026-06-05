@@ -95,9 +95,12 @@
                         </div>
                     </div>
 
-                    <!-- Event Main Article / Body Content -->
                     <div class="prose prose-zinc max-w-none text-[#575e75] leading-[1.7] mt-2 prose-headings:text-[#37352F] prose-headings:font-semibold prose-a:text-[#df1c24] prose-strong:text-[#37352F] font-normal">
                         {!! clean($event->body) !!}
+                    </div>
+
+                    <div class="mt-8">
+                        <livewire:comments :model="$event" />
                     </div>
 
                 </div>
@@ -158,20 +161,27 @@
                         <!-- Registration / Share Actions -->
                         <div class="flex flex-col gap-2.5">
                             @if($isUpcoming || $isOngoing)
-                                @if($isAlreadyRegistered)
-                                    <a href="{{ route('dashboard.events') }}" wire:navigate
-                                       class="w-full bg-emerald-600 hover:bg-emerald-700 text-[#fff] text-center text-sm font-semibold py-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                                        You are Registered (View Ticket)
-                                    </a>
+                                @auth
+                                    @if($isAlreadyRegistered)
+                                        <a href="{{ route('dashboard.events') }}" wire:navigate
+                                           class="w-full bg-emerald-600 hover:bg-emerald-700 text-[#fff] text-center text-sm font-semibold py-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                                            You are Registered (View Ticket)
+                                        </a>
+                                    @else
+                                        <a href="{{ route('events.checkout', ['event' => $event->id]) }}" wire:navigate
+                                           class="w-full bg-[#df1c24] hover:bg-opacity-95 text-center text-sm font-semibold py-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                           style="color: white !important;">
+                                            <span class="material-symbols-outlined text-[18px]" style="color: white !important;">add_circle</span>
+                                            RSVP & Join Event
+                                        </a>
+                                    @endif
                                 @else
-                                    <a href="{{ route('events.checkout', ['event' => $event->id]) }}" wire:navigate
-                                       class="w-full bg-[#df1c24] hover:bg-opacity-95 text-center text-sm font-semibold py-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                                       style="color: white !important;">
-                                        <span class="material-symbols-outlined text-[18px]" style="color: white !important;">add_circle</span>
-                                        RSVP & Join Event
+                                    <a href="{{ route('join') }}" class="w-full bg-[#df1c24] hover:bg-opacity-95 text-center text-sm font-semibold py-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm" style="color: white !important;">
+                                        <span class="material-symbols-outlined text-[18px]" style="color: white !important;">workspace_premium</span>
+                                        Join KHI to Book Event
                                     </a>
-                                @endif
+                                @endauth
                             @else
                                 <button type="button" disabled
                                         class="w-full bg-zinc-200 text-zinc-400 text-sm font-semibold py-3.5 rounded-lg flex items-center justify-center gap-1.5 cursor-not-allowed">

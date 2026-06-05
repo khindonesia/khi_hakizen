@@ -39,6 +39,7 @@ name('aspirasi.detail');
 ]">
 @if ($aspirasi)
         @include('theme::partials.blog.article-detail', [
+            'model' => $aspirasi,
             'backHref' => route('aspirasi'),
             'backText' => 'Back to Aspirasi',
             'categoryLabel' => $categoryLabel,

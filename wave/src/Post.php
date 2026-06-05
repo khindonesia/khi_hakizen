@@ -24,4 +24,14 @@ class Post extends Model
     public function category(){
     	return $this->belongsTo('Wave\Category');
     }
+
+    public function comments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Models\Comment::class, 'commentable')->whereNull('parent_id');
+    }
+
+    public function allComments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Models\Comment::class, 'commentable');
+    }
 }

@@ -294,9 +294,9 @@
                                    x-text="message"
                                    :class="messageType === 'success' ? 'text-emerald-600' : 'text-rose-600'"></p>
                             </div>
-                            @elseguest
-                                <a href="{{ route('login') }}" class="w-full rounded-full bg-red-600 py-3 text-center font-semibold text-white transition-all hover:bg-red-500">
-                                    Sign in to Purchase
+                            @else
+                                <a href="{{ route('join') }}" class="w-full rounded-full bg-red-600 py-3 text-center font-semibold text-white transition-all hover:bg-red-500">
+                                    Join KHI to Purchase
                                 </a>
                             @endauth
 

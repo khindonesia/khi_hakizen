@@ -6,6 +6,8 @@ use Illuminate\Support\Str;
 use Wave\User as WaveUser;
 use Illuminate\Notifications\Notifiable;
 use Wave\Traits\HasProfileKeyValues;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends WaveUser
 {
@@ -78,6 +80,23 @@ class User extends WaveUser
     public function ownedEvents()
     {
         return $this->hasMany(Event::class, 'author_id');
+    }
+
+    /**
+     * Get the comments written by this user.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * Get the comments liked by this user.
+     */
+    public function likedComments(): BelongsToMany
+    {
+        return $this->belongsToMany(Comment::class, 'comment_likes')
+                    ->withTimestamps();
     }
 
     protected static function boot()
