@@ -77,7 +77,7 @@
             messages: [{
                 id: 1,
                 role: 'assistant',
-                content: 'Halo 👋 Ada yang bisa saya bantu?'
+                content: 'Halo, selamat datang di Komunitas Historia Indonesia (KHI). Ada yang bisa saya bantu?'
             }],
 
             async sendMessage() {

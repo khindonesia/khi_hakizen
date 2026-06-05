@@ -158,7 +158,7 @@ ATURAN WAJIB:
 - Jawab HANYA berdasarkan DATABASE CONTEXT
 - Jangan gunakan pengetahuan luar
 - Jangan mengarang
-- Jika tidak ada di context jawab: "Data tidak tersedia di sistem KHI"
+- Jika tidak ada di context jawab: "Data tidak tersedia di sistem KHI. Silakan ajukan pertanyaan yang lebih spesifik!"
 - Gunakan sinonim hanya untuk memahami query
 
 DATABASE CONTEXT:
