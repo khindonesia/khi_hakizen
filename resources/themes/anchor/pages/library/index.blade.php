@@ -85,10 +85,10 @@ new class extends Component {
             <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
             <x-container class="relative z-10 max-w-4xl px-6">
                 <h1 style="color: #e4e4e7;" class="text-4xl md:text-6xl font-bold leading-tight tracking-tight mb-4 font-sans text-zinc-200">
-                    Digital Archive
+                    {{ setting('library_title', 'Digital Archive') }}
                 </h1>
                 <p class="text-zinc-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-                    Explore our extensive collection of digitized historical manuscripts, scholarly publications, and rare archival materials documenting the rich tapestry of Indonesian history.
+                    {{ setting('library_subtitle', 'Explore our extensive collection of digitized historical manuscripts, scholarly publications, and rare archival materials documenting the rich tapestry of Indonesian history.') }}
                 </p>
 
                 <!-- Symmetrical Search Input Bar -->

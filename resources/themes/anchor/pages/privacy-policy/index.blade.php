@@ -27,9 +27,7 @@ name('privacy-policy');
 
         <main class="w-full max-w-4xl mx-auto px-6 mt-16">
             <div class="bg-white rounded-2xl border border-gray-200/70 p-8 md:p-10 space-y-6 text-gray-700 leading-relaxed">
-                <p>We only collect information needed to operate the site, manage accounts, and support community features.</p>
-                <p>We do not sell personal data. Shared data is limited to trusted service providers required for the app to function.</p>
-                <p>If you have privacy questions, contact the community team through the site's official channels.</p>
+                {!! setting_sanitized('privacy_policy', '<p>We only collect information needed to operate the site, manage accounts, and support community features.</p><p>We do not sell personal data. Shared data is limited to trusted service providers required for the app to function.</p><p>If you have privacy questions, contact the community team through the site\'s official channels.</p>') !!}
             </div>
         </main>
     </div>

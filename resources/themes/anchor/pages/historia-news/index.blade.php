@@ -23,13 +23,13 @@ name('historia-news');
             <x-container class="max-w-4xl mx-auto px-6">
                 <div
                     class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#df1c24]/10 border border-[#df1c24]/20 text-xs font-bold text-[#df1c24] uppercase tracking-wider mb-6">
-                    Historialita
+                    {{ setting('news_chip', 'Historialita') }}
                 </div>
                 <h1 class="text-4xl md:text-[56px] font-extrabold text-gray-900 tracking-tight leading-none">
-                    Historialita
+                    {{ setting('news_title', 'Historialita') }}
                 </h1>
                 <p class="text-gray-600 max-w-2xl text-base md:text-lg mt-6 mx-auto leading-relaxed">
-                    Kurasi artikel, kabar komunitas, dan cerita sejarah dari Komunitas Historia Indonesia.
+                    {{ setting('news_subtitle', 'Kurasi artikel, kabar komunitas, dan cerita sejarah dari Komunitas Historia Indonesia.') }}
                 </p>
             </x-container>
         </section>

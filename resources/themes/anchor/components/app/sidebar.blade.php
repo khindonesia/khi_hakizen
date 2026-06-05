@@ -70,6 +70,12 @@
                             :active="Request::is('dashboard/historialita') || Request::is('dashboard/historialita/*')">
                             Historialita
                         </x-app.sidebar-link>
+                        @role('admin')
+                            <x-app.sidebar-link href="/dashboard/admin/settings" icon="phosphor-gear-six"
+                                :active="Request::is('dashboard/admin/settings')">
+                                Site Settings
+                            </x-app.sidebar-link>
+                        @endrole
                     </div>
                 </div>
 

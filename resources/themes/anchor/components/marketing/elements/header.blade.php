@@ -23,7 +23,7 @@
     <div class="mx-auto flex h-20 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <a href="{{ route('home') }}" class="inline-flex items-center gap-3 rounded-full border border-zinc-200/80 bg-white px-3 py-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
             <x-logo class="h-7 w-auto" />
-            <span class="hidden text-sm font-semibold text-zinc-900 sm:block">Komunitas Historia Indonesia</span>
+            <span class="hidden text-sm font-semibold text-zinc-900 sm:block">{{ setting('site.title', 'Komunitas Historia Indonesia') }}</span>
         </a>
 
         <nav class="hidden items-center gap-1 rounded-full border border-zinc-200/80 bg-white/90 px-2 py-2 shadow-sm lg:flex dark:border-zinc-800 dark:bg-zinc-950/90">

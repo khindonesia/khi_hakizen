@@ -21,24 +21,19 @@ name('home');
 @php
         $homePageContent = HomePageContent::with(['achievements' => fn ($query) => $query->ordered()])->first();
 
-        $heroTitle = $homePageContent?->hero_title
-            ?? 'Komunitas Historia Indonesia: Penjaga Memori Kolektif Bangsa';
-        $heroSubtitle = $homePageContent?->hero_subtitle
-            ?? 'Komunitas Historia Indonesia (KHI) telah membuktikan bahwa sejarah bukan sekadar pelajaran tentang masa lalu, tetapi fondasi penting dalam membangun nasionalisme dan ketahanan bangsa yang kokoh.';
-        $heroButtonText = $homePageContent?->hero_button_text ?? 'Bergabung Sekarang!';
-        $heroImage = $homePageContent?->hero_image
-            ? \Illuminate\Support\Facades\Storage::url($homePageContent->hero_image)
-            : url('/images/img-hero.jpeg');
+        $heroTitle = setting('hero_title', 'Komunitas Historia Indonesia: Penjaga Memori Kolektif Bangsa');
+        $heroSubtitle = setting('hero_subtitle', 'Komunitas Historia Indonesia (KHI) telah membuktikan bahwa sejarah bukan sekadar pelajaran tentang masa lalu, tetapi fondasi penting dalam membangun nasionalisme dan ketahanan bangsa yang kokoh.');
+        $heroButtonText = setting('hero_button_text', 'Bergabung Sekarang!');
+        $heroImage = setting_image('hero_image', asset('/images/img-hero.jpeg'));
 
-        $orgName = $homePageContent?->org_name ?? 'Komunitas Historia Indonesia';
-        $orgAcronym = $homePageContent?->org_acronym ?? 'KHI';
-        $orgDescription = $homePageContent?->org_description
-            ?? 'Komunitas sejarah yang aktif mengedukasi publik melalui program, tulisan, kearsipan, kebudayaan, dan kegiatan lapangan.';
+        $orgName = setting('site.title', 'Komunitas Historia Indonesia');
+        $orgAcronym = setting('org_acronym', 'KHI');
+        $orgDescription = setting('about_description', 'Komunitas sejarah yang aktif mengedukasi publik melalui program, tulisan, kearsipan, kebudayaan, dan kegiatan lapangan.');
         $leaderName = $homePageContent?->leader_name ?? 'Asep Kambali';
         $leaderPosition = $homePageContent?->leader_position ?? 'Founder KHI';
         $leaderImage = $homePageContent?->leader_image
             ? \Illuminate\Support\Facades\Storage::url($homePageContent->leader_image)
-            : url('/images/achievement.jpg');
+            : asset('/images/achievement.jpg');
 
         $achievements = $homePageContent?->achievements ?? collect();
         if ($achievements->isEmpty()) {
@@ -526,9 +521,9 @@ name('home');
                             <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-[#37352F] mb-4">
                                 {{ $orgName }} @if ($orgAcronym) ({{ $orgAcronym }}) @endif
                             </h2>
-                            <p class="text-base text-[#37352F]/80 leading-relaxed">
-                                {{ $orgDescription }}
-                            </p>
+                            <div class="text-base text-[#37352F]/80 leading-relaxed">
+                                {!! setting_sanitized('about_description', $orgDescription) !!}
+                            </div>
                         </div>
                         <div class="mt-auto pt-6 border-t border-[#663d00]/10">
                             <a class="inline-flex items-center gap-2 text-[#663d00] font-semibold text-sm group-hover:gap-4 transition-all duration-300" href="{{ route('organization') }}" wire:navigate>

@@ -5,13 +5,31 @@
             <div class="space-y-4 max-w-xl">
                 <a href="{{ route('home') }}" class="inline-flex items-center gap-3">
                     <x-logo class="h-8 w-auto" />
-                    <span class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Komunitas
-                        Historia Indonesia</span>
+                    <span class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{{ setting('site.title', 'Komunitas Historia Indonesia') }}</span>
                 </a>
                 <p class="max-w-lg text-sm leading-7 text-zinc-500 dark:text-zinc-400">
-                    Scholarly preservation for modern minds. Clean navigation, focused content, and a lighter canvas for
-                    the community.
+                    {{ setting('header_tagline', 'Scholarly preservation for modern minds. Clean navigation, focused content, and a lighter canvas for the community.') }}
                 </p>
+                <div class="text-xs text-zinc-500 space-y-2 mt-4">
+                    @if($address = setting('footer_address'))
+                        <p class="flex items-start gap-2">
+                            <x-phosphor-map-pin class="w-4 h-4 shrink-0 mt-0.5 text-zinc-400" />
+                            <span>{{ $address }}</span>
+                        </p>
+                    @endif
+                    @if($phone = setting('footer_contact_phone'))
+                        <p class="flex items-center gap-2">
+                            <x-phosphor-phone class="w-4 h-4 shrink-0 text-zinc-400" />
+                            <span>{{ $phone }}</span>
+                        </p>
+                    @endif
+                    @if($email = setting('footer_contact_email'))
+                        <p class="flex items-center gap-2">
+                            <x-phosphor-envelope-simple class="w-4 h-4 shrink-0 text-zinc-400" />
+                            <span>{{ $email }}</span>
+                        </p>
+                    @endif
+                </div>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
@@ -47,19 +65,33 @@
 
         <div
             class="flex flex-col gap-4 border-t border-zinc-200/80 pt-6 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
-            <p>&copy; 2003-{{ date('Y') }} Komunitas Historia Indonesia.</p>
+            <p>{!! setting_sanitized('footer_copyright', '&copy; 2003-' . date('Y') . ' Komunitas Historia Indonesia.') !!}</p>
 
             <div class="flex items-center gap-4">
                 @php
-                    $socials = \App\Models\Social::all();
+                    $socialLinks = [
+                        ['key' => 'socmed_facebook', 'icon' => 'facebook', 'name' => 'Facebook'],
+                        ['key' => 'socmed_instagram', 'icon' => 'instagram', 'name' => 'Instagram'],
+                        ['key' => 'socmed_twitter', 'icon' => 'twitter', 'name' => 'Twitter'],
+                        ['key' => 'socmed_youtube', 'icon' => 'youtube', 'name' => 'YouTube'],
+                    ];
                 @endphp
-
-                @foreach ($socials as $social)
-                    <a href="{{ $social->url }}" target="_blank" rel="noopener noreferrer" title="{{ $social->name }}"
-                        class="hover:text-red-700 dark:hover:text-blue-300 flex items-center gap-1">
-                        <x-icon :name="$social->icon" class="w-5 h-5" />
-                        <span>{{ $social->name }}</span>
-                    </a>
+                @foreach ($socialLinks as $social)
+                    @if ($url = setting($social['key']))
+                        <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="{{ $social['name'] }}"
+                            class="hover:text-red-700 dark:hover:text-blue-300 flex items-center gap-1 text-zinc-500 hover:text-red-700 dark:text-zinc-400 transition">
+                            @if($social['icon'] === 'facebook')
+                                <x-phosphor-facebook-logo class="w-5 h-5" />
+                            @elseif($social['icon'] === 'instagram')
+                                <x-phosphor-instagram-logo class="w-5 h-5" />
+                            @elseif($social['icon'] === 'twitter')
+                                <x-phosphor-twitter-logo class="w-5 h-5" />
+                            @elseif($social['icon'] === 'youtube')
+                                <x-phosphor-youtube-logo class="w-5 h-5" />
+                            @endif
+                            <span>{{ $social['name'] }}</span>
+                        </a>
+                    @endif
                 @endforeach
             </div>
         </div>

@@ -105,11 +105,11 @@ new class extends Component {
                 <header class="mb-16 text-center max-w-3xl mx-auto">
                     <div class="inline-flex items-center gap-[8px] px-[16px] py-[4px] bg-[#df1c24]/10 text-[#df1c24] rounded-full mb-[16px] border border-[#df1c24]/20">
                         <span class="material-symbols-outlined text-[16px]">campaign</span>
-                        <span class="text-[13px] font-semibold tracking-wide uppercase">Suara Anggota KHI</span>
+                        <span class="text-[13px] font-semibold tracking-wide uppercase">{{ setting('aspirasi_chip', 'Suara Anggota KHI') }}</span>
                     </div>
-                    <h1 class="text-5xl md:text-[80px] font-semibold tracking-[-2px] text-[#020611] leading-[1.05] mb-6">Aspirasi</h1>
+                    <h1 class="text-5xl md:text-[80px] font-semibold tracking-[-2px] text-[#020611] leading-[1.05] mb-6">{{ setting('aspirasi_title', 'Aspirasi') }}</h1>
                     <p class="text-[18px] leading-[1.55] text-[#575e75]">
-                        Opini, esai, dan pemikiran mendalam mengenai pelestarian sejarah, identitas budaya, dan masa depan warisan Indonesia dari para anggota dan cendekiawan.
+                        {{ setting('aspirasi_subtitle', 'Opini, esai, dan pemikiran mendalam mengenai pelestarian sejarah, identitas budaya, dan masa depan warisan Indonesia dari para anggota dan cendekiawan.') }}
                     </p>
                 </header>
 

@@ -61,9 +61,9 @@ name("merchandise");
     <main class="relative mx-auto max-w-[1280px] px-4 pb-24 pt-24 sm:px-6">
         <!-- Header Section -->
         <header class="mb-16 border-b border-zinc-200/80 pb-12">
-            <div class="stitch-chip mb-4">Merchandise</div>
-            <h1 class="mb-3 text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-900 md:text-[56px]">KHI Store</h1>
-            <p class="max-w-2xl text-lg leading-[1.55] text-zinc-500">Support historical preservation. Every purchase directly funds our educational programs and archive maintenance.</p>
+            <div class="stitch-chip mb-4">{{ setting('merchandise_chip', 'Merchandise') }}</div>
+            <h1 class="mb-3 text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-900 md:text-[56px]">{{ setting('merchandise_title', 'KHI Store') }}</h1>
+            <p class="max-w-2xl text-lg leading-[1.55] text-zinc-500">{{ setting('merchandise_subtitle', 'Support historical preservation. Every purchase directly funds our educational programs and archive maintenance.') }}</p>
         </header>
 
         <!-- Category Filters -->

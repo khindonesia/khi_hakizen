@@ -27,9 +27,7 @@ name('terms-of-service');
 
         <main class="w-full max-w-4xl mx-auto px-6 mt-16">
             <div class="bg-white rounded-2xl border border-gray-200/70 p-8 md:p-10 space-y-6 text-gray-700 leading-relaxed">
-                <p>Use the site respectfully and follow applicable laws and community guidelines.</p>
-                <p>Content may be updated, removed, or moderated when needed to keep the platform safe and useful.</p>
-                <p>By using the site, you agree to the terms and policies published here.</p>
+                {!! setting_sanitized('terms_of_service', '<p>Use the site respectfully and follow applicable laws and community guidelines.</p><p>Content may be updated, removed, or moderated when needed to keep the platform safe and useful.</p><p>By using the site, you agree to the terms and policies published here.</p>') !!}
             </div>
         </main>
     </div>

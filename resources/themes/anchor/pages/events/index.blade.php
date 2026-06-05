@@ -51,13 +51,13 @@
             <div class="max-w-3xl mb-12">
                 <div class="stitch-chip mb-3 inline-flex">
                     <span class="material-symbols-outlined text-[14px]">event_upcoming</span>
-                    Historical Gatherings
+                    {{ setting('events_chip', 'Historical Gatherings') }}
                 </div>
                 <h1 class="text-3xl font-semibold leading-tight tracking-tight text-zinc-900 md:text-[44px]">
-                    KHI Community Events
+                    {{ setting('events_title', 'KHI Community Events') }}
                 </h1>
                 <p class="mt-3 text-sm leading-[1.6] text-zinc-500 md:text-base">
-                    Participate in our interactive walking tours, archive conservation workshops, history forums, and heritage conservation programs across Indonesia.
+                    {{ setting('events_subtitle', 'Participate in our interactive walking tours, archive conservation workshops, history forums, and heritage conservation programs across Indonesia.') }}
                 </p>
             </div>
 

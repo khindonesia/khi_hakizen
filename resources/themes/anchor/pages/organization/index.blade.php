@@ -143,9 +143,9 @@ name('organization');
                         <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">visibility</span>
                     </div>
                     <h3 class="text-2xl font-bold text-[#000000] tracking-tight">Our Vision</h3>
-                    <p class="text-sm md:text-base text-charcoal leading-[1.7]">
-                        Menjadi lembaga pelestarian sejarah dan budaya independen terkemuka di Asia Tenggara, menumbuhkan pemahaman mendalam bangsa sebagai pondasi patriotisme rakyat Indonesia yang berkepribadian mandiri.
-                    </p>
+                    <div class="text-sm md:text-base text-charcoal leading-[1.7]">
+                        {!! setting_sanitized('about_vision', 'Menjadi lembaga pelestarian sejarah dan budaya independen terkemuka di Asia Tenggara, menumbuhkan pemahaman mendalam bangsa sebagai pondasi patriotisme rakyat Indonesia yang berkepribadian mandiri.') !!}
+                    </div>
                     <div class="flex flex-wrap gap-2 pt-2">
                         <span class="px-3 py-1 rounded-full bg-[#fffafb] border border-[#E9E9E8] text-[11px] font-semibold text-[#575e75]">Preservation</span>
                         <span class="px-3 py-1 rounded-full bg-[#fffafb] border border-[#E9E9E8] text-[11px] font-semibold text-[#575e75]">Independent</span>
@@ -158,9 +158,9 @@ name('organization');
                         <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">track_changes</span>
                     </div>
                     <h3 class="text-2xl font-bold text-[#000000] tracking-tight">Our Mission</h3>
-                    <p class="text-sm md:text-base text-charcoal leading-[1.7]">
-                        Mengemas pembelajaran nilai luhur sejarah secara rekreatif, edukatif, dan interaktif guna mendidik generasi muda aktif menjaga kelestarian cagar budaya serta warisan pusaka nasional.
-                    </p>
+                    <div class="text-sm md:text-base text-charcoal leading-[1.7]">
+                        {!! setting_sanitized('about_mission', 'Mengemas pembelajaran nilai luhur sejarah secara rekreatif, edukatif, dan interaktif guna mendidik generasi muda aktif menjaga kelestarian cagar budaya serta warisan pusaka nasional.') !!}
+                    </div>
                     <div class="flex flex-wrap gap-2 pt-2">
                         <span class="px-3 py-1 rounded-full bg-[#fffafb] border border-[#E9E9E8] text-[11px] font-semibold text-[#575e75]">Educators</span>
                         <span class="px-3 py-1 rounded-full bg-[#fffafb] border border-[#E9E9E8] text-[11px] font-semibold text-[#575e75]">Community</span>
