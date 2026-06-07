@@ -125,13 +125,13 @@ name('organization');
             <div class="text-center max-w-3xl mx-auto space-y-4">
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-wider">
                     <span class="material-symbols-outlined text-[14px]">account_tree</span>
-                    Portal Informasi KHI
+                    {{ setting('org_page_chip', 'Portal Informasi KHI') }}
                 </div>
                 <h1 class="text-4xl md:text-[56px] leading-[1.1] font-bold text-[#000000] tracking-tight">
-                    Structure, Vision & Heritage
+                    {{ setting('org_page_title', 'Structure, Vision & Heritage') }}
                 </h1>
                 <p class="text-sm md:text-base text-[#575e75] leading-[1.6]">
-                    Mengenal tata kelola keorganisasian, komitmen pelestarian nilai sejarah, serta lini masa pencapaian luar biasa Komunitas Historia Indonesia sejak tahun 2003.
+                    {{ setting('org_page_subtitle', 'Mengenal tata kelola keorganisasian, komitmen pelestarian nilai sejarah, serta lini masa pencapaian luar biasa Komunitas Historia Indonesia sejak tahun 2003.') }}
                 </p>
             </div>
 
@@ -170,33 +170,19 @@ name('organization');
             </div>
 
             <!-- Our Team (Database Driven & Fallback) -->
+            @if ($teams->isNotEmpty())
             <div class="space-y-10">
                 <div class="text-center max-w-3xl mx-auto space-y-4">
-                    <h3 class="text-3xl md:text-4xl font-bold text-[#000000] tracking-tight">Our Team</h3>
+                    <h3 class="text-3xl md:text-4xl font-bold text-[#000000] tracking-tight">
+                        {{ setting('org_page_team_title', 'Our Team') }}
+                    </h3>
                     <p class="text-sm md:text-base text-[#575e75] leading-[1.6]">
-                        Tim kami terdiri dari individu-individu yang penuh semangat, berdedikasi untuk mempromosikan sejarah, budaya, dan nasionalisme Indonesia. Bersama-sama, kami mengorganisir acara, program, dan tur edukatif yang menginspirasi masyarakat untuk lebih mengenal dan mencintai warisan bangsa.
+                        {{ setting('org_page_team_subtitle', 'Tim kami terdiri dari individu-individu yang penuh semangat, berdedikasi untuk mempromosikan sejarah, budaya, dan nasionalisme Indonesia. Bersama-sama, kami mengorganisir acara, program, dan tur edukatif yang menginspirasi masyarakat untuk lebih mengenal dan mencintai warisan bangsa.') }}
                     </p>
                 </div>
 
-                @php
-                    $displayTeams = $teams;
-                    if ($displayTeams->isEmpty()) {
-                        $displayTeams = collect([
-                            (object)[
-                                'id' => 1,
-                                'name' => 'Asep Kambali',
-                                'position' => 'Founder KHI',
-                                'avatar' => null,
-                                'facebook_url' => 'https://facebook.com',
-                                'instagram_url' => 'https://instagram.com',
-                                'linkedin_url' => 'https://linkedin.com'
-                            ]
-                        ]);
-                    }
-                @endphp
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                    @foreach ($displayTeams as $team)
+                    @foreach ($teams as $team)
                         <div class="bg-white border border-[#E9E9E8] rounded-3xl p-6 flex flex-col items-center justify-between text-center hover:shadow-[0_12px_32px_rgba(86,37,168,0.05)] hover:border-primary/20 hover:-translate-y-0.5 transition duration-300 group">
                             <div class="space-y-4 w-full">
                                 <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden border border-[#E9E9E8] p-1 bg-zinc-50 group-hover:scale-105 transition duration-300">
@@ -248,13 +234,16 @@ name('organization');
                     @endforeach
                 </div>
             </div>
+            @endif
 
             <!-- Achievements Section (3-Column Layout with custom card designs) -->
             <div class="space-y-10">
                 <div class="text-center max-w-2xl mx-auto space-y-3">
-                    <h2 class="text-3xl md:text-4xl font-bold text-[#000000] tracking-tight">Penghargaan & Prestasi</h2>
+                    <h2 class="text-3xl md:text-4xl font-bold text-[#000000] tracking-tight">
+                        {{ setting('org_page_achievements_title', 'Penghargaan & Prestasi') }}
+                    </h2>
                     <p class="text-sm text-[#575e75] leading-relaxed">
-                        Dedikasi KHI mendapat apresiasi tinggi dan pengakuan nasional dari kementerian serta lembaga terkemuka.
+                        {{ setting('org_page_achievements_subtitle', 'Dedikasi KHI mendapat apresiasi tinggi dan pengakuan nasional dari kementerian serta lembaga terkemuka.') }}
                     </p>
                 </div>
 
@@ -285,8 +274,12 @@ name('organization');
             <!-- Milestones Timeline Section (Horizontal Sequence layout spec) -->
             <div class="space-y-12 pb-12">
                 <div class="text-center max-w-2xl mx-auto space-y-3">
-                    <h3 class="text-2xl md:text-3xl font-bold text-[#000000] tracking-tight">Lini Masa Perjalanan KHI</h3>
-                    <p class="text-xs text-[#575e75]">Menyusuri tonggak-tonggak sejarah pembentukan Komunitas Historia Indonesia.</p>
+                    <h3 class="text-2xl md:text-3xl font-bold text-[#000000] tracking-tight">
+                        {{ setting('org_page_milestones_title', 'Lini Masa Perjalanan KHI') }}
+                    </h3>
+                    <p class="text-xs text-[#575e75]">
+                        {{ setting('org_page_milestones_subtitle', 'Menyusuri tonggak-tonggak sejarah pembentukan Komunitas Historia Indonesia.') }}
+                    </p>
                 </div>
 
                 <!-- Horizontally scrolling/sequence card structure as spec -->
@@ -310,6 +303,8 @@ name('organization');
                         </div>
                     @endforeach
                 </div>
+            </div>
+
             <!-- Collaboration & Sponsor CTA Section -->
             <div class="border-t border-[#E9E9E8] pt-16 pb-12">
                 <div class="bg-gradient-to-br from-brand-navy-deep to-brand-navy-mid rounded-[32px] p-8 md:p-16 text-white relative overflow-hidden shadow-xl">
@@ -321,20 +316,20 @@ name('organization');
                         <div class="lg:col-span-7 space-y-6">
                             <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-bold text-white uppercase tracking-wider">
                                 <span class="material-symbols-outlined text-[14px]">handshake</span>
-                                Sponsorship & Partnership
+                                {{ setting('org_page_collab_chip', 'Sponsorship & Partnership') }}
                             </span>
                             <h2 class="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] text-white">
-                                Kolaborasi Bersama KHI
+                                {{ setting('org_page_collab_title', 'Kolaborasi Bersama KHI') }}
                             </h2>
                             <p class="text-sm md:text-base text-zinc-300 leading-relaxed max-w-2xl">
-                                Komunitas Historia Indonesia (KHI) membuka kesempatan seluas-luasnya bagi perusahaan, institusi, dan sponsor untuk bermitra dalam melestarikan sejarah, cagar budaya, dan mengedukasi publik. Mari bersama wujudkan sinergi positif demi menjaga memori kolektif bangsa.
+                                {{ setting('org_page_collab_subtitle', 'Komunitas Historia Indonesia (KHI) membuka kesempatan seluas-luasnya bagi perusahaan, institusi, dan sponsor untuk bermitra dalam melestarikan sejarah, cagar budaya, dan mengedukasi publik. Mari bersama wujudkan sinergi positif demi menjaga memori kolektif bangsa.') }}
                             </p>
                         </div>
                         
                         <div class="lg:col-span-5 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 space-y-6 backdrop-blur-sm">
                             <h3 class="text-lg font-bold text-white tracking-tight border-b border-white/10 pb-3 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[20px] text-primary-container">contact_support</span>
-                                Hubungi Tim Kemitraan
+                                {{ setting('org_page_collab_contact_title', 'Hubungi Tim Kemitraan') }}
                             </h3>
                             
                             <div class="space-y-4">
@@ -343,9 +338,9 @@ name('organization');
                                         <span class="material-symbols-outlined text-[20px]">mail</span>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-zinc-400">Email Resmi</p>
-                                        <a href="mailto:info@komunitashistoria.com" class="text-sm md:text-base font-semibold text-white hover:text-primary-container transition">
-                                            info@komunitashistoria.com
+                                        <p class="text-xs text-zinc-400">{{ setting('org_page_collab_email_label', 'Email Resmi') }}</p>
+                                        <a href="mailto:{{ setting('org_page_collab_email', 'info@komunitashistoria.com') }}" class="text-sm md:text-base font-semibold text-white hover:text-primary-container transition">
+                                            {{ setting('org_page_collab_email', 'info@komunitashistoria.com') }}
                                         </a>
                                     </div>
                                 </div>
@@ -355,18 +350,18 @@ name('organization');
                                         <span class="material-symbols-outlined text-[20px]">phone_iphone</span>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-zinc-400">WhatsApp / Telepon</p>
-                                        <a href="https://wa.me/6281808073636" target="_blank" class="text-sm md:text-base font-semibold text-white hover:text-primary-container transition">
-                                            +62 818-0807-3636
+                                        <p class="text-xs text-zinc-400">{{ setting('org_page_collab_phone_label', 'WhatsApp / Telepon') }}</p>
+                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', setting('org_page_collab_phone', '+62 818-0807-3636')) }}" target="_blank" class="text-sm md:text-base font-semibold text-white hover:text-primary-container transition">
+                                            {{ setting('org_page_collab_phone', '+62 818-0807-3636') }}
                                         </a>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="pt-2">
-                                <a href="https://wa.me/6281808073636" target="_blank" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#c41219] hover:shadow-lg transition duration-200">
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', setting('org_page_collab_phone', '+62 818-0807-3636')) }}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#c41219] hover:shadow-lg transition duration-200">
                                     <span class="material-symbols-outlined text-[16px]">chat</span>
-                                    Ajukan Penawaran
+                                    {{ setting('org_page_collab_btn_text', 'Ajukan Penawaran') }}
                                 </a>
                             </div>
                         </div>

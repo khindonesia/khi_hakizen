@@ -103,25 +103,25 @@ new class extends Component {
                             <div class="space-y-4">
                                 <div class="stitch-chip">
                                     <span class="material-symbols-outlined text-[14px]">history_edu</span>
-                                    Keanggotaan KHI
+                                    {{ setting('join_page_chip', 'Keanggotaan KHI') }}
                                 </div>
                                 <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-900 md:text-[56px]">
-                                    Become a Keeper of History
+                                    {{ setting('join_page_title', 'Become a Keeper of History') }}
                                 </h1>
                                 <p class="text-sm leading-[1.6] text-zinc-500 md:text-base">
-                                    Join a prestigious community dedicated to scholarly preservation and public advocacy. By becoming an official member, you directly fund local heritage restoration campaigns and independent archival expeditions.
+                                    {{ setting('join_page_subtitle', 'Join a prestigious community dedicated to scholarly preservation and public advocacy. By becoming an official member, you directly fund local heritage restoration campaigns and independent archival expeditions.') }}
                                 </p>
                             </div>
 
                             <!-- Historical Archive Cabinet Image -->
                             <div class="relative max-h-[220px] overflow-hidden rounded-[28px] border border-zinc-200/80 shadow-sm">
-                                <img src="https://static.wixstatic.com/media/4dda9f_9ef8c0b1d37349c19b2c061f1f321e2d.jpg/v1/fill/w_1000,h_666,al_c,q_85,usm_0.66_1.00_0.01/4dda9f_9ef8c0b1d37349c19b2c061f1f321e2d.jpg" 
+                                <img src="{{ setting('join_page_image', 'https://static.wixstatic.com/media/4dda9f_9ef8c0b1d37349c19b2c061f1f321e2d.jpg/v1/fill/w_1000,h_666,al_c,q_85,usm_0.66_1.00_0.01/4dda9f_9ef8c0b1d37349c19b2c061f1f321e2d.jpg') }}" 
                                      alt="Historical Archive Cabinet" class="w-full h-full object-cover">
                             </div>
 
                             <!-- Membership Privileges Card (bg-card-tint-cream) -->
                             <div class="stitch-panel space-y-6 p-8">
-                                <h3 class="text-lg font-semibold tracking-tight text-zinc-900">Eksklusivitas Anggota KHI</h3>
+                                <h3 class="text-lg font-semibold tracking-tight text-zinc-900">{{ setting('join_page_privileges_title', 'Eksklusivitas Anggota KHI') }}</h3>
                                 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <!-- Privilege 1 -->
@@ -130,8 +130,8 @@ new class extends Component {
                                             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">folder_open</span>
                                         </div>
                                         <div>
-                                            <h4 class="text-xs font-bold text-zinc-900">Exclusive Archives</h4>
-                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">Full digital access to rare manuscripts and primary source documents.</p>
+                                            <h4 class="text-xs font-bold text-zinc-900">{{ setting('join_page_privilege_1_title', 'Exclusive Archives') }}</h4>
+                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">{{ setting('join_page_privilege_1_desc', 'Full digital access to rare manuscripts and primary source documents.') }}</p>
                                         </div>
                                     </div>
 
@@ -141,8 +141,8 @@ new class extends Component {
                                             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">menu_book</span>
                                         </div>
                                         <div>
-                                            <h4 class="text-xs font-bold text-zinc-900">Scholarly Journals</h4>
-                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">Quarterly physical delivery of KHI historical monographs.</p>
+                                            <h4 class="text-xs font-bold text-zinc-900">{{ setting('join_page_privilege_2_title', 'Scholarly Journals') }}</h4>
+                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">{{ setting('join_page_privilege_2_desc', 'Quarterly physical delivery of KHI historical monographs.') }}</p>
                                         </div>
                                     </div>
 
@@ -152,8 +152,8 @@ new class extends Component {
                                             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">event_seat</span>
                                         </div>
                                         <div>
-                                            <h4 class="text-xs font-bold text-zinc-900">Curated Events</h4>
-                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">Priority reservation and 20% discount on history tours.</p>
+                                            <h4 class="text-xs font-bold text-zinc-900">{{ setting('join_page_privilege_3_title', 'Curated Events') }}</h4>
+                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">{{ setting('join_page_privilege_3_desc', 'Priority reservation and 20% discount on history tours.') }}</p>
                                         </div>
                                     </div>
 
@@ -163,8 +163,8 @@ new class extends Component {
                                             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">how_to_vote</span>
                                         </div>
                                         <div>
-                                            <h4 class="text-xs font-bold text-zinc-900">Voting Rights</h4>
-                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">Vote on community restoration proposals and board decisions.</p>
+                                            <h4 class="text-xs font-bold text-zinc-900">{{ setting('join_page_privilege_4_title', 'Voting Rights') }}</h4>
+                                            <p class="mt-0.5 text-[11px] leading-relaxed text-zinc-500">{{ setting('join_page_privilege_4_desc', 'Vote on community restoration proposals and board decisions.') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -174,8 +174,8 @@ new class extends Component {
                         <!-- Right Column: Registration Form Card -->
                         <div class="lg:col-span-6 stitch-panel space-y-8 p-8 md:p-12">
                             <div class="space-y-1.5">
-                                <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">Register Today</h2>
-                                <p class="text-xs text-zinc-500">Secure your place in the modern archive.</p>
+                                <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">{{ setting('join_page_form_title', 'Register Today') }}</h2>
+                                <p class="text-xs text-zinc-500">{{ setting('join_page_form_subtitle', 'Secure your place in the modern archive.') }}</p>
                             </div>
 
                             <form wire:submit.prevent="registerMember" class="space-y-5">
@@ -545,13 +545,13 @@ new class extends Component {
                                 <!-- CTA Button -->
                                 <button type="submit"
                                     class="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-red-600 py-4 font-semibold text-white transition duration-200 hover:bg-red-500 shadow-sm">
-                                    Bergabung Sekarang <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                    {{ setting('join_page_form_btn_text', 'Bergabung Sekarang') }} <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                                 </button>
                             </form>
 
                             <div class="border-t border-zinc-200/80 pt-6 text-center">
                                 <p class="text-[10px] leading-relaxed text-zinc-400">
-                                    By joining, you agree to our scholarly code of conduct.
+                                    {{ setting('join_page_form_footer', 'By joining, you agree to our scholarly code of conduct.') }}
                                 </p>
                             </div>
                         </div>

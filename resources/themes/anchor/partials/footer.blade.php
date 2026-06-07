@@ -67,29 +67,36 @@
             class="flex flex-col gap-4 border-t border-zinc-200/80 pt-6 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
             <p>{!! setting_sanitized('footer_copyright', '&copy; 2003-' . date('Y') . ' Komunitas Historia Indonesia.') !!}</p>
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
                 @php
-                    $socialLinks = [
-                        ['key' => 'socmed_facebook', 'icon' => 'facebook', 'name' => 'Facebook'],
-                        ['key' => 'socmed_instagram', 'icon' => 'instagram', 'name' => 'Instagram'],
-                        ['key' => 'socmed_twitter', 'icon' => 'twitter', 'name' => 'Twitter'],
-                        ['key' => 'socmed_youtube', 'icon' => 'youtube', 'name' => 'YouTube'],
-                    ];
+                    $socialLinks = setting_social_links();
                 @endphp
                 @foreach ($socialLinks as $social)
-                    @if ($url = setting($social['key']))
-                        <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="{{ $social['name'] }}"
-                            class="hover:text-red-700 dark:hover:text-blue-300 flex items-center gap-1 text-zinc-500 hover:text-red-700 dark:text-zinc-400 transition">
-                            @if($social['icon'] === 'facebook')
-                                <x-phosphor-facebook-logo class="w-5 h-5" />
-                            @elseif($social['icon'] === 'instagram')
-                                <x-phosphor-instagram-logo class="w-5 h-5" />
-                            @elseif($social['icon'] === 'twitter')
-                                <x-phosphor-twitter-logo class="w-5 h-5" />
-                            @elseif($social['icon'] === 'youtube')
-                                <x-phosphor-youtube-logo class="w-5 h-5" />
+                    @if (!empty($social['url']))
+                        @php
+                            $name = $social['name'] ?? '';
+                            $url = $social['url'];
+                            $logo = $social['logo'] ?? '';
+                            $iconName = strtolower($name);
+                        @endphp
+                        <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="{{ $name }}"
+                            class="hover:text-red-700 dark:hover:text-blue-300 flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 transition">
+                            @if (!empty($logo))
+                                <img src="{{ Storage::url($logo) }}" class="w-5 h-5 object-contain" alt="{{ $name }}" />
+                            @else
+                                @if($iconName === 'facebook')
+                                    <x-phosphor-facebook-logo class="w-5 h-5" />
+                                @elseif($iconName === 'instagram')
+                                    <x-phosphor-instagram-logo class="w-5 h-5" />
+                                @elseif($iconName === 'twitter' || $iconName === 'x')
+                                    <x-phosphor-twitter-logo class="w-5 h-5" />
+                                @elseif($iconName === 'youtube')
+                                    <x-phosphor-youtube-logo class="w-5 h-5" />
+                                @else
+                                    <x-phosphor-share-network class="w-5 h-5" />
+                                @endif
                             @endif
-                            <span>{{ $social['name'] }}</span>
+                            <span>{{ $name }}</span>
                         </a>
                     @endif
                 @endforeach

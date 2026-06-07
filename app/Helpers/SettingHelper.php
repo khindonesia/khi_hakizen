@@ -62,4 +62,24 @@ class SettingHelper
 
         return asset($value);
     }
+
+    /**
+     * Get social media links as an array.
+     *
+     * @return array
+     */
+    public static function socialLinks(): array
+    {
+        $value = self::get('site_social_links');
+
+        if (!$value) {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return $value;
+        }
+
+        return json_decode($value, true) ?: [];
+    }
 }

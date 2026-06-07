@@ -172,294 +172,168 @@ name('home');
         </section>
 
         <!-- 2. Upcoming Events Section -->
+        @if ($events->isNotEmpty())
         <section class="py-20 bg-zinc-50 border-t border-hairline">
             <div class="max-w-[1280px] mx-auto px-6">
                 <div class="flex justify-between items-end mb-8">
                     <div>
-                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal">Upcoming Events</h2>
-                        <p class="text-sm lg:text-base text-zinc-500 mt-1">Join our upcoming historical tours and webinars.</p>
+                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal">{{ setting('home_events_title', 'Upcoming Events') }}</h2>
+                        <p class="text-sm lg:text-base text-zinc-500 mt-1">{{ setting('home_events_subtitle', 'Join our upcoming historical tours and webinars.') }}</p>
                     </div>
-                    <a class="text-primary font-semibold text-sm hover:underline" href="{{ url('/events') }}" wire:navigate>View All Events</a>
+                    <a class="text-primary font-semibold text-sm hover:underline" href="{{ url('/events') }}" wire:navigate>{{ setting('home_events_view_all_text', 'View All Events') }}</a>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    @if ($events->isNotEmpty())
-                        @foreach ($events as $idx => $event)
-                            @php
-                                // Assign distinct colors to the events dynamically
-                                $colorClasses = [
-                                    0 => ['bg' => 'bg-card-tint-rose', 'text' => 'text-primary'],
-                                    1 => ['bg' => 'bg-card-tint-sky', 'text' => 'text-link-blue'],
-                                    2 => ['bg' => 'bg-card-tint-mint', 'text' => 'text-tertiary']
-                                ];
-                                $style = $colorClasses[$idx % 3];
-                                $eventExcerpt = \Illuminate\Support\Str::limit(strip_tags($event->body), 150);
-                                $eventMonth = $event->start_datetime->format('M');
-                                $eventDay = $event->start_datetime->format('d');
-                                $eventTime = $event->start_datetime->format('H:i') . ' - ' . $event->end_datetime->format('H:i') . ' WIB';
-                            @endphp
-                            <div class="bg-white rounded-xl p-6 border border-hairline shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4 group">
-                                <div class="flex items-start justify-between">
-                                    <div class="{{ $style['bg'] }} {{ $style['text'] }} px-4 py-2 rounded-lg text-center min-w-[60px]">
-                                        <span class="block text-xs font-bold uppercase tracking-wider">{{ $eventMonth }}</span>
-                                        <span class="block text-2xl lg:text-3xl font-bold leading-none mt-1">{{ $eventDay }}</span>
-                                    </div>
-                                    <span class="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-                                        {{ $event->type === 'FREE' ? 'Free Event' : 'Paid Event' }}
-                                    </span>
-                                </div>
-                                <h3 class="font-bold text-lg lg:text-xl text-charcoal mt-2 group-hover:text-primary transition-colors line-clamp-1">
-                                    <a href="{{ url('/events/' . $event->slug) }}" wire:navigate>{{ $event->title }}</a>
-                                </h3>
-                                <p class="text-sm text-zinc-500 leading-relaxed line-clamp-3">
-                                    {{ $eventExcerpt }}
-                                </p>
-                                <div class="mt-auto pt-4 border-t border-hairline flex items-center justify-between">
-                                    <span class="text-xs text-zinc-400 flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-sm">schedule</span> {{ $eventTime }}
-                                    </span>
-                                    <a href="{{ url('/events/' . $event->slug) }}" wire:navigate class="text-primary font-semibold text-sm hover:text-[#c41219] transition-colors">
-                                        Register
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <!-- Fallback Stitch mockups adapted to local names -->
+                    @foreach ($events as $idx => $event)
+                        @php
+                            // Assign distinct colors to the events dynamically
+                            $colorClasses = [
+                                0 => ['bg' => 'bg-card-tint-rose', 'text' => 'text-primary'],
+                                1 => ['bg' => 'bg-card-tint-sky', 'text' => 'text-link-blue'],
+                                2 => ['bg' => 'bg-card-tint-mint', 'text' => 'text-tertiary']
+                            ];
+                            $style = $colorClasses[$idx % 3];
+                            $eventExcerpt = \Illuminate\Support\Str::limit(strip_tags($event->body), 150);
+                            $eventMonth = $event->start_datetime->format('M');
+                            $eventDay = $event->start_datetime->format('d');
+                            $eventTime = $event->start_datetime->format('H:i') . ' - ' . $event->end_datetime->format('H:i') . ' WIB';
+                        @endphp
                         <div class="bg-white rounded-xl p-6 border border-hairline shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4 group">
                             <div class="flex items-start justify-between">
-                                <div class="bg-card-tint-rose text-primary px-4 py-2 rounded-lg text-center min-w-[60px]">
-                                    <span class="block text-xs font-bold uppercase tracking-wider">JUN</span>
-                                    <span class="block text-2xl lg:text-3xl font-bold leading-none mt-1">15</span>
+                                <div class="{{ $style['bg'] }} {{ $style['text'] }} px-4 py-2 rounded-lg text-center min-w-[60px]">
+                                    <span class="block text-xs font-bold uppercase tracking-wider">{{ $eventMonth }}</span>
+                                    <span class="block text-2xl lg:text-3xl font-bold leading-none mt-1">{{ $eventDay }}</span>
                                 </div>
-                                <span class="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Historical Tour</span>
+                                <span class="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+                                    {{ $event->type === 'FREE' ? 'Free Event' : 'Paid Event' }}
+                                </span>
                             </div>
-                            <h3 class="font-bold text-lg lg:text-xl text-charcoal mt-2 group-hover:text-primary transition-colors line-clamp-1">Jelajah Kota Tua Batavia</h3>
-                            <p class="text-sm text-zinc-500 leading-relaxed line-clamp-3">Explore the historical roots of Jakarta with our expert guides leading you through the old town's hidden gems and colonial architecture.</p>
+                            <h3 class="font-bold text-lg lg:text-xl text-charcoal mt-2 group-hover:text-primary transition-colors line-clamp-1">
+                                <a href="{{ url('/events/' . $event->slug) }}" wire:navigate>{{ $event->title }}</a>
+                            </h3>
+                            <p class="text-sm text-zinc-500 leading-relaxed line-clamp-3">
+                                {{ $eventExcerpt }}
+                            </p>
                             <div class="mt-auto pt-4 border-t border-hairline flex items-center justify-between">
                                 <span class="text-xs text-zinc-400 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">schedule</span> 08:00 - 12:00 WIB
+                                    <span class="material-symbols-outlined text-sm">schedule</span> {{ $eventTime }}
                                 </span>
-                                <button class="text-primary font-semibold text-sm hover:text-[#c41219] transition-colors">Register</button>
+                                <a href="{{ url('/events/' . $event->slug) }}" wire:navigate class="text-primary font-semibold text-sm hover:text-[#c41219] transition-colors">
+                                    {{ setting('home_events_register_text', 'Register') }}
+                                </a>
                             </div>
                         </div>
-                        <div class="bg-white rounded-xl p-6 border border-hairline shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4 group">
-                            <div class="flex items-start justify-between">
-                                <div class="bg-card-tint-sky text-link-blue px-4 py-2 rounded-lg text-center min-w-[60px]">
-                                    <span class="block text-xs font-bold uppercase tracking-wider">JUN</span>
-                                    <span class="block text-2xl lg:text-3xl font-bold leading-none mt-1">22</span>
-                                </div>
-                                <span class="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Webinar</span>
-                            </div>
-                            <h3 class="font-bold text-lg lg:text-xl text-charcoal mt-2 group-hover:text-primary transition-colors line-clamp-1">Menelusuri Jejak Rempah Nusantara</h3>
-                            <p class="text-sm text-zinc-500 leading-relaxed line-clamp-3">An online scholarly discussion about the spice route and its profound impact on Indonesian history, culture, and global trade dynamics.</p>
-                            <div class="mt-auto pt-4 border-t border-hairline flex items-center justify-between">
-                                <span class="text-xs text-zinc-400 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">schedule</span> 14:00 - 16:00 WIB
-                                </span>
-                                <button class="text-primary font-semibold text-sm hover:text-[#c41219] transition-colors">Register</button>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl p-6 border border-hairline shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4 group">
-                            <div class="flex items-start justify-between">
-                                <div class="bg-card-tint-mint text-tertiary px-4 py-2 rounded-lg text-center min-w-[60px]">
-                                    <span class="block text-xs font-bold uppercase tracking-wider">JUL</span>
-                                    <span class="block text-2xl lg:text-3xl font-bold leading-none mt-1">05</span>
-                                </div>
-                                <span class="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Museum Visit</span>
-                            </div>
-                            <h3 class="font-bold text-lg lg:text-xl text-charcoal mt-2 group-hover:text-primary transition-colors line-clamp-1">Night at the Museum: Sejarah Nasional</h3>
-                            <p class="text-sm text-zinc-500 leading-relaxed line-clamp-3">A special evening curated tour at the National Museum, exploring rare artifacts from the prehistoric era to the modern age.</p>
-                            <div class="mt-auto pt-4 border-t border-hairline flex items-center justify-between">
-                                <span class="text-xs text-zinc-400 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">schedule</span> 19:00 - 21:00 WIB
-                                </span>
-                                <button class="text-primary font-semibold text-sm hover:text-[#c41219] transition-colors">Register</button>
-                            </div>
-                        </div>
-                    @endif
+                    @endforeach
                 </div>
             </div>
         </section>
+        @endif
 
         <!-- 3. E-Book Showcase Section -->
+        @if ($ebooks->isNotEmpty())
         <section class="py-20 bg-card-tint-lavender border-t border-hairline">
             <div class="max-w-[1280px] mx-auto px-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     <div class="lg:col-span-4">
-                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal mb-4">E-Book Showcase</h2>
-                        <p class="text-base text-zinc-700 leading-relaxed mb-6">Explore our curated digital library of Indonesian history. Exclusive publications available for members.</p>
-                        <a class="inline-flex items-center justify-center px-6 py-2.5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-[#c41219] transition-colors shadow" href="{{ route('library') }}" wire:navigate>Explore E-Library</a>
+                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal mb-4">{{ setting('home_library_title', 'E-Book Showcase') }}</h2>
+                        <p class="text-base text-zinc-700 leading-relaxed mb-6">{{ setting('home_library_subtitle', 'Explore our curated digital library of Indonesian history. Exclusive publications available for members.') }}</p>
+                        <a class="inline-flex items-center justify-center px-6 py-2.5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-[#c41219] transition-colors shadow" href="{{ route('library') }}" wire:navigate>{{ setting('home_library_explore_text', 'Explore E-Library') }}</a>
                     </div>
                     <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        @if ($ebooks->isNotEmpty())
-                            @foreach ($ebooks as $book)
-                                @php
-                                    $coverUrl = $book->cover_image
-                                        ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url(ltrim($book->cover_image, '/')))
-                                        : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=400&auto=format&fit=crop';
-                                    
-                                    // Fallback for missing/demo images that don't exist on disk
-                                    if ($book->cover_image && str_starts_with($book->cover_image, 'demo/')) {
-                                        $coverUrl = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=400&auto=format&fit=crop';
-                                    }
-                                @endphp
-                                <div class="bg-white p-6 rounded-xl flex gap-6 shadow-sm hover:shadow transition-shadow duration-300 border border-hairline">
-                                    <div class="w-24 h-32 bg-zinc-100 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-zinc-200">
-                                        <img alt="{{ $book->title }}" class="w-full h-full object-cover" src="{{ $coverUrl }}"/>
-                                    </div>
-                                    <div class="flex flex-col justify-between">
-                                        <div>
-                                            <h4 class="text-base text-charcoal font-semibold leading-snug line-clamp-2">{{ $book->title }}</h4>
-                                            <p class="text-xs text-zinc-400 mt-1">By {{ $book->author }}</p>
-                                        </div>
-                                        <div class="flex flex-col gap-2 mt-2">
-                                            <a href="{{ route('library.book', ['slug' => $book->slug]) }}" wire:navigate class="text-primary text-left hover:underline text-sm font-semibold">Read Sample</a>
-                                            <a href="{{ route('library.book', ['slug' => $book->slug]) }}" wire:navigate class="text-zinc-600 text-left hover:underline text-sm font-semibold">Get E-Book</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <!-- Fallback Stitch mockups -->
-                            <div class="bg-white p-6 rounded-xl flex gap-6 shadow-sm border border-hairline">
-                                <div class="w-24 h-32 bg-zinc-50 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-zinc-200">
-                                    <img alt="Sejarah Nasional E-Book" class="w-full h-full object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiN-EXoSFyMEVwkTracELbrpOVNUqdHAXR-fg0kzdNJPkEXJCFjn4FR2HLCcFmCwxZG0v1ph0HVfvzEsjqV_3DIPD13WlebDsqli_B3ShPDLM_o_vFa44QzuZg5SHvGyyhr2m9qH9LQNAyA5Ga8bpu9LSj2TRi2yHzCWKtQXDhziICFNayCwbbBn2icOrgI7f-K05QCrjRexKXPTARwvUTS5-JPunPYYVZ9f6Uf-upW6vYDHdkz6nhOGzVyaU0JDz4deyppKuyrGDY"/>
+                        @foreach ($ebooks as $book)
+                            @php
+                                $coverUrl = $book->cover_image
+                                    ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url(ltrim($book->cover_image, '/')))
+                                    : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=400&auto=format&fit=crop';
+                                
+                                // Fallback for missing/demo images that don't exist on disk
+                                if ($book->cover_image && str_starts_with($book->cover_image, 'demo/')) {
+                                    $coverUrl = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=400&auto=format&fit=crop';
+                                }
+                            @endphp
+                            <div class="bg-white p-6 rounded-xl flex gap-6 shadow-sm hover:shadow transition-shadow duration-300 border border-hairline">
+                                <div class="w-24 h-32 bg-zinc-100 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-zinc-200">
+                                    <img alt="{{ $book->title }}" class="w-full h-full object-cover" src="{{ $coverUrl }}"/>
                                 </div>
                                 <div class="flex flex-col justify-between">
                                     <div>
-                                        <h4 class="text-base text-charcoal font-semibold">Sejarah Nasional</h4>
-                                        <p class="text-xs text-zinc-400 mt-1">Digital Edition</p>
+                                        <h4 class="text-base text-charcoal font-semibold leading-snug line-clamp-2">{{ $book->title }}</h4>
+                                        <p class="text-xs text-zinc-400 mt-1">By {{ $book->author }}</p>
                                     </div>
                                     <div class="flex flex-col gap-2 mt-2">
-                                        <a href="{{ route('library') }}" wire:navigate class="text-primary text-left hover:underline text-sm font-semibold">Read Sample</a>
-                                        <a href="{{ route('library') }}" wire:navigate class="text-zinc-600 text-left hover:underline text-sm font-semibold">Get E-Book</a>
+                                        <a href="{{ route('library.book', ['slug' => $book->slug]) }}" wire:navigate class="text-primary text-left hover:underline text-sm font-semibold">{{ setting('home_library_read_sample_text', 'Read Sample') }}</a>
+                                        <a href="{{ route('library.book', ['slug' => $book->slug]) }}" wire:navigate class="text-zinc-600 text-left hover:underline text-sm font-semibold">{{ setting('home_library_get_ebook_text', 'Get E-Book') }}</a>
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-white p-6 rounded-xl flex gap-6 shadow-sm border border-hairline">
-                                <div class="w-24 h-32 bg-zinc-50 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-zinc-200">
-                                    <img alt="Surat Batavia E-Book" class="w-full h-full object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyPe8GCol3WwzuDhK5RhLmhrzx9tQwgXd97-i6nv1ASOWZbjFXZaSqtqqLB6Or6Njo-4W9pUw5EcH792awkgu4hzMCqzCwwRMhZrQEw0Ds0SZgywphezWAEdyqLcKqQHBVpVUTH0tGxpjuj7oKa47_wRjF0KOo9nudyXHkThgdyGKPb3YBSsNN9qHQAJgZ_CBfi_1IqWg5TX7oJwu6-glJxCo7E7r9lanpz8xKLUBmy2f7PMFLpeKhduhRIOuwAGCg4h-OIPKcD-0C"/>
-                                </div>
-                                <div class="flex flex-col justify-between">
-                                    <div>
-                                        <h4 class="text-base text-charcoal font-semibold">Surat Batavia</h4>
-                                        <p class="text-xs text-zinc-400 mt-1">Archive Study</p>
-                                    </div>
-                                    <div class="flex flex-col gap-2 mt-2">
-                                        <a href="{{ route('library') }}" wire:navigate class="text-primary text-left hover:underline text-sm font-semibold">Read Sample</a>
-                                        <a href="{{ route('library') }}" wire:navigate class="text-zinc-600 text-left hover:underline text-sm font-semibold">Get E-Book</a>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
+                        @endforeach
                     </div>
                 </div>
             </div>
         </section>
+        @endif
 
         <!-- 4. Merchandise Catalog Section -->
+        @if ($products->isNotEmpty())
         <section class="py-20 bg-white border-t border-hairline">
             <div class="max-w-[1280px] mx-auto px-6">
                 <div class="flex justify-between items-end mb-8">
                     <div>
-                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal">Merchandise Catalog</h2>
-                        <p class="text-sm lg:text-base text-zinc-500 mt-1">Support our mission by wearing history.</p>
+                        <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal">{{ setting('home_merchandise_title', 'Merchandise Catalog') }}</h2>
+                        <p class="text-sm lg:text-base text-zinc-500 mt-1">{{ setting('home_merchandise_subtitle', 'Support our mission by wearing history.') }}</p>
                     </div>
-                    <a class="text-primary font-semibold text-sm hover:underline" href="{{ route('merchandise') }}" wire:navigate>View All Shop</a>
+                    <a class="text-primary font-semibold text-sm hover:underline" href="{{ route('merchandise') }}" wire:navigate>{{ setting('home_merchandise_view_all_text', 'View All Shop') }}</a>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    @if ($products->isNotEmpty())
-                        @foreach ($products as $product)
-                            @php
-                                $productImage = null;
-                                $variantImage = $product->defaultVariant?->image_url;
-                                if ($variantImage) {
-                                    $productImage = $normalizeImageUrl($variantImage);
-                                } else {
-                                    $productImage = $normalizeImageUrl($product->images->sortBy('sort_order')->first()?->image_url);
-                                }
-                                $price = 'Coming soon';
-                                if ($product->defaultVariant) {
-                                    $price = 'Rp ' . number_format($product->defaultVariant->price, 0, ',', '.');
-                                }
-                            @endphp
-                            <div class="group flex flex-col justify-between h-full">
-                                <div>
-                                    <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center relative block">
-                                        @if ($productImage)
-                                            <img alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ $productImage }}" loading="lazy" decoding="async" width="300" height="300"/>
-                                        @else
-                                            <div class="text-slate flex flex-col items-center">
-                                                <span class="material-symbols-outlined text-4xl mb-1">image</span>
-                                                <span class="text-[10px] uppercase font-semibold">No Image</span>
-                                            </div>
-                                        @endif
-                                    </a>
-                                    <h4 class="text-base font-semibold text-charcoal">
-                                        <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="hover:text-primary transition-colors line-clamp-1">{{ $product->name }}</a>
-                                    </h4>
-                                    <p class="font-bold text-sm text-primary mb-4 mt-1">{{ $price }}</p>
-                                </div>
-                                <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">
-                                    View Product
+                    @foreach ($products as $product)
+                        @php
+                            $productImage = null;
+                            $variantImage = $product->defaultVariant?->image_url;
+                            if ($variantImage) {
+                                $productImage = $normalizeImageUrl($variantImage);
+                            } else {
+                                $productImage = $normalizeImageUrl($product->images->sortBy('sort_order')->first()?->image_url);
+                            }
+                            $price = 'Coming soon';
+                            if ($product->defaultVariant) {
+                                $price = 'Rp ' . number_format($product->defaultVariant->price, 0, ',', '.');
+                            }
+                        @endphp
+                        <div class="group flex flex-col justify-between h-full">
+                            <div>
+                                <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center relative block">
+                                    @if ($productImage)
+                                        <img alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ $productImage }}" loading="lazy" decoding="async" width="300" height="300"/>
+                                    @else
+                                        <div class="text-slate flex flex-col items-center">
+                                            <span class="material-symbols-outlined text-4xl mb-1">image</span>
+                                            <span class="text-[10px] uppercase font-semibold">No Image</span>
+                                        </div>
+                                    @endif
                                 </a>
+                                <h4 class="text-base font-semibold text-charcoal">
+                                    <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="hover:text-primary transition-colors line-clamp-1">{{ $product->name }}</a>
+                                </h4>
+                                <p class="font-bold text-sm text-primary mb-4 mt-1">{{ $price }}</p>
                             </div>
-                        @endforeach
-                    @else
-                        <!-- Fallback Stitch mockups with local styles -->
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="KHI Official T-Shirt" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7ipM72L6cuYHt3YWsvlVIOIgv7VhVp3c5GhZ_NVBLvb57vAe8dXKHqDFVLjZ2D_eR8V-EUfuwfk0wx14xddmTP6SLxYtgXn231Ha93xOKNFwEM2Ivp7e6C3ewlqrZ9eHIkjjvKQzwUZfC5JKMWKi4qDomN3rMz-ob9U1z7zwcD9EP-A4Y0jD-frg3CgqpdEeydZhUnun7e2TwYb_ynGWqnvrVshehFJ7xGZMmcGSt6mynkcyA5xnCdk6fJOl7egxxBx6IWDpgC5lD" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">KHI Official T-Shirt</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 150.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
+                            <a href="{{ url('/merchandise/' . $product->slug) }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">
+                                {{ setting('home_merchandise_view_product_text', 'View Product') }}
+                            </a>
                         </div>
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Historia Tote Bag" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiIoz7wKEHebu-L2j6FZYswNUdF4SpxYSf6ikU7MAaxIHq7xS3RaipGuJCGQ1y931pwraOABcmJb18_6wKaOwAvzp9sB9bhGV9gHeCz1ZORAg_8EGZSbfnfc4ou4AJbC1dh9xVZ4KqroXy7rkbxs5Fcy_M0B1Ly37uPmXK59M9eB9Csh7zE548_PkTuZ-XL4AuwMmbFdCRHkYT1AsarXYLHA1yVh05CK4rRbOScXrELKDHUhReplGV-74re6lsQOWSjhsX4MLjDhPo" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">Historia Tote Bag</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 85.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
-                        </div>
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Old Batavia Map Print" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsQiTLdoeqsz-YlYRQdWM-4hSzz5sXy58pedSqBSOCa2ph33EQ2_0kJ0ZTR_4B15aZ0B5aYDLZI3lDVn-Cm7kPienQoH7iKgxsxFj2guMRilt6NSqMLMHg5DxD08OWmYOpGB_ZYDEo2ARNp_EynHvPPRIL0KJjpYXBlVIvYTmNug9AH8r37FmGvAif6xzn7kbXE117XmM3NJ4g9vjkU7GYKDOGnK75FE87JSaukL79U-VM3UmCk1st5vFqU5DGY2MDZyCv0Xxw70n" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">Old Batavia Map Print</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 120.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
-                        </div>
-                        <div class="group flex flex-col justify-between h-full">
-                            <div>
-                                <div class="aspect-square bg-zinc-50 rounded-xl mb-4 overflow-hidden flex items-center justify-center">
-                                    <img alt="Exclusive Pin Set" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7qade8_xtkqbbnia5hmSbONXlsWtFAW8-X9jdsoxPE4um7tr-VGWH3otc6hFQFMCZC6htcDdkwhmDjXgll7NK-cZXuVTBAMkWiO5ppf4nBi75shSnrMrAJf1SVHTN7NEMAGL5gzit4JEUM9ZCyCNaalmdD2NLexWXIWU9eueLVqpeDsB7U36IftpF7J5j_3HW1TNUimX0yS9amAT5LyajVOrEfKIVvl10w8L_iOf39JNRVSIPzaIhsoGj7jTAYPJJAcLOt5UERROz" loading="lazy" decoding="async" width="300" height="300"/>
-                                </div>
-                                <h4 class="text-base font-semibold text-charcoal">Exclusive Pin Set</h4>
-                                <p class="font-bold text-sm text-primary mb-4 mt-1">Rp 45.000</p>
-                            </div>
-                            <a href="{{ route('merchandise') }}" wire:navigate class="w-full text-center py-2.5 border border-zinc-200 text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors block">View Product</a>
-                        </div>
-                    @endif
+                    @endforeach
                 </div>
             </div>
         </section>
+        @endif
 
         <!-- 5. Historia News Section -->
+        @if ($newsPosts->isNotEmpty())
         <section class="py-20 bg-white border-t border-hairline">
             <div class="max-w-[1280px] mx-auto px-6">
                 <div class="text-center mb-12">
-                    <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal mb-2">Historia News</h2>
-                    <p class="text-base text-zinc-500">Check out some of our latest blog posts below.</p>
+                    <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-charcoal mb-2">{{ setting('home_news_title', 'Historia News') }}</h2>
+                    <p class="text-base text-zinc-500">{{ setting('home_news_subtitle', 'Check out some of our latest blog posts below.') }}</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @foreach ($newsPosts as $post)
@@ -493,7 +367,7 @@ name('home');
                                     {{ $excerpt }}
                                 </p>
                                 <a class="mt-auto inline-flex items-center gap-1 font-semibold text-sm text-primary hover:text-[#c41219] transition-colors" href="{{ $post->link() }}" wire:navigate>
-                                    Read More <span class="material-symbols-outlined text-sm">arrow_right_alt</span>
+                                    {{ setting('home_news_read_more_text', 'Read More') }} <span class="material-symbols-outlined text-sm">arrow_right_alt</span>
                                 </a>
                             </div>
                         </article>
@@ -501,11 +375,12 @@ name('home');
                 </div>
                 <div class="mt-12 text-center">
                     <a class="inline-flex items-center justify-center px-6 py-2.5 border border-hairline-strong text-charcoal rounded-lg font-semibold text-sm hover:bg-zinc-50 transition-colors duration-200" href="{{ route('historia-news') }}" wire:navigate>
-                        Lihat selengkapnya
+                        {{ setting('home_news_view_all_text', 'Lihat selengkapnya') }}
                     </a>
                 </div>
             </div>
         </section>
+        @endif
 
         <!-- 6. Bento Grid (Mission & Awards Section) -->
         <section class="py-20 px-6 max-w-[1280px] mx-auto border-t border-hairline">
@@ -516,7 +391,7 @@ name('home');
                         <div>
                             <div class="inline-flex items-center gap-2 px-4 py-1 bg-white/50 rounded-full mb-4 backdrop-blur-sm border border-white/20">
                                 <span class="material-symbols-outlined text-[#663d00] text-sm">history_edu</span>
-                                <span class="font-bold text-xs tracking-wider uppercase text-[#663d00]">Our Mission</span>
+                                <span class="font-bold text-xs tracking-wider uppercase text-[#663d00]">{{ setting('home_mission_badge_text', 'Our Mission') }}</span>
                             </div>
                             <h2 class="font-bold text-3xl lg:text-4xl tracking-tight text-[#37352F] mb-4">
                                 {{ $orgName }} @if ($orgAcronym) ({{ $orgAcronym }}) @endif
@@ -527,7 +402,7 @@ name('home');
                         </div>
                         <div class="mt-auto pt-6 border-t border-[#663d00]/10">
                             <a class="inline-flex items-center gap-2 text-[#663d00] font-semibold text-sm group-hover:gap-4 transition-all duration-300" href="{{ route('organization') }}" wire:navigate>
-                                Lihat selengkapnya <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                {{ setting('home_mission_view_more_text', 'Lihat selengkapnya') }} <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </a>
                         </div>
                     </div>
@@ -536,6 +411,7 @@ name('home');
                 </div>
 
                 <!-- Leader Image Card -->
+                @if ($leaderName)
                 <div class="md:col-span-5 rounded-xl overflow-hidden shadow-md relative group border border-hairline h-full min-h-[400px]">
                     <img alt="{{ $leaderName }}, {{ $leaderPosition }}" class="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-105" src="{{ $leaderImage }}" loading="lazy" decoding="async" width="500" height="600">
                     <div class="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/20 to-transparent"></div>
@@ -546,17 +422,19 @@ name('home');
                         </p>
                     </div>
                 </div>
+                @endif
 
                 <!-- Awards Card -->
+                @if ($achievements->isNotEmpty())
                 <div class="md:col-span-12 bg-card-tint-mint rounded-xl p-8 lg:p-12 shadow-sm hover:shadow-md transition-shadow duration-300 border border-hairline">
                     <div class="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
                         <div class="md:w-1/3">
                             <div class="inline-flex items-center gap-2 px-4 py-1 bg-white/50 rounded-full mb-4 backdrop-blur-sm border border-white/20">
                                 <span class="material-symbols-outlined text-[#40465d] text-sm">military_tech</span>
-                                <span class="font-bold text-xs tracking-wider uppercase text-[#40465d]">Recognition</span>
+                                <span class="font-bold text-xs tracking-wider uppercase text-[#40465d]">{{ setting('home_recognition_badge_text', 'Recognition') }}</span>
                             </div>
-                            <h2 class="font-bold text-2xl lg:text-3xl tracking-tight text-charcoal">Prestasi &amp; Penghargaan</h2>
-                            <p class="text-base text-zinc-600 leading-relaxed mt-2">Dedikasi kami dalam melestarikan sejarah telah diakui oleh berbagai institusi.</p>
+                            <h2 class="font-bold text-2xl lg:text-3xl tracking-tight text-charcoal">{{ setting('home_recognition_title', 'Prestasi &amp; Penghargaan') }}</h2>
+                            <p class="text-base text-zinc-600 leading-relaxed mt-2">{{ setting('home_recognition_subtitle', 'Dedikasi kami dalam melestarikan sejarah telah diakui oleh berbagai institusi.') }}</p>
                         </div>
                         <div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                             @foreach ($achievements->take(4) as $achievement)
@@ -570,6 +448,7 @@ name('home');
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </section>
 
@@ -580,12 +459,12 @@ name('home');
                 <div class="bg-white/5 p-8 lg:p-12 rounded-3xl border border-white/10 backdrop-blur-sm text-center md:text-left">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                         <div class="flex flex-col gap-4">
-                            <h2 class="font-bold text-3xl lg:text-5xl tracking-tight text-white">Gabung Bersama KHI</h2>
-                            <p class="text-base lg:text-lg text-white/70 leading-relaxed">Jadilah bagian dari penjaga memori bangsa. Nikmati akses eksklusif ke arsip digital, prioritas pendaftaran acara, dan jaringan komunitas sejarah terbesar di Indonesia.</p>
+                            <h2 class="font-bold text-3xl lg:text-5xl tracking-tight text-white">{{ setting('home_cta_title', 'Gabung Bersama KHI') }}</h2>
+                            <p class="text-base lg:text-lg text-white/70 leading-relaxed">{{ setting('home_cta_subtitle', 'Jadilah bagian dari penjaga memori bangsa. Nikmati akses eksklusif ke arsip digital, prioritas pendaftaran acara, dan jaringan komunitas sejarah terbesar di Indonesia.') }}</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-end">
-                            <a class="px-8 py-3 bg-primary text-white rounded-full font-semibold text-sm text-center hover:bg-[#c41219] transition-all shadow-lg shadow-primary/20 animate-pulse hover:animate-none" href="{{ route('join') }}" wire:navigate>Daftar Member</a>
-                            <a class="px-8 py-3 border border-white/30 text-white rounded-full font-semibold text-sm text-center hover:bg-white/10 transition-all" href="{{ route('join') }}" wire:navigate>Pelajari Benefit</a>
+                            <a class="px-8 py-3 bg-primary text-white rounded-full font-semibold text-sm text-center hover:bg-[#c41219] transition-all shadow-lg shadow-primary/20 animate-pulse hover:animate-none" href="{{ route('join') }}" wire:navigate>{{ setting('home_cta_primary_btn_text', 'Daftar Member') }}</a>
+                            <a class="px-8 py-3 border border-white/30 text-white rounded-full font-semibold text-sm text-center hover:bg-white/10 transition-all" href="{{ route('join') }}" wire:navigate>{{ setting('home_cta_secondary_btn_text', 'Pelajari Benefit') }}</a>
                         </div>
                     </div>
                 </div>

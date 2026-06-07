@@ -109,6 +109,13 @@ class ProductResource extends Resource
                                                     ->default(1000)
                                                     ->suffix('g')
                                                     ->helperText('Weight of the product in grams'),
+
+                                                Forms\Components\Select::make('types')
+                                                    ->label('Types/Labels')
+                                                    ->relationship('types', 'name')
+                                                    ->multiple()
+                                                    ->preload()
+                                                    ->columnSpan(2),
                                             ])
                                             ->columns(2),
 

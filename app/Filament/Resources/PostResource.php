@@ -106,6 +106,12 @@ class PostResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->required(),
+
+                                Forms\Components\Select::make('types')
+                                    ->label('Types/Labels')
+                                    ->relationship('types', 'name')
+                                    ->multiple()
+                                    ->preload(),
                             ]),
 
                         Forms\Components\Section::make('Featured Image')

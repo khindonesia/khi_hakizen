@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Actions\CreateCheckoutInvoiceAction;
 use App\Actions\HandleXenditWebhookAction;
 use App\Services\XenditInvoiceGateway;
+use App\Mail\EventRegistrationMail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class XenditController extends Controller
@@ -167,6 +169,16 @@ class XenditController extends Controller
                             'updated_at' => now(),
                         ]);
                     }
+
+                    // Query the registration record to pass to the mail
+                    $reg = DB::table('event_user')
+                        ->where('event_id', $event->id)
+                        ->where('user_id', $lockedUser->id)
+                        ->first();
+
+                    Mail::to($lockedUser->email)->queue(
+                        new EventRegistrationMail($event, $lockedUser, $reg)
+                    );
 
                     return [
                         'status' => 'free_success',

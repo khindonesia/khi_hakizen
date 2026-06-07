@@ -4,9 +4,12 @@ namespace App\Actions;
 
 use App\Models\Order;
 use App\Models\Variant;
+use App\Mail\OrderInvoiceMail;
+use App\Mail\EventRegistrationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class HandleXenditWebhookAction
 {
@@ -122,6 +125,12 @@ class HandleXenditWebhookAction
                     ]);
                 
                 Log::info("Event registration successfully verified for ID: {$registration->id}");
+
+                $user = \App\Models\User::find($registration->user_id);
+                $event = \App\Models\Event::find($registration->event_id);
+                if ($user && $event) {
+                    Mail::to($user->email)->queue(new EventRegistrationMail($event, $user, $registration));
+                }
             } elseif ($status === 'EXPIRED') {
                 DB::table('event_user')
                     ->where('external_id', $externalId)
@@ -174,6 +183,10 @@ class HandleXenditWebhookAction
                 ]);
                 
                 Log::info("Order ID {$order->id} payment confirmed via webhook.");
+
+                if ($order->user) {
+                    Mail::to($order->user->email)->queue(new OrderInvoiceMail($order));
+                }
             } elseif ($status === 'EXPIRED') {
                 $order->update([
                     'payment_status' => 'expired',

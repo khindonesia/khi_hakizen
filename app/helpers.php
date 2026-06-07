@@ -25,3 +25,14 @@ if (!function_exists('setting_sanitized')) {
         return \App\Helpers\SettingHelper::sanitized($key, $default);
     }
 }
+
+if (!function_exists('setting_social_links')) {
+    /**
+     * Get dynamic site social links.
+     *
+     * @return array
+     */
+    function setting_social_links() {
+        return \App\Helpers\SettingHelper::socialLinks();
+    }
+}

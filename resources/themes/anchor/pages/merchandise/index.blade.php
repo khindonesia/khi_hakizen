@@ -11,6 +11,7 @@ name("merchandise");
 
     @php
         $selectedCategory = request()->integer("category");
+        $selectedType = request("type");
         $emptyPaginator = function (int $perPage = 9) {
             return new \Illuminate\Pagination\LengthAwarePaginator(
                 [],
@@ -33,6 +34,8 @@ name("merchandise");
                 ->orderBy("name")
                 ->get();
 
+            $types = \App\Models\Type::all();
+
             $productQuery = \App\Models\Product::query()
                 ->where("status", "active")
                 ->with(["category", "defaultVariant", "images"])
@@ -49,10 +52,27 @@ name("merchandise");
                 );
             }
 
-            $products = $productQuery->latest()->paginate(9)->withQueryString();
+            if ($selectedType) {
+                if ($selectedType === 'terbaru') {
+                    $productQuery->latest();
+                } elseif ($selectedType === 'terlama') {
+                    $productQuery->oldest();
+                } else {
+                    $productQuery->whereHas(
+                        "types",
+                        fn($query) => $query->where("slug", $selectedType),
+                    );
+                    $productQuery->latest();
+                }
+            } else {
+                $productQuery->latest();
+            }
+
+            $products = $productQuery->paginate(9)->withQueryString();
 
         } catch (\Throwable $e) {
             $categories = collect();
+            $types = collect();
             $products = $emptyPaginator();
         }
     @endphp
@@ -67,15 +87,31 @@ name("merchandise");
         </header>
 
         <!-- Category Filters -->
-        <div class="mb-8 flex flex-wrap gap-2">
-            <a href="{{ route('merchandise') }}" wire:navigate 
+        <div class="mb-4 flex flex-wrap gap-2 items-center">
+            <span class="text-sm font-semibold text-zinc-500 mr-2">Category:</span>
+            <a href="{{ request()->fullUrlWithQuery(['category' => null]) }}" wire:navigate 
                class="rounded-full border px-4 py-2 text-sm font-medium transition duration-200 {{ !$selectedCategory ? 'border-red-600 bg-red-600 text-white shadow-sm' : 'border-zinc-200 bg-white text-zinc-700 hover:border-red-200 hover:text-red-700' }}">
                 All Items
             </a>
             @foreach ($categories as $category)
-                <a href="{{ url('/merchandise?category=' . $category->id) }}" wire:navigate 
+                <a href="{{ request()->fullUrlWithQuery(['category' => $category->id]) }}" wire:navigate 
                    class="rounded-full border px-4 py-2 text-sm font-medium transition duration-200 {{ $selectedCategory === $category->id ? 'border-red-600 bg-red-600 text-white shadow-sm' : 'border-zinc-200 bg-white text-zinc-700 hover:border-red-200 hover:text-red-700' }}">
                     {{ $category->name }}
+                </a>
+            @endforeach
+        </div>
+
+        <!-- Type Filters -->
+        <div class="mb-8 flex flex-wrap gap-2 items-center">
+            <span class="text-sm font-semibold text-zinc-500 mr-2">Tipe:</span>
+            <a href="{{ request()->fullUrlWithQuery(['type' => null]) }}" wire:navigate 
+               class="rounded-full border px-4 py-1.5 text-xs font-medium transition duration-200 {{ !$selectedType ? 'border-red-600 bg-red-600 text-white shadow-sm' : 'border-zinc-200 bg-white text-zinc-700 hover:border-red-200 hover:text-red-700' }}">
+                Semua Tipe
+            </a>
+            @foreach ($types as $type)
+                <a href="{{ request()->fullUrlWithQuery(['type' => $type->slug]) }}" wire:navigate 
+                   class="rounded-full border px-4 py-1.5 text-xs font-medium transition duration-200 {{ $selectedType === $type->slug ? 'border-red-600 bg-red-600 text-white shadow-sm' : 'border-zinc-200 bg-white text-zinc-700 hover:border-red-200 hover:text-red-700' }}">
+                    {{ $type->name }}
                 </a>
             @endforeach
         </div>

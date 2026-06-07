@@ -7,6 +7,7 @@
     render(function (View $view): View {
         $filter = request('filter');
         $search = request('search');
+        $selectedType = request('type');
 
         $query = \App\Models\Event::published();
 
@@ -17,24 +18,41 @@
             });
         }
 
+        if ($selectedType && !in_array($selectedType, ['terbaru', 'terlama'])) {
+            $query->whereHas('types', fn($q) => $q->where('slug', $selectedType));
+        }
+
         switch ($filter) {
             case 'ongoing':
                 $query->ongoing();
                 break;
             case 'past':
-                $query->past()->orderBy('start_datetime', 'desc');
+                $query->past();
                 break;
             case 'upcoming':
-                $query->upcoming()->orderBy('start_datetime', 'asc');
-                break;
-            default:
-                $query->orderBy('start_datetime', 'desc');
+                $query->upcoming();
                 break;
         }
+
+        if ($selectedType === 'terbaru') {
+            $query->orderBy('start_datetime', 'desc');
+        } elseif ($selectedType === 'terlama') {
+            $query->orderBy('start_datetime', 'asc');
+        } else {
+            if ($filter === 'upcoming') {
+                $query->orderBy('start_datetime', 'asc');
+            } else {
+                $query->orderBy('start_datetime', 'desc');
+            }
+        }
+
+        $types = \App\Models\Type::all();
 
         return $view->with([
             'filter' => $filter,
             'search' => $search,
+            'selectedType' => $selectedType,
+            'types' => $types,
             'events' => $query->paginate(6),
         ]);
     });
@@ -65,19 +83,19 @@
             <div class="stitch-panel mb-10 flex flex-col items-center justify-between gap-4 p-4 md:flex-row">
                 <!-- Tabs / Filters -->
                 <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <a href="{{ route('events', ['search' => $search]) }}" wire:navigate 
+                    <a href="{{ route('events', ['search' => $search, 'type' => $selectedType]) }}" wire:navigate 
                        class="rounded-full border px-4 py-2 text-xs font-semibold transition-all {{ $filter === null ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
                         All Events
                     </a>
-                    <a href="{{ route('events', ['filter' => 'upcoming', 'search' => $search]) }}" wire:navigate 
+                    <a href="{{ route('events', ['filter' => 'upcoming', 'search' => $search, 'type' => $selectedType]) }}" wire:navigate 
                        class="rounded-full border px-4 py-2 text-xs font-semibold transition-all {{ $filter === 'upcoming' ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
                         Upcoming
                     </a>
-                    <a href="{{ route('events', ['filter' => 'ongoing', 'search' => $search]) }}" wire:navigate 
+                    <a href="{{ route('events', ['filter' => 'ongoing', 'search' => $search, 'type' => $selectedType]) }}" wire:navigate 
                        class="rounded-full border px-4 py-2 text-xs font-semibold transition-all {{ $filter === 'ongoing' ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
                         Ongoing
                     </a>
-                    <a href="{{ route('events', ['filter' => 'past', 'search' => $search]) }}" wire:navigate 
+                    <a href="{{ route('events', ['filter' => 'past', 'search' => $search, 'type' => $selectedType]) }}" wire:navigate 
                        class="rounded-full border px-4 py-2 text-xs font-semibold transition-all {{ $filter === 'past' ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
                         Past Events
                     </a>
@@ -88,15 +106,33 @@
                     @if($filter)
                         <input type="hidden" name="filter" value="{{ $filter }}">
                     @endif
+                    @if($selectedType)
+                        <input type="hidden" name="type" value="{{ $selectedType }}">
+                    @endif
                     <span class="material-symbols-outlined mr-2 text-[20px] text-zinc-400">search</span>
                     <input type="text" name="search" placeholder="Search events..." value="{{ $search }}"
                            class="w-full border-none bg-transparent p-0 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-0">
                     @if($search)
-                        <a href="{{ route('events', ['filter' => $filter]) }}" class="text-zinc-400 hover:text-zinc-600 ml-1.5 flex items-center">
+                        <a href="{{ route('events', ['filter' => $filter, 'type' => $selectedType]) }}" class="text-zinc-400 hover:text-zinc-600 ml-1.5 flex items-center">
                             <span class="material-symbols-outlined text-[16px]">close</span>
                         </a>
                     @endif
                 </form>
+            </div>
+
+            <!-- Type Filters -->
+            <div class="mb-10 flex flex-wrap gap-2 items-center">
+                <span class="text-xs font-bold text-zinc-500 mr-2">Tipe:</span>
+                <a href="{{ request()->fullUrlWithQuery(['type' => null]) }}" wire:navigate 
+                   class="rounded-full border px-4 py-1.5 text-xs font-semibold transition-all {{ !$selectedType ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
+                    Semua Tipe
+                </a>
+                @foreach ($types as $type)
+                    <a href="{{ request()->fullUrlWithQuery(['type' => $type->slug]) }}" wire:navigate 
+                       class="rounded-full border px-4 py-1.5 text-xs font-semibold transition-all {{ $selectedType === $type->slug ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
+                        {{ $type->name }}
+                    </a>
+                @endforeach
             </div>
 
             <!-- Events Grid -->
@@ -182,7 +218,7 @@
 
                 <!-- Custom Pagination -->
                 <div class="flex justify-center mt-12">
-                    {{ $events->appends(['filter' => $filter, 'search' => $search])->links('theme::partials.pagination') }}
+                    {{ $events->appends(['filter' => $filter, 'search' => $search, 'type' => $selectedType])->links('theme::partials.pagination') }}
                 </div>
             @else
                 <div class="stitch-panel mx-auto max-w-lg p-8 py-16 text-center">

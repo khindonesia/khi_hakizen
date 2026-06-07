@@ -5,10 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Event extends Model
 {
     use HasFactory;
+
+    /**
+     * Get the types for the event.
+     */
+    public function types(): MorphToMany
+    {
+        return $this->morphToMany(Type::class, 'typeable');
+    }
 
     /**
      * The attributes that are mass assignable.

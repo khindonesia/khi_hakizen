@@ -85,6 +85,12 @@ class EventResource extends Resource
                     ->placeholder('0')
                     ->visible(fn (Get $get): bool => $get('type') === 'PAID')
                     ->required(fn (Get $get): bool => $get('type') === 'PAID'),
+                Forms\Components\Select::make('types')
+                    ->label('Types/Labels')
+                    ->relationship('types', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->columnSpanFull(),
             ]);
     }
 

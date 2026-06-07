@@ -5,11 +5,26 @@ name('historia-news');
 ?>
 
 @php
-    $posts = \Wave\Post::query()
-        ->where('status', 'PUBLISHED')
-        ->orderByRaw('featured DESC') // Mengutamakan featured (true/1 sebelum false/0)
-        ->latest() // Sama dengan orderBy('created_at', 'desc')
-        ->paginate(9);
+    $selectedType = request('type');
+    $types = \App\Models\Type::all();
+
+    $postQuery = \App\Models\Post::query()
+        ->where('status', 'PUBLISHED');
+
+    if ($selectedType) {
+        if ($selectedType === 'terbaru') {
+            $postQuery->orderByRaw('featured DESC')->latest();
+        } elseif ($selectedType === 'terlama') {
+            $postQuery->orderByRaw('featured DESC')->oldest();
+        } else {
+            $postQuery->whereHas('types', fn($q) => $q->where('slug', $selectedType));
+            $postQuery->orderByRaw('featured DESC')->latest();
+        }
+    } else {
+        $postQuery->orderByRaw('featured DESC')->latest();
+    }
+
+    $posts = $postQuery->paginate(9)->withQueryString();
 @endphp
 
 <x-layouts.marketing :seo="[
@@ -35,10 +50,25 @@ name('historia-news');
         </section>
 
         <main class="w-full max-w-[1280px] mx-auto px-6 mt-16">
+            <!-- Type Filters -->
+            <div class="mb-10 flex flex-wrap gap-2 items-center justify-center">
+                <span class="text-xs font-bold text-zinc-500 mr-2">Tipe:</span>
+                <a href="{{ request()->fullUrlWithQuery(['type' => null]) }}" wire:navigate 
+                   class="rounded-full border px-4 py-1.5 text-xs font-semibold transition-all {{ !$selectedType ? 'border-red-600 bg-red-600 text-white shadow-sm' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
+                    Semua Tipe
+                </a>
+                @foreach ($types as $type)
+                    <a href="{{ request()->fullUrlWithQuery(['type' => $type->slug]) }}" wire:navigate 
+                       class="rounded-full border px-4 py-1.5 text-xs font-semibold transition-all {{ $selectedType === $type->slug ? 'border-red-600 bg-red-600 text-white shadow-sm' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-200 hover:text-red-700' }}">
+                        {{ $type->name }}
+                    </a>
+                @endforeach
+            </div>
+
             @if ($posts->isEmpty())
                 <div
                     class="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-600">
-                    Belum ada artikel Historialita saat ini.
+                    Belum ada artikel Historialita dengan tipe ini.
                 </div>
             @else
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">

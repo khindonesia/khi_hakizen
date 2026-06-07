@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Product extends Model
 {
@@ -19,6 +20,14 @@ class Product extends Model
         'weight',
         'status',
     ];
+
+    /**
+     * Relasi ke tipe produk.
+     */
+    public function types(): MorphToMany
+    {
+        return $this->morphToMany(Type::class, 'typeable');
+    }
 
     /**
      * Mendapatkan harga yang akan ditampilkan.

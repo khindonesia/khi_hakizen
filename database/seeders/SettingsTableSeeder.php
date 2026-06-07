@@ -105,33 +105,9 @@ class SettingsTableSeeder extends Seeder
 
             // Social Media
             [
-                'key' => 'socmed_facebook',
-                'value' => 'https://facebook.com/komunitashistoria',
-                'type' => 'url',
-                'group' => 'Social Media',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'key' => 'socmed_instagram',
-                'value' => 'https://instagram.com/komunitashistoria',
-                'type' => 'url',
-                'group' => 'Social Media',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'key' => 'socmed_twitter',
-                'value' => 'https://twitter.com/historiadotco',
-                'type' => 'url',
-                'group' => 'Social Media',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'key' => 'socmed_youtube',
-                'value' => 'https://youtube.com',
-                'type' => 'url',
+                'key' => 'site_social_links',
+                'value' => '[{"name":"Facebook","url":"https:\/\/facebook.com\/komunitashistoria","logo":""},{"name":"Instagram","url":"https:\/\/instagram.com\/komunitashistoria","logo":""},{"name":"Twitter","url":"https:\/\/twitter.com\/historiadotco","logo":""},{"name":"YouTube","url":"https:\/\/youtube.com","logo":""}]',
+                'type' => 'json',
                 'group' => 'Social Media',
                 'created_at' => now(),
                 'updated_at' => now(),
