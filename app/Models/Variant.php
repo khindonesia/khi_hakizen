@@ -97,6 +97,21 @@ class Variant extends Model
     }
     
     /**
+     * Get the variant's display name.
+     */
+    public function getNameAttribute(): string
+    {
+        $attributes = $this->variantAttributes;
+        if ($attributes && $attributes->isNotEmpty()) {
+            return $attributes->map(function ($va) {
+                return $va->attributeValue?->value;
+            })->filter()->implode(' / ');
+        }
+        
+        return $this->sku;
+    }
+
+    /**
      * Scope a query to only include default variants.
      */
     public function scopeDefault($query)

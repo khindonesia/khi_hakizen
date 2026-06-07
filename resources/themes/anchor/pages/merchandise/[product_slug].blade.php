@@ -42,11 +42,30 @@
 
     $mainImageUrl = $galleryItems->first() ?? $fallbackImageUrl;
 
-    $selectedVariant = $product
-        ? ($product->defaultVariant
-            ?? $product->variants->firstWhere('status', 'active')
-            ?? $product->variants->first())
-        : null;
+    $urlVariantQuery = request()->query('variant');
+    $selectedVariant = null;
+
+    if ($product) {
+        if ($urlVariantQuery) {
+            // Check if it is a numeric ID
+            if (is_numeric($urlVariantQuery)) {
+                $selectedVariant = $product->variants->firstWhere('id', $urlVariantQuery);
+            }
+            // Check if it matches SKU (case-insensitive)
+            if (!$selectedVariant) {
+                $selectedVariant = $product->variants->first(fn ($v) => strtolower($v->sku) === strtolower($urlVariantQuery));
+            }
+            // Check if it matches Variant Name (case-insensitive)
+            if (!$selectedVariant) {
+                $selectedVariant = $product->variants->first(fn ($v) => strtolower($v->name) === strtolower($urlVariantQuery));
+            }
+        }
+        if (!$selectedVariant) {
+            $selectedVariant = $product->defaultVariant
+                ?? $product->variants->firstWhere('status', 'active')
+                ?? $product->variants->first();
+        }
+    }
 
     $selectedVariantPrice = $selectedVariant?->price ?? 0;
     $selectedVariantStock = $selectedVariant?->stock_quantity ?? 0;
@@ -59,6 +78,11 @@
             'name' => $variant->name,
             'price' => $variant->price,
             'stock_quantity' => $variant->stock_quantity,
+            'attributes' => $variant->variantAttributes->map(fn ($va) => [
+                'attribute_id' => $va->attribute_id,
+                'attribute_value_id' => $va->attribute_value_id,
+                'value' => $va->attributeValue?->value,
+            ])->all(),
         ])->values()
         : collect();
 @endphp
@@ -121,6 +145,68 @@
                              loading: false,
                              message: '',
                              messageType: 'success',
+                             init() {
+                                 const urlParams = new URLSearchParams(window.location.search);
+                                 const urlVariant = urlParams.get('variant');
+                                 if (urlVariant) {
+                                     const match = this.variants.find(v => 
+                                         v.id == urlVariant || 
+                                         (v.name && v.name.toLowerCase() === urlVariant.toLowerCase()) || 
+                                         (v.sku && v.sku.toLowerCase() === urlVariant.toLowerCase())
+                                     );
+                                     if (match) {
+                                         this.selectedVariantId = match.id;
+                                     } else if (this.selectedVariantId) {
+                                         this.updateUrl();
+                                     }
+                                 } else if (this.selectedVariantId) {
+                                     this.updateUrl();
+                                 }
+
+                                 this.$watch('selectedVariantId', (val) => {
+                                     this.updateUrl();
+                                 });
+                             },
+                             updateUrl() {
+                                 if (!this.selectedVariantId) return;
+                                 const url = new URL(window.location.href);
+                                 const variantName = this.selectedVariant?.name || this.selectedVariant?.sku || this.selectedVariantId;
+                                 url.searchParams.set('variant', variantName);
+                                 window.history.replaceState({}, '', url.toString());
+                             },
+                             isAttributeSelected(attributeId, attributeValueId) {
+                                 if (!this.selectedVariant || !this.selectedVariant.attributes) return false;
+                                 return this.selectedVariant.attributes.some(
+                                     (attr) => attr.attribute_id === attributeId && attr.attribute_value_id === attributeValueId
+                                 );
+                             },
+                             selectAttribute(attributeId, attributeValueId) {
+                                 let currentAttrs = {};
+                                 if (this.selectedVariant && this.selectedVariant.attributes) {
+                                     this.selectedVariant.attributes.forEach(attr => {
+                                         currentAttrs[attr.attribute_id] = attr.attribute_value_id;
+                                     });
+                                 }
+                                 currentAttrs[attributeId] = attributeValueId;
+
+                                 let match = this.variants.find(v => {
+                                     if (!v.attributes) return false;
+                                     return Object.entries(currentAttrs).every(([attrId, valId]) => {
+                                         return v.attributes.some(va => va.attribute_id == attrId && va.attribute_value_id == valId);
+                                     });
+                                 });
+
+                                 if (!match) {
+                                     match = this.variants.find(v => {
+                                         if (!v.attributes) return false;
+                                         return v.attributes.some(va => va.attribute_id == attributeId && va.attribute_value_id == attributeValueId);
+                                     });
+                                 }
+
+                                 if (match) {
+                                     this.selectedVariantId = match.id;
+                                 }
+                             },
                              get selectedVariant() {
                                  return this.variants.find((variant) => variant.id === this.selectedVariantId) ?? null;
                              },
@@ -234,7 +320,11 @@
                                         <div class="flex flex-wrap gap-2">
                                             @foreach($group as $value)
                                                 <button type="button"
-                                                        class="rounded-full border px-3 py-1.5 text-xs transition-colors {{ $value->attributeValue->value == $value->selected ? 'border-red-600 bg-red-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-300 hover:text-red-700' }}">
+                                                        x-on:click="selectAttribute({{ $attr->id }}, {{ $value->attribute_value_id }})"
+                                                        class="rounded-full border px-3 py-1.5 text-xs transition-colors"
+                                                        :class="isAttributeSelected({{ $attr->id }}, {{ $value->attribute_value_id }}) 
+                                                            ? 'border-red-700 bg-red-700 text-white shadow-sm font-medium' 
+                                                            : 'border-zinc-200 bg-white text-zinc-600 hover:border-red-300 hover:text-red-700'">
                                                     {{ $value->attributeValue->value }}
                                                 </button>
                                             @endforeach
@@ -276,9 +366,14 @@
                                         </button>
                                     </div>
 
-                                    <p class="text-xs font-medium text-zinc-500" x-text="stockHint">
-                                        {{ $selectedVariantStock > 0 ? $selectedVariantStock.' available' : 'Out of stock' }}
-                                    </p>
+                                     @php
+                                         $initialStockColor = $selectedVariantStock > 0 ? ($selectedVariantStock <= 5 ? 'text-amber-600' : 'text-emerald-600') : 'text-rose-600';
+                                     @endphp
+                                     <p class="text-sm font-semibold {{ $initialStockColor }}"
+                                        :class="selectedVariant && selectedVariant.stock_quantity > 0 ? (selectedVariant.stock_quantity <= 5 ? 'text-amber-600' : 'text-emerald-600') : 'text-rose-600'"
+                                        x-text="stockHint">
+                                         {{ $selectedVariantStock > 0 ? $selectedVariantStock.' available' : 'Out of stock' }}
+                                     </p>
                                 </div>
 
                                 <button
@@ -290,9 +385,12 @@
                                     Add to Cart
                                 </button>
 
-                                <p class="min-h-5 text-sm font-medium"
+                                <p x-show="message"
+                                   x-transition
+                                   class="text-sm font-medium mt-1 text-center"
                                    x-text="message"
-                                   :class="messageType === 'success' ? 'text-emerald-600' : 'text-rose-600'"></p>
+                                   :class="messageType === 'success' ? 'text-emerald-600' : 'text-rose-600'"
+                                   x-cloak></p>
                             </div>
                             @else
                                 <a href="{{ route('join') }}" class="w-full rounded-full bg-red-600 py-3 text-center font-semibold text-white transition-all hover:bg-red-500">

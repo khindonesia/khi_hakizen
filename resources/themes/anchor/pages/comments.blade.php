@@ -139,7 +139,7 @@ new class extends Component {
             <div class="flex-1 flex flex-col gap-2">
                 <textarea wire:model="newCommentBody" 
                           class="w-full border border-[#D1D1D0] rounded-lg p-3 text-base leading-[1.55] text-[#37352F] bg-white focus:outline-none focus:border-[#df1c24] focus:ring-1 focus:ring-[#df1c24] transition-all resize-none placeholder:text-[#979A9B]" 
-                          placeholder="Bagikan pemikiran Anda tentang ini..." 
+                          placeholder="Bagikan komentar Anda tentang ini..." 
                           rows="3"></textarea>
                 @error('newCommentBody') <span class="text-xs text-red-500 font-medium">{{ $message }}</span> @enderror
                 <div class="flex justify-end">
@@ -268,7 +268,7 @@ new class extends Component {
                 @endif
             </div>
         @empty
-            <p class="text-sm text-[#575e75] text-center py-6">Belum ada komentar. Jadilah yang pertama memberikan pemikiran!</p>
+            <p class="text-sm text-[#575e75] text-center py-6">Belum ada komentar. Jadilah yang pertama memberikan komentar!</p>
         @endforelse
     </div>
 
