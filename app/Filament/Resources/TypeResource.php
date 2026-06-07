@@ -37,7 +37,17 @@ class TypeResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                    ])->columns(2)
+                        Forms\Components\Select::make('for')
+                            ->options([
+                                'product' => 'Product',
+                                'event' => 'Event',
+                                'post' => 'Post (Article)',
+                                'aspirasi' => 'Aspirasi',
+                            ])
+                            ->required()
+                            ->default('product')
+                            ->native(false),
+                    ])->columns(3)
             ]);
     }
 
@@ -53,6 +63,24 @@ class TypeResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->color('gray'),
+                Tables\Columns\TextColumn::make('for')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'product' => 'warning',
+                        'event' => 'success',
+                        'post' => 'info',
+                        'aspirasi' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'product' => 'Product',
+                        'event' => 'Event',
+                        'post' => 'Post (Article)',
+                        'aspirasi' => 'Aspirasi',
+                        default => $state,
+                    })
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -63,7 +91,14 @@ class TypeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('for')
+                    ->options([
+                        'product' => 'Product',
+                        'event' => 'Event',
+                        'post' => 'Post (Article)',
+                        'aspirasi' => 'Aspirasi',
+                    ])
+                    ->label('Target Model'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([

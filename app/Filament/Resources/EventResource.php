@@ -87,7 +87,7 @@ class EventResource extends Resource
                     ->required(fn (Get $get): bool => $get('type') === 'PAID'),
                 Forms\Components\Select::make('types')
                     ->label('Types/Labels')
-                    ->relationship('types', 'name')
+                    ->relationship('types', 'name', fn ($query) => $query->where('for', 'event'))
                     ->multiple()
                     ->preload()
                     ->columnSpanFull(),

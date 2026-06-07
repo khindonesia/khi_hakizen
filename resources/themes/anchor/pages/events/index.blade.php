@@ -46,7 +46,7 @@
             }
         }
 
-        $types = \App\Models\Type::all();
+        $types = \App\Models\Type::where('for', 'event')->get();
 
         return $view->with([
             'filter' => $filter,

@@ -15,12 +15,28 @@ new class extends Component {
 
     public string $categoryFilter = 'all';
     public string $tabFilter = 'all'; // all, my-posts
+    public string $typeFilter = 'all';
     
     // Form fields
     public string $title = '';
     public string $categorySlug = 'cagar-budaya';
     public string $body = '';
     public string $excerpt = '';
+
+    public function updatedCategoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTabFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter(): void
+    {
+        $this->resetPage();
+    }
 
     protected $rules = [
         'title' => 'required|min:5|max:150',
@@ -172,6 +188,23 @@ new class extends Component {
                     </div>
                 </div>
 
+                <!-- Type Filters -->
+                <div class="flex items-center justify-between mb-8 pb-4 border-b border-[#E9E9E8]">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="text-xs font-bold text-zinc-500 mr-2">Tipe:</span>
+                        <button type="button" wire:click="$set('typeFilter', 'all')"
+                            class="px-4 py-1.5 rounded-full text-xs font-semibold transition duration-200 {{ $typeFilter === 'all' ? 'border-[#df1c24] bg-[#df1c24] text-white shadow-sm' : 'border-[#E9E9E8] bg-white text-[#575e75] hover:bg-zinc-50 hover:text-red-700' }}">
+                            Semua Tipe
+                        </button>
+                        @foreach (\App\Models\Type::where('for', 'aspirasi')->get() as $type)
+                            <button type="button" wire:click="$set('typeFilter', '{{ $type->slug }}')"
+                                class="px-4 py-1.5 rounded-full text-xs font-semibold transition duration-200 {{ $typeFilter === $type->slug ? 'border-[#df1c24] bg-[#df1c24] text-white shadow-sm' : 'border-[#E9E9E8] bg-white text-[#575e75] hover:bg-zinc-50 hover:text-red-700' }}">
+                                {{ $type->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
                 @php
                     $query = Aspirasi::query()->with(['user', 'category'])->where('status', 'PUBLISHED')->latest();
                     
@@ -183,6 +216,12 @@ new class extends Component {
 
                     if ($this->tabFilter === 'my-posts' && auth()->check()) {
                         $query->where('author_id', auth()->id());
+                    }
+
+                    if ($this->typeFilter !== 'all') {
+                        $query->whereHas('types', function($q) {
+                            $q->where('slug', $this->typeFilter);
+                        });
                     }
 
                     $aspirations = $query->paginate(7); // 7 per page provides a beautiful layout with 1 featured and 6 grid items

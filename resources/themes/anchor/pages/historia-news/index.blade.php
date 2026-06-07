@@ -6,7 +6,7 @@ name('historia-news');
 
 @php
     $selectedType = request('type');
-    $types = \App\Models\Type::all();
+    $types = \App\Models\Type::where('for', 'post')->get();
 
     $postQuery = \App\Models\Post::query()
         ->where('status', 'PUBLISHED');

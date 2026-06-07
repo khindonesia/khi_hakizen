@@ -1,11 +1,10 @@
 <?php
-
+ 
 namespace App\Filament\Resources;
-
-use App\Filament\Resources\PostResource\Pages;
-use App\Models\Post;
+ 
+use App\Filament\Resources\AspirasiResource\Pages;
+use App\Models\Aspirasi;
 use App\Models\User;
-use Wave\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,25 +14,25 @@ use Filament\Forms\Set;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Str;
-
-class PostResource extends Resource
+ 
+class AspirasiResource extends Resource
 {
-    protected static ?string $model = Post::class;
-
-    protected static ?string $navigationIcon = 'phosphor-pencil-line-duotone';
-
-    protected static ?string $navigationLabel = 'Historialita';
+    protected static ?string $model = Aspirasi::class;
+ 
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+ 
+    protected static ?string $navigationLabel = 'Aspirasi';
     protected static ?string $navigationGroup = 'Post Management';
-
-    protected static ?int $navigationSort = 3;
-
+ 
+    protected static ?int $navigationSort = 4;
+ 
     protected static ?string $recordTitleAttribute = 'title';
-
+ 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                // Kolom Kiri: Konten Utama
+                // Left Column: Main Content
                 Forms\Components\Group::make()
                     ->schema([
                         Forms\Components\Section::make('Content')
@@ -43,39 +42,39 @@ class PostResource extends Resource
                                     ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
                                     ->required()
                                     ->maxLength(191),
-
+ 
                                 Forms\Components\TextInput::make('slug')
                                     ->required()
                                     ->unique(ignoreRecord: true)
                                     ->maxLength(191),
-
+ 
                                 Forms\Components\RichEditor::make('body')
                                     ->required()
-                                    ->fileAttachmentsDirectory('posts/attachments')
+                                    ->fileAttachmentsDirectory('aspirasis/attachments')
                                     ->columnSpanFull(),
-
+ 
                                 Forms\Components\Textarea::make('excerpt')
                                     ->rows(3)
                                     ->columnSpanFull(),
                             ])->columns(2),
-
+ 
                         Forms\Components\Section::make('SEO Metadata')
                             ->collapsible()
                             ->collapsed()
                             ->schema([
                                 Forms\Components\TextInput::make('seo_title')
                                     ->maxLength(191),
-
+ 
                                 Forms\Components\Textarea::make('meta_description')
                                     ->rows(3),
-
+ 
                                 Forms\Components\Textarea::make('meta_keywords')
                                     ->rows(3),
                             ]),
                     ])
                     ->columnSpan(['lg' => 2]),
-
-                // Kolom Kanan: Pengaturan & Media (Sidebar)
+ 
+                // Right Column: Sidebar
                 Forms\Components\Group::make()
                     ->schema([
                         Forms\Components\Section::make('Status & Meta')
@@ -88,37 +87,37 @@ class PostResource extends Resource
                                         'PENDING' => 'Pending',
                                     ])
                                     ->native(false)
-                                    ->default('DRAFT'),
-
+                                    ->default('PENDING'),
+ 
                                 Forms\Components\Toggle::make('featured')
                                     ->onIcon('heroicon-m-star')
                                     ->offIcon('heroicon-m-x-mark')
                                     ->onColor('amber'),
-
+ 
                                 Forms\Components\Select::make('author_id')
                                     ->relationship('user', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->required(),
-
+ 
                                 Forms\Components\Select::make('category_id')
                                     ->relationship('category', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->required(),
-
+ 
                                 Forms\Components\Select::make('types')
                                     ->label('Types/Labels')
-                                    ->relationship('types', 'name', fn ($query) => $query->where('for', 'post'))
+                                    ->relationship('types', 'name', fn ($query) => $query->where('for', 'aspirasi'))
                                     ->multiple()
                                     ->preload(),
                             ]),
-
-                        Forms\Components\Section::make('Featured Image')
+ 
+                        Forms\Components\Section::make('Cover Image')
                             ->schema([
                                 Forms\Components\FileUpload::make('image')
                                     ->image()
-                                    ->directory('posts/covers')
+                                    ->directory('aspirasis/covers')
                                     ->imageEditor()
                                     ->maxSize(2048),
                             ]),
@@ -127,7 +126,7 @@ class PostResource extends Resource
             ])
             ->columns(3);
     }
-
+ 
     public static function table(Table $table): Table
     {
         return $table
@@ -136,24 +135,24 @@ class PostResource extends Resource
                     ->label('Cover')
                     ->square()
                     ->disk('public'),
-
+ 
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable()
                     ->wrap()
-                    ->description(fn(Post $record): string => Str::limit(strip_tags($record->excerpt), 50)),
-
+                    ->description(fn(Aspirasi $record): string => Str::limit(strip_tags($record->excerpt), 50)),
+ 
                 Tables\Columns\TextColumn::make('category.name')
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('gray'),
-
+ 
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Author')
                     ->searchable()
                     ->sortable(),
-
+ 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
@@ -163,7 +162,7 @@ class PostResource extends Resource
                         default => 'gray',
                     })
                     ->sortable(),
-
+ 
                 Tables\Columns\IconColumn::make('featured')
                     ->boolean()
                     ->trueIcon('heroicon-o-star')
@@ -171,18 +170,15 @@ class PostResource extends Resource
                     ->trueColor('amber')
                     ->falseColor('gray')
                     ->sortable(),
-
+ 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Published At')
+                    ->label('Created At')
                     ->dateTime('d M Y, H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->defaultSort('created_at', 'desc')
-
-            // Mengubah posisi layout filter agar terbuka di atas konten tabel (seperti pada gambar)
             ->filtersLayout(FiltersLayout::AboveContent)
-
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -193,10 +189,10 @@ class PostResource extends Resource
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label('Category')
                     ->relationship('category', 'name'),
-
+ 
                 TernaryFilter::make('featured')
-                    ->label('Featured Post')
-                    ->placeholder('All Posts')
+                    ->label('Featured')
+                    ->placeholder('All')
                     ->trueLabel('Only Featured')
                     ->falseLabel('Not Featured'),
             ])
@@ -212,20 +208,20 @@ class PostResource extends Resource
                 ]),
             ]);
     }
-
+ 
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-
+ 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPosts::route('/'),
-            'create' => Pages\CreatePost::route('/create'),
-            'edit' => Pages\EditPost::route('/{record}/edit'),
+            'index' => Pages\ListAspirasis::route('/'),
+            'create' => Pages\CreateAspirasi::route('/create'),
+            'edit' => Pages\EditAspirasi::route('/{record}/edit'),
         ];
     }
 }

@@ -112,7 +112,7 @@ class ProductResource extends Resource
 
                                                 Forms\Components\Select::make('types')
                                                     ->label('Types/Labels')
-                                                    ->relationship('types', 'name')
+                                                    ->relationship('types', 'name', fn ($query) => $query->where('for', 'product'))
                                                     ->multiple()
                                                     ->preload()
                                                     ->columnSpan(2),

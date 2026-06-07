@@ -10,7 +10,7 @@ class Type extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name', 'slug', 'for'];
 
     /**
      * Get all products that are assigned this type.
@@ -34,5 +34,13 @@ class Type extends Model
     public function events(): MorphToMany
     {
         return $this->morphedByMany(Event::class, 'typeable');
+    }
+
+    /**
+     * Get all aspirations that are assigned this type.
+     */
+    public function aspirations(): MorphToMany
+    {
+        return $this->morphedByMany(Aspirasi::class, 'typeable');
     }
 }

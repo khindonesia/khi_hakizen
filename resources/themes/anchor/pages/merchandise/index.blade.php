@@ -34,7 +34,7 @@ name("merchandise");
                 ->orderBy("name")
                 ->get();
 
-            $types = \App\Models\Type::all();
+            $types = \App\Models\Type::where('for', 'product')->get();
 
             $productQuery = \App\Models\Product::query()
                 ->where("status", "active")
