@@ -222,4 +222,9 @@ return [
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
     ])->toArray(),
 
+
+    'kyc' => [
+        'key'  => env('KYC_ENCRYPTION_KEY'),
+        'salt' => env('KYC_BLIND_INDEX_SALT'),
+    ],
 ];

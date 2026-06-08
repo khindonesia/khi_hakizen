@@ -51,6 +51,7 @@ class User extends WaveUser
         'country',
         'province',
         'city',
+        'kyc_status'
     ];
 
     /**
@@ -137,5 +138,10 @@ class User extends WaveUser
             // Assign the default role
             $user->assignRole(config('wave.default_user_role', 'registered'));
         });
+    }
+
+    public function kyc()
+    {
+        return $this->hasOne(UserKyc::class);
     }
 }
